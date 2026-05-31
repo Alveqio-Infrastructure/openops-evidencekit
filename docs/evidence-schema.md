@@ -51,3 +51,6 @@ python -m openops_evidence validate -i evidence.local.json
 
 Validation checks the required envelope and basic asset shape. It does not prove
 that a signal is true; it only checks that the file can be interpreted.
+
+The repository also includes a draft 2020-12 JSON Schema at
+`schemas/evidence.schema.json`.

@@ -76,6 +76,8 @@ EvidenceKit uses three files:
 Use `merge` when evidence comes from multiple collectors or manually reviewed
 sources.
 
+JSON Schemas for generated artifacts live in [schemas/](schemas/).
+
 Policy checks are intentionally small:
 
 ```toml

@@ -7,3 +7,4 @@
 - Add deterministic policy engine with path queries and date checks.
 - Add Markdown and HTML report renderers.
 - Add redaction for common secret keys, email addresses, and IPv4 addresses.
+- Add draft JSON Schemas for evidence and report artifacts.
