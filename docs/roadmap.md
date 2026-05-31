@@ -27,6 +27,7 @@ having to deploy a platform first.
 - Runbook freshness checks.
 - Inventory completeness checks.
 - Evidence bundle manifest.
+- Bundle manifest validation.
 
 ## 0.4 Assurance Pack
 

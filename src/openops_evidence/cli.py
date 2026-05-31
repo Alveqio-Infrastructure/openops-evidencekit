@@ -5,6 +5,7 @@ import sys
 from importlib import resources
 from pathlib import Path
 
+from .bundle import create_bundle_manifest
 from .collectors import (
     collect_borg_archives,
     collect_docker_containers,
@@ -21,7 +22,7 @@ from .merge import merge_evidence
 from .policy import evaluate_policy, parse_policy
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
-from .schema import validate_evidence, validate_report
+from .schema import validate_bundle_manifest, validate_evidence, validate_report
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -95,9 +96,18 @@ def build_parser() -> argparse.ArgumentParser:
     merge.add_argument("-o", "--output", default="-")
     merge.set_defaults(func=cmd_merge)
 
-    validate = sub.add_parser("validate", help="Validate evidence or report JSON")
+    bundle = sub.add_parser("bundle", help="Create and inspect evidence bundles")
+    bundle_sub = bundle.add_subparsers(required=True)
+    manifest = bundle_sub.add_parser("manifest", help="Create a hash manifest for evidence artifacts")
+    manifest.add_argument("inputs", nargs="+")
+    manifest.add_argument("--name", default="openops-evidence-bundle")
+    manifest.add_argument("--base-dir")
+    manifest.add_argument("-o", "--output", default="-")
+    manifest.set_defaults(func=cmd_bundle_manifest)
+
+    validate = sub.add_parser("validate", help="Validate evidence, report, or bundle JSON")
     validate.add_argument("-i", "--input", required=True)
-    validate.add_argument("-t", "--type", choices=["evidence", "report"], default="evidence")
+    validate.add_argument("-t", "--type", choices=["evidence", "report", "bundle"], default="evidence")
     validate.set_defaults(func=cmd_validate)
 
     report = sub.add_parser("report", help="Render a check report")
@@ -187,9 +197,20 @@ def cmd_merge(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_bundle_manifest(args: argparse.Namespace) -> int:
+    manifest = create_bundle_manifest(args.inputs, name=args.name, base_dir=args.base_dir)
+    write_text(args.output, dump_json(manifest))
+    return 0
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     document = load_json(args.input)
-    errors = validate_report(document) if args.type == "report" else validate_evidence(document)
+    if args.type == "report":
+        errors = validate_report(document)
+    elif args.type == "bundle":
+        errors = validate_bundle_manifest(document)
+    else:
+        errors = validate_evidence(document)
     if errors:
         print("invalid")
         for error in errors:

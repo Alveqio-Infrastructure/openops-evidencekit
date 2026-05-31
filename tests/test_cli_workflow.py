@@ -19,6 +19,7 @@ class CliWorkflowTests(unittest.TestCase):
             report = temp / "report.json"
             markdown = temp / "report.md"
             bookstack = temp / "bookstack.md"
+            manifest = temp / "manifest.json"
 
             self.assertEqual(
                 main(["collect", "fixture", str(ROOT / "examples" / "evidence.sample.json"), "-o", str(evidence)]),
@@ -54,9 +55,28 @@ class CliWorkflowTests(unittest.TestCase):
             )
             self.assertEqual(main(["report", "-i", str(report), "-f", "markdown", "-o", str(markdown)]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "bookstack", "-o", str(bookstack)]), 0)
+            self.assertEqual(
+                main(
+                    [
+                        "bundle",
+                        "manifest",
+                        str(merged),
+                        str(report),
+                        str(markdown),
+                        "--base-dir",
+                        str(temp),
+                        "-o",
+                        str(manifest),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(main(["validate", "-i", str(manifest), "-t", "bundle"]), 0)
 
             report_data = json.loads(report.read_text(encoding="utf-8"))
+            manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
             self.assertEqual(report_data["summary"]["status"], "pass")
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 3)
             self.assertIn("# OpenOps Evidence Report", markdown.read_text(encoding="utf-8"))
             self.assertIn("# Infrastructure Readiness Evidence", bookstack.read_text(encoding="utf-8"))
 

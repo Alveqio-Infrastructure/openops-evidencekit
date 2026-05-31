@@ -25,6 +25,8 @@ python -m openops_evidence validate -i examples/evidence.sample.json
 python -m openops_evidence check -i examples/evidence.sample.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.local.md -o evidence-bundle.manifest.json
+python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 ```
 
 Then inspect:
@@ -38,8 +40,9 @@ Then inspect:
 
 1. Update `CHANGELOG.md`.
 2. Confirm sample artifacts match the current schema.
-3. Confirm `schemas/evidence.schema.json` and `schemas/report.schema.json` are
-   still aligned with generated output.
+3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`, and
+   `schemas/bundle-manifest.schema.json` are still aligned with generated
+   output.
 4. Run the pre-release checks.
 5. Create a signed git tag when signing is available.
 6. Publish release notes with a short migration note for any schema or policy

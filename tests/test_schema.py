@@ -1,6 +1,6 @@
 import unittest
 
-from openops_evidence.schema import validate_evidence, validate_report
+from openops_evidence.schema import validate_bundle_manifest, validate_evidence, validate_report
 
 
 class SchemaTests(unittest.TestCase):
@@ -31,6 +31,46 @@ class SchemaTests(unittest.TestCase):
             }
         )
         self.assertEqual(errors, [])
+
+    def test_valid_bundle_manifest(self):
+        errors = validate_bundle_manifest(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "metadata": {},
+                "artifacts": [
+                    {
+                        "path": "evidence.json",
+                        "filename": "evidence.json",
+                        "role": "evidence",
+                        "media_type": "application/json",
+                        "size_bytes": 128,
+                        "sha256": "a" * 64,
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_bundle_manifest_hash_is_reported(self):
+        errors = validate_bundle_manifest(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "metadata": {},
+                "artifacts": [
+                    {
+                        "path": "evidence.json",
+                        "filename": "evidence.json",
+                        "role": "evidence",
+                        "media_type": "application/json",
+                        "size_bytes": 128,
+                        "sha256": "not-a-hash",
+                    }
+                ],
+            }
+        )
+        self.assertIn("artifacts[0].sha256 must be a lowercase SHA-256 hex digest.", errors)
 
 
 if __name__ == "__main__":

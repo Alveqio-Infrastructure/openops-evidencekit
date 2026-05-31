@@ -22,6 +22,8 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence validate -i report.local.json -t report
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.local.md readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 ```
 
 Expected result for the baseline fixture:

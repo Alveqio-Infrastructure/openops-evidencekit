@@ -9,6 +9,9 @@
 - Add redaction for common secret keys, email addresses, and IPv4 addresses.
 - Add draft JSON Schemas for evidence and report artifacts.
 - Add BookStack-oriented Markdown report output.
+- Add restic and Borg backup collectors.
 - Add Uptime Kuma export collector.
 - Add Prometheus target health collector.
+- Add systemd timer and Docker container runtime collectors.
+- Add evidence bundle manifest generation and validation.
 - Add end-to-end CLI workflow test and demo documentation.

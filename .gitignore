@@ -13,10 +13,12 @@ reports/
 evidence.local.json
 evidence.merged.json
 evidence.redacted.json
+evidence-bundle.manifest.json
 borg.evidence.json
 docker.evidence.json
 report.local.json
 report.local.md
+report.local.html
 report.merged.json
 report.security.json
 restic.evidence.json

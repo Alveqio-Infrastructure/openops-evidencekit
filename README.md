@@ -43,6 +43,12 @@ Render a wiki-friendly report:
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
 ```
 
+Create a hash manifest for the files you plan to share:
+
+```powershell
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json readiness.bookstack.md -o evidence-bundle.manifest.json
+```
+
 Merge evidence from multiple sources:
 
 ```powershell
@@ -121,6 +127,7 @@ sources.
 JSON Schemas for generated artifacts live in [schemas/](schemas/).
 Example inputs and generated artifact shapes are described in
 [examples/README.md](examples/README.md).
+Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest.md).
 
 Policy checks are intentionally small:
 

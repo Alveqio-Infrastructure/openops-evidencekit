@@ -37,6 +37,36 @@ def validate_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_bundle_manifest(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Bundle manifest must be a JSON object."]
+    _require_string(document, "schema_version", errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_list(document, "artifacts", errors)
+    for index, artifact in enumerate(document.get("artifacts", [])):
+        if not isinstance(artifact, dict):
+            errors.append(f"artifacts[{index}] must be an object.")
+            continue
+        prefix = f"artifacts[{index}]."
+        _require_string(artifact, "path", errors, prefix=prefix)
+        _require_string(artifact, "filename", errors, prefix=prefix)
+        _require_string(artifact, "role", errors, prefix=prefix)
+        _require_string(artifact, "media_type", errors, prefix=prefix)
+        _require_string(artifact, "sha256", errors, prefix=prefix)
+        sha256 = artifact.get("sha256")
+        if isinstance(sha256, str) and sha256 and not _is_sha256_hex(sha256):
+            errors.append(f"{prefix}sha256 must be a lowercase SHA-256 hex digest.")
+        if not isinstance(artifact.get("size_bytes"), int) or artifact.get("size_bytes", -1) < 0:
+            errors.append(f"{prefix}size_bytes must be a non-negative integer.")
+    return errors
+
+
+def _is_sha256_hex(value: str) -> bool:
+    return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
+
+
 def _require_string(document: dict[str, Any], key: str, errors: list[str], prefix: str = "") -> None:
     value = document.get(key)
     if not isinstance(value, str) or not value:
