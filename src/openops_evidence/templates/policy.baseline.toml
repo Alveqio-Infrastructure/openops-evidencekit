@@ -1,0 +1,12 @@
+[metadata]
+name = "OpenOps starter readiness policy"
+version = "0.1"
+
+[[checks]]
+id = "evidence_has_assets"
+title = "Evidence contains at least one asset"
+path = "assets[*].id"
+operator = "exists"
+severity = "medium"
+required = true
+remediation = "Add at least one host, service, endpoint, or repository to the assets list."

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from importlib import resources
 from pathlib import Path
 
 from .collectors import collect_fixture, collect_local, collect_tls
@@ -9,6 +10,7 @@ from .io import UserFacingError, dump_json, load_json, load_structured, write_te
 from .policy import evaluate_policy, parse_policy
 from .redact import redact_document
 from .reports import render_html, render_markdown
+from .schema import validate_evidence, validate_report
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -53,6 +55,11 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("-o", "--output", default="-")
     check.set_defaults(func=cmd_check)
 
+    validate = sub.add_parser("validate", help="Validate evidence or report JSON")
+    validate.add_argument("-i", "--input", required=True)
+    validate.add_argument("-t", "--type", choices=["evidence", "report"], default="evidence")
+    validate.set_defaults(func=cmd_validate)
+
     report = sub.add_parser("report", help="Render a check report")
     report.add_argument("-i", "--input", required=True)
     report.add_argument("-f", "--format", choices=["markdown", "html"], default="markdown")
@@ -88,6 +95,9 @@ def cmd_collect_tls(args: argparse.Namespace) -> int:
 
 def cmd_check(args: argparse.Namespace) -> int:
     evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
     policy_raw = load_structured(args.policy)
     checks = parse_policy(policy_raw)
     report = evaluate_policy(evidence, checks)
@@ -95,8 +105,23 @@ def cmd_check(args: argparse.Namespace) -> int:
     return 1 if report["summary"]["status"] == "fail" else 0
 
 
+def cmd_validate(args: argparse.Namespace) -> int:
+    document = load_json(args.input)
+    errors = validate_report(document) if args.type == "report" else validate_evidence(document)
+    if errors:
+        print("invalid")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+    print("valid")
+    return 0
+
+
 def cmd_report(args: argparse.Namespace) -> int:
     report = load_json(args.input)
+    errors = validate_report(report)
+    if errors:
+        raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
     rendered = render_html(report) if args.format == "html" else render_markdown(report)
     write_text(args.output, rendered)
     return 0
@@ -112,9 +137,10 @@ def cmd_redact(args: argparse.Namespace) -> int:
 def cmd_init(args: argparse.Namespace) -> int:
     target = Path(args.directory)
     target.mkdir(parents=True, exist_ok=True)
-    policy = Path(__file__).resolve().parents[2] / "examples" / "policy.baseline.toml"
-    evidence = Path(__file__).resolve().parents[2] / "examples" / "evidence.sample.json"
-    (target / "policy.baseline.toml").write_text(policy.read_text(encoding="utf-8"), encoding="utf-8")
-    (target / "evidence.sample.json").write_text(evidence.read_text(encoding="utf-8"), encoding="utf-8")
+    package = "openops_evidence.templates"
+    policy = resources.files(package).joinpath("policy.baseline.toml").read_text(encoding="utf-8")
+    evidence = resources.files(package).joinpath("evidence.sample.json").read_text(encoding="utf-8")
+    (target / "policy.baseline.toml").write_text(policy, encoding="utf-8")
+    (target / "evidence.sample.json").write_text(evidence, encoding="utf-8")
     print(f"Created starter files in {target}")
     return 0

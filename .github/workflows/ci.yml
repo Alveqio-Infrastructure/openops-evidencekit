@@ -29,5 +29,7 @@ jobs:
       - name: Run sample workflow
         run: |
           PYTHONPATH=src python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
+          PYTHONPATH=src python -m openops_evidence validate -i evidence.local.json
           PYTHONPATH=src python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
+          PYTHONPATH=src python -m openops_evidence validate -i report.local.json -t report
           PYTHONPATH=src python -m openops_evidence report -i report.local.json -f markdown -o report.local.md

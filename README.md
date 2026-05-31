@@ -29,6 +29,7 @@ Run from a checkout:
 
 ```powershell
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
+python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 ```
@@ -43,6 +44,12 @@ Use redaction before sharing evidence outside your organization:
 
 ```powershell
 python -m openops_evidence redact -i evidence.local.json --redact-hostnames -o evidence.redacted.json
+```
+
+Create starter files for a new assessment:
+
+```powershell
+python -m openops_evidence init ./my-readiness-check
 ```
 
 ## Core Concepts

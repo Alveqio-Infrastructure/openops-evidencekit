@@ -40,3 +40,14 @@ Signals contain observed facts. Common signal groups:
 
 Collectors may add new signal groups. Policies should use stable paths whenever
 possible.
+
+## Validation
+
+Run:
+
+```powershell
+python -m openops_evidence validate -i evidence.local.json
+```
+
+Validation checks the required envelope and basic asset shape. It does not prove
+that a signal is true; it only checks that the file can be interpreted.
