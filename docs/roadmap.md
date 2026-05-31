@@ -29,6 +29,7 @@ having to deploy a platform first.
 - Evidence bundle manifest.
 - Bundle manifest validation.
 - Local documentation directory collector.
+- Wiki seed pages for public project documentation.
 
 ## 0.4 Assurance Pack
 

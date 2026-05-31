@@ -162,6 +162,8 @@ See [docs/roadmap.md](docs/roadmap.md).
 Maintainers should use [docs/release-process.md](docs/release-process.md) for
 release checks.
 
+A short wiki seed for GitHub Wiki or BookStack lives in [docs/wiki/](docs/wiki/).
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).
