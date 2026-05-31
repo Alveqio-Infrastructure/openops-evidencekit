@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run unit tests
+        run: PYTHONPATH=src python -m unittest discover -s tests
+      - name: Run sample workflow
+        run: |
+          PYTHONPATH=src python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
+          PYTHONPATH=src python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
+          PYTHONPATH=src python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
