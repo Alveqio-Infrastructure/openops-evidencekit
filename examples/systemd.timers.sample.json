@@ -1,0 +1,14 @@
+[
+  {
+    "unit": "backup.timer",
+    "active": "active",
+    "sub": "waiting",
+    "next": "Mon 2026-06-01 02:00:00 UTC"
+  },
+  {
+    "unit": "reporting.timer",
+    "active": "active",
+    "sub": "waiting",
+    "next": "Mon 2026-06-01 06:00:00 UTC"
+  }
+]

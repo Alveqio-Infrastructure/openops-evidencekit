@@ -19,6 +19,7 @@ having to deploy a platform first.
 - Borg backup evidence.
 - systemd timer evidence.
 - Docker container evidence.
+- Collector-specific fixture coverage.
 
 ## 0.3 Documentation Pack
 

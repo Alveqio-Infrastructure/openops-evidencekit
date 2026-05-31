@@ -3,8 +3,11 @@ import unittest
 from pathlib import Path
 
 from openops_evidence.collectors import (
+    collect_borg_archives,
+    collect_docker_containers,
     collect_prometheus_targets,
     collect_restic_snapshots,
+    collect_systemd_timers,
     collect_uptime_kuma_export,
 )
 
@@ -48,6 +51,27 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(evidence["signals"]["monitoring"]["monitors_total"], 2)
         self.assertEqual(evidence["signals"]["monitoring"]["alert_channels"], ["1"])
 
+    def test_collect_borg_archives(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "borg.json"
+            path.write_text(
+                """
+{
+  "repository": {"id": "repo-1"},
+  "archives": [
+    {"name": "srv-2026-05-29", "time": "2026-05-29T22:00:00+00:00", "hostname": "srv-01"},
+    {"name": "srv-2026-05-30", "time": "2026-05-30T22:00:00+00:00", "hostname": "srv-01"}
+  ]
+}
+""".strip(),
+                encoding="utf-8",
+            )
+            evidence = collect_borg_archives(str(path))
+        self.assertEqual(evidence["signals"]["backup"]["tool"], "borg")
+        self.assertEqual(evidence["signals"]["backup"]["archive_count"], 2)
+        self.assertEqual(evidence["signals"]["backup"]["last_success_at"], "2026-05-30T22:00:00+00:00")
+        self.assertEqual(evidence["signals"]["backup"]["protected_hosts"], ["srv-01"])
+
     def test_collect_prometheus_targets(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "targets.json"
@@ -69,6 +93,43 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(evidence["signals"]["monitoring"]["targets"], 1)
         self.assertEqual(evidence["signals"]["monitoring"]["targets_down"], 1)
         self.assertEqual(evidence["signals"]["monitoring"]["down_targets"], ["db:9100"])
+
+    def test_collect_systemd_timers(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "timers.json"
+            path.write_text(
+                """
+[
+  {"unit": "backup.timer", "active": "active", "sub": "waiting"},
+  {"unit": "old.timer", "active": "failed", "sub": "failed"}
+]
+""".strip(),
+                encoding="utf-8",
+            )
+            evidence = collect_systemd_timers(str(path))
+        systemd = evidence["signals"]["runtime"]["systemd"]
+        self.assertEqual(systemd["timers_total"], 2)
+        self.assertEqual(systemd["timers_active"], 1)
+        self.assertEqual(systemd["timers_failed"], 1)
+        self.assertEqual(systemd["failed_timers"], ["old.timer"])
+
+    def test_collect_docker_containers_from_json_lines(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "containers.jsonl"
+            path.write_text(
+                """
+{"Names":"web","Image":"nginx:stable","State":"running","RestartPolicy":"unless-stopped"}
+{"Names":"worker","Image":"busybox:latest","Status":"Exited (0) 1 hour ago","RestartPolicy":"no"}
+{"Names":"api","Image":"example/api:1","Status":"Up 2 hours","RestartPolicy":"no"}
+""".strip(),
+                encoding="utf-8",
+            )
+            evidence = collect_docker_containers(str(path))
+        docker = evidence["signals"]["runtime"]["docker"]
+        self.assertEqual(docker["containers_total"], 3)
+        self.assertEqual(docker["containers_running"], 2)
+        self.assertEqual(docker["containers_exited"], 1)
+        self.assertEqual(docker["restart_policy_missing"], ["api"])
 
 
 if __name__ == "__main__":

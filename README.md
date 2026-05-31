@@ -62,6 +62,13 @@ restic snapshots --json > restic.snapshots.json
 python -m openops_evidence collect restic-snapshots restic.snapshots.json -o backup.evidence.json
 ```
 
+Turn `borg list --json` output into backup evidence:
+
+```powershell
+borg list --json /path/to/repo > borg.archives.json
+python -m openops_evidence collect borg-archives borg.archives.json -o borg.evidence.json
+```
+
 Import an Uptime Kuma backup/export file:
 
 ```powershell
@@ -73,6 +80,16 @@ Import Prometheus target health:
 ```powershell
 curl http://prometheus.example.invalid/api/v1/targets > prometheus.targets.json
 python -m openops_evidence collect prometheus-targets prometheus.targets.json -o prometheus.evidence.json
+```
+
+Import runtime evidence from systemd and Docker exports:
+
+```powershell
+systemctl list-timers --all --output=json > systemd.timers.json
+python -m openops_evidence collect systemd-timers systemd.timers.json -o systemd.evidence.json
+
+docker ps -a --format '{{json .}}' > docker.containers.jsonl
+python -m openops_evidence collect docker-containers docker.containers.jsonl -o docker.evidence.json
 ```
 
 Use redaction before sharing evidence outside your organization:

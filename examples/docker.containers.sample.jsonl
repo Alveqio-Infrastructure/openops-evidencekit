@@ -1,0 +1,3 @@
+{"Names":"web","Image":"nginx:stable","Status":"Up 2 hours","RestartPolicy":"unless-stopped"}
+{"Names":"worker","Image":"busybox:latest","Status":"Exited (0) 1 hour ago","RestartPolicy":"no"}
+{"Names":"api","Image":"example/api:1","Status":"Up 30 minutes","RestartPolicy":"unless-stopped"}

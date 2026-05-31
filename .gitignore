@@ -13,11 +13,14 @@ reports/
 evidence.local.json
 evidence.merged.json
 evidence.redacted.json
+borg.evidence.json
+docker.evidence.json
 report.local.json
 report.local.md
 report.merged.json
 report.security.json
 restic.evidence.json
+systemd.evidence.json
 uptime-kuma.evidence.json
 prometheus.evidence.json
 readiness.bookstack.md

@@ -18,9 +18,14 @@ documentation, demos, and issue reproduction.
 ## Collector Input Samples
 
 - `restic.snapshots.sample.json` mirrors the shape of `restic snapshots --json`.
+- `borg.archives.sample.json` mirrors the archive list in `borg list --json`.
 - `uptime-kuma.export.sample.json` contains a trimmed Uptime Kuma export shape.
 - `prometheus.targets.sample.json` contains a trimmed Prometheus
   `/api/v1/targets` response.
+- `systemd.timers.sample.json` contains a trimmed `systemctl list-timers`
+  JSON export.
+- `docker.containers.sample.jsonl` contains JSON lines produced by
+  `docker ps --format '{{json .}}'`.
 
 ## Regenerating Demo Output
 

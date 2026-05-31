@@ -6,10 +6,13 @@ from importlib import resources
 from pathlib import Path
 
 from .collectors import (
+    collect_borg_archives,
+    collect_docker_containers,
     collect_fixture,
     collect_local,
     collect_prometheus_targets,
     collect_restic_snapshots,
+    collect_systemd_timers,
     collect_tls,
     collect_uptime_kuma_export,
 )
@@ -54,6 +57,10 @@ def build_parser() -> argparse.ArgumentParser:
     restic.add_argument("path")
     restic.add_argument("-o", "--output", default="-")
     restic.set_defaults(func=cmd_collect_restic)
+    borg = collect_sub.add_parser("borg-archives", help="Collect backup evidence from borg list --json")
+    borg.add_argument("path")
+    borg.add_argument("-o", "--output", default="-")
+    borg.set_defaults(func=cmd_collect_borg)
     kuma = collect_sub.add_parser("uptime-kuma", help="Collect monitoring evidence from an Uptime Kuma export")
     kuma.add_argument("path")
     kuma.add_argument("-o", "--output", default="-")
@@ -62,6 +69,14 @@ def build_parser() -> argparse.ArgumentParser:
     prometheus.add_argument("path")
     prometheus.add_argument("-o", "--output", default="-")
     prometheus.set_defaults(func=cmd_collect_prometheus)
+    systemd = collect_sub.add_parser("systemd-timers", help="Collect runtime evidence from systemd timer JSON")
+    systemd.add_argument("path")
+    systemd.add_argument("-o", "--output", default="-")
+    systemd.set_defaults(func=cmd_collect_systemd)
+    docker = collect_sub.add_parser("docker-containers", help="Collect runtime evidence from Docker JSON or JSON lines")
+    docker.add_argument("path")
+    docker.add_argument("-o", "--output", default="-")
+    docker.set_defaults(func=cmd_collect_docker)
     tls = collect_sub.add_parser("tls", help="Collect TLS certificate evidence for a host")
     tls.add_argument("hostname")
     tls.add_argument("--port", type=int, default=443)
@@ -118,6 +133,11 @@ def cmd_collect_restic(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_collect_borg(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_borg_archives(args.path)))
+    return 0
+
+
 def cmd_collect_uptime_kuma(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(collect_uptime_kuma_export(args.path)))
     return 0
@@ -125,6 +145,16 @@ def cmd_collect_uptime_kuma(args: argparse.Namespace) -> int:
 
 def cmd_collect_prometheus(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(collect_prometheus_targets(args.path)))
+    return 0
+
+
+def cmd_collect_systemd(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_systemd_timers(args.path)))
+    return 0
+
+
+def cmd_collect_docker(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_docker_containers(args.path)))
     return 0
 
 

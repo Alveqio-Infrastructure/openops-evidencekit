@@ -11,16 +11,21 @@ Integrations should collect facts, not secrets.
 - Support offline fixture-based tests.
 - Document required permissions.
 
-## Candidate Integrations
+## Supported Offline Collectors
 
 | Area | Integration | Evidence examples |
 | --- | --- | --- |
 | Backup | restic | last successful snapshot, repository count, protected hosts and paths |
-| Backup | Borg | archive recency, repository reachability |
+| Backup | Borg | archive recency, repository identifier, protected hosts |
 | Monitoring | Prometheus | target count, up/down target count, down target list |
 | Monitoring | Uptime Kuma | monitor count, enabled target count, alert channel references |
 | Runtime | systemd | enabled timers, failed units |
 | Runtime | Docker | running containers, restart policies |
+
+## Candidate Integrations
+
+| Area | Integration | Evidence examples |
+| --- | --- | --- |
 | Documentation | BookStack | page freshness, required runbook pages |
 | Access | SSH config | public exposure marker, access method evidence |
 

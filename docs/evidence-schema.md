@@ -33,6 +33,7 @@ Signals contain observed facts. Common signal groups:
 
 - `backup`
 - `monitoring`
+- `runtime`
 - `access`
 - `tls`
 - `docs`
