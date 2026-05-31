@@ -6,6 +6,7 @@ from importlib import resources
 from pathlib import Path
 
 from .bundle import create_bundle_manifest
+from .compare import compare_reports, render_comparison_markdown
 from .collectors import (
     collect_borg_archives,
     collect_docker_containers,
@@ -23,7 +24,12 @@ from .merge import merge_evidence
 from .policy import evaluate_policy, parse_policy
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
-from .schema import validate_bundle_manifest, validate_evidence, validate_report
+from .schema import (
+    validate_bundle_manifest,
+    validate_evidence,
+    validate_report,
+    validate_report_comparison,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -42,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="openops-evidence",
-        description="Collect, check, redact, and report infrastructure operations evidence.",
+        description="Collect, check, compare, redact, and report infrastructure operations evidence.",
     )
     sub = parser.add_subparsers(required=True)
 
@@ -98,6 +104,14 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("-o", "--output", default="-")
     check.set_defaults(func=cmd_check)
 
+    compare = sub.add_parser("compare", help="Compare two report JSON files")
+    compare.add_argument("--base", required=True)
+    compare.add_argument("--current", required=True)
+    compare.add_argument("-f", "--format", choices=["json", "markdown"], default="json")
+    compare.add_argument("--fail-on-regression", action="store_true")
+    compare.add_argument("-o", "--output", default="-")
+    compare.set_defaults(func=cmd_compare)
+
     merge = sub.add_parser("merge", help="Merge multiple evidence JSON files")
     merge.add_argument("inputs", nargs="+")
     merge.add_argument("-o", "--output", default="-")
@@ -112,9 +126,14 @@ def build_parser() -> argparse.ArgumentParser:
     manifest.add_argument("-o", "--output", default="-")
     manifest.set_defaults(func=cmd_bundle_manifest)
 
-    validate = sub.add_parser("validate", help="Validate evidence, report, or bundle JSON")
+    validate = sub.add_parser("validate", help="Validate evidence, report, bundle, or comparison JSON")
     validate.add_argument("-i", "--input", required=True)
-    validate.add_argument("-t", "--type", choices=["evidence", "report", "bundle"], default="evidence")
+    validate.add_argument(
+        "-t",
+        "--type",
+        choices=["evidence", "report", "bundle", "comparison"],
+        default="evidence",
+    )
     validate.set_defaults(func=cmd_validate)
 
     report = sub.add_parser("report", help="Render a check report")
@@ -198,6 +217,29 @@ def cmd_check(args: argparse.Namespace) -> int:
     return 1 if report["summary"]["status"] == "fail" else 0
 
 
+def cmd_compare(args: argparse.Namespace) -> int:
+    base = load_json(args.base)
+    current = load_json(args.current)
+    base_errors = validate_report(base)
+    current_errors = validate_report(current)
+    if base_errors:
+        raise UserFacingError(
+            "Base report validation failed:\n- " + "\n- ".join(base_errors)
+        )
+    if current_errors:
+        raise UserFacingError(
+            "Current report validation failed:\n- " + "\n- ".join(current_errors)
+        )
+    comparison = compare_reports(base, current)
+    if args.format == "markdown":
+        write_text(args.output, render_comparison_markdown(comparison))
+    else:
+        write_text(args.output, dump_json(comparison))
+    if args.fail_on_regression and comparison["summary"]["regressions_count"] > 0:
+        return 1
+    return 0
+
+
 def cmd_merge(args: argparse.Namespace) -> int:
     documents = []
     for path in args.inputs:
@@ -222,6 +264,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_report(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
+    elif args.type == "comparison":
+        errors = validate_report_comparison(document)
     else:
         errors = validate_evidence(document)
     if errors:

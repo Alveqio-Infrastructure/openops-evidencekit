@@ -25,9 +25,11 @@ python -m openops_evidence validate -i examples/evidence.sample.json
 python -m openops_evidence collect docs examples/docs-sample --required inventory.md --required runbooks/backup-restore.md --max-age-days 365 -o docs.evidence.json
 python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json
 python -m openops_evidence check -i examples/evidence.sample.json -p examples/policy.baseline.toml -o report.local.json
+python -m openops_evidence compare --base report.local.json --current report.local.json -o report.comparison.json
+python -m openops_evidence validate -i report.comparison.json -t comparison
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
-python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.local.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.comparison.json report.local.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 ```
 
@@ -42,8 +44,9 @@ Then inspect:
 
 1. Update `CHANGELOG.md`.
 2. Confirm sample artifacts match the current schema.
-3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`, and
-   `schemas/bundle-manifest.schema.json` are still aligned with generated
+3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`,
+   `schemas/bundle-manifest.schema.json`, and
+   `schemas/report-comparison.schema.json` are still aligned with generated
    output.
 4. Run the pre-release checks.
 5. Create a signed git tag when signing is available.

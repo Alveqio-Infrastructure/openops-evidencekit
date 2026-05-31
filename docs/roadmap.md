@@ -37,6 +37,7 @@ having to deploy a platform first.
 - JSON Schema distribution.
 - Policy pack versioning.
 - CI-ready machine output with stable exit codes.
+- Report comparison and regression guardrails.
 
 ## 1.0
 

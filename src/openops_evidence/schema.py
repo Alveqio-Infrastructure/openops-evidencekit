@@ -63,6 +63,21 @@ def validate_bundle_manifest(document: Any) -> list[str]:
     return errors
 
 
+def validate_report_comparison(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Report comparison must be a JSON object."]
+    _require_string(document, "schema_version", errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "regressions", errors)
+    _require_list(document, "improvements", errors)
+    _require_list(document, "neutral_changes", errors)
+    _require_list(document, "added", errors)
+    _require_list(document, "removed", errors)
+    return errors
+
+
 def _is_sha256_hex(value: str) -> bool:
     return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
 

@@ -43,6 +43,12 @@ Render a wiki-friendly report:
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
 ```
 
+Compare two reports over time:
+
+```powershell
+python -m openops_evidence compare --base previous-report.json --current report.local.json -f markdown -o report.comparison.md
+```
+
 Create a hash manifest for the files you plan to share:
 
 ```powershell
@@ -134,6 +140,7 @@ JSON Schemas for generated artifacts live in [schemas/](schemas/).
 Example inputs and generated artifact shapes are described in
 [examples/README.md](examples/README.md).
 Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest.md).
+Report comparisons are described in [docs/report-comparison.md](docs/report-comparison.md).
 
 Policy checks are intentionally small:
 

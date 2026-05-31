@@ -13,6 +13,7 @@ Also verify:
 - generated reports are readable
 - examples are synthetic
 - schemas match generated artifacts
+- report comparison output validates
 - changelog entries describe user-visible changes
 - redacted evidence does not contain sensitive data
 

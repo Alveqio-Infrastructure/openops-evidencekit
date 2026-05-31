@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/report-comparison.schema.json",
+  "title": "OpenOps Report Comparison",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "summary", "regressions", "improvements", "neutral_changes", "added", "removed"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "base_status",
+        "current_status",
+        "base_score",
+        "current_score",
+        "score_delta",
+        "added_count",
+        "removed_count",
+        "changed_count",
+        "regressions_count",
+        "improvements_count",
+        "neutral_changes_count",
+        "unchanged_count"
+      ],
+      "additionalProperties": true
+    },
+    "regressions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/change"
+      }
+    },
+    "improvements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/change"
+      }
+    },
+    "neutral_changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/change"
+      }
+    },
+    "added": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/result"
+      }
+    },
+    "removed": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/result"
+      }
+    }
+  },
+  "$defs": {
+    "change": {
+      "type": "object",
+      "required": ["id", "title", "before", "after", "change_type"],
+      "additionalProperties": true
+    },
+    "result": {
+      "type": "object",
+      "required": ["id", "title", "status", "severity"],
+      "additionalProperties": true
+    }
+  }
+}

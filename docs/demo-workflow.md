@@ -24,6 +24,9 @@ python -m openops_evidence check -i docs.evidence.json -p examples/policy.docume
 python -m openops_evidence validate -i report.local.json -t report
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
+python -m openops_evidence compare --base report.local.json --current report.local.json -o report.comparison.json
+python -m openops_evidence compare --base report.local.json --current report.local.json -f markdown -o report.comparison.md
+python -m openops_evidence validate -i report.comparison.json -t comparison
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.local.md readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 ```

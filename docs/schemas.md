@@ -6,6 +6,7 @@ machine-readable artifacts:
 - `schemas/evidence.schema.json`
 - `schemas/report.schema.json`
 - `schemas/bundle-manifest.schema.json`
+- `schemas/report-comparison.schema.json`
 
 The bundled `validate` command uses a lightweight built-in validator so the CLI
 does not need a JSON Schema dependency. The schema files are still useful for
@@ -44,3 +45,17 @@ Bundle manifests contain:
 Each artifact entry records the display path, filename, inferred role, media
 type, byte size, and SHA-256 hash. Manifests deliberately do not embed artifact
 contents.
+
+## Report Comparisons
+
+Report comparisons contain:
+
+- `summary`
+- `regressions`
+- `improvements`
+- `neutral_changes`
+- `added`
+- `removed`
+
+They are generated from two report JSON files and can be used as a CI guardrail
+or as a compact change summary for recurring readiness reviews.

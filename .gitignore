@@ -21,6 +21,8 @@ report.local.json
 report.local.md
 report.local.html
 report.docs.json
+report.comparison.json
+report.comparison.md
 report.merged.json
 report.security.json
 restic.evidence.json
