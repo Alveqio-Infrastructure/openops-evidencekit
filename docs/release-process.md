@@ -22,6 +22,8 @@ Run these commands from the repository root:
 $env:PYTHONPATH = "src"
 python -m openops_evidence --version
 python -m unittest discover -s tests
+python -m openops_evidence policy list
+python -m openops_evidence policy show baseline -o policy.exported.toml
 python -m openops_evidence validate -i examples/evidence.sample.json
 python -m openops_evidence collect docs examples/docs-sample --required inventory.md --required runbooks/backup-restore.md --max-age-days 365 -o docs.evidence.json
 python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json

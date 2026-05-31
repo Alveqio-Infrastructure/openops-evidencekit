@@ -39,6 +39,7 @@ having to deploy a platform first.
 - CI-ready machine output with stable exit codes.
 - Report comparison and regression guardrails.
 - CLI version and exit-code documentation.
+- Bundled policy pack discovery and export.
 
 ## 1.0
 

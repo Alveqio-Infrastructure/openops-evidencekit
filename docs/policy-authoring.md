@@ -2,6 +2,15 @@
 
 Policies are TOML files with one or more `[[checks]]` tables.
 
+Bundled policy packs can be listed and exported with:
+
+```powershell
+python -m openops_evidence policy list
+python -m openops_evidence policy show baseline -o policy.baseline.toml
+```
+
+See [policy-packs.md](policy-packs.md) for pack names and workflow guidance.
+
 ## Fields
 
 - `id`: stable machine-readable check ID.
@@ -40,7 +49,9 @@ assets[0].hostname
 
 ## Policy Packs
 
-The `examples/` directory contains:
+The package includes bundled policy packs, and the `examples/` directory
+contains matching copies for browsing:
 
 - `policy.baseline.toml`: broad operational readiness baseline.
 - `policy.security-minimum.toml`: small security-focused baseline.
+- `policy.documentation.toml`: documentation readiness baseline.

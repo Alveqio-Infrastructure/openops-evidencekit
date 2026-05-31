@@ -1,0 +1,101 @@
+[metadata]
+name = "OpenOps baseline readiness policy"
+version = "0.1"
+
+[[checks]]
+id = "backup_recent"
+title = "Recent successful backup exists"
+path = "signals.backup.last_success_at"
+operator = "within_days"
+value = 2
+severity = "critical"
+required = true
+remediation = "Configure backups and record the last successful backup timestamp."
+
+[[checks]]
+id = "restore_test_recent"
+title = "Restore test is recent"
+path = "signals.backup.restore_test_at"
+operator = "within_days"
+value = 30
+severity = "high"
+required = true
+remediation = "Run a restore drill and store the result as evidence."
+
+[[checks]]
+id = "monitoring_targets_present"
+title = "Monitoring has targets"
+path = "signals.monitoring.targets"
+operator = "at_least"
+value = 1
+severity = "high"
+required = true
+remediation = "Add at least one monitored target for the environment."
+
+[[checks]]
+id = "alert_channel_present"
+title = "At least one alert channel is configured"
+path = "signals.monitoring.alert_channels[*]"
+operator = "exists"
+severity = "high"
+required = true
+remediation = "Configure an alert delivery path and verify it."
+
+[[checks]]
+id = "public_ssh_closed"
+title = "Public SSH exposure is closed"
+path = "signals.access.ssh_public_exposed"
+operator = "equals"
+value = false
+severity = "critical"
+required = true
+remediation = "Move administrative SSH behind VPN, SSO, or another controlled access layer."
+
+[[checks]]
+id = "mfa_required"
+title = "Administrative MFA is required"
+path = "signals.access.mfa_required"
+operator = "equals"
+value = true
+severity = "high"
+required = true
+remediation = "Require MFA for administrative entry points."
+
+[[checks]]
+id = "tls_not_expired"
+title = "TLS certificates are valid"
+path = "signals.tls.certificates[*].not_after"
+operator = "after_now"
+mode = "all"
+severity = "medium"
+required = true
+remediation = "Renew expired certificates and automate certificate expiry monitoring."
+
+[[checks]]
+id = "inventory_recent"
+title = "Inventory was updated recently"
+path = "signals.docs.inventory_updated_at"
+operator = "within_days"
+value = 14
+severity = "medium"
+required = true
+remediation = "Update the infrastructure inventory and record the timestamp."
+
+[[checks]]
+id = "runbook_present"
+title = "At least one runbook exists"
+path = "signals.docs.runbooks[*].name"
+operator = "exists"
+severity = "medium"
+required = true
+remediation = "Create basic runbooks for backup restore, incident handling, and access recovery."
+
+[[checks]]
+id = "mail_dmarc_policy"
+title = "Mail domain has DMARC policy"
+path = "signals.mail.domains[*].dmarc"
+operator = "one_of"
+value = ["quarantine", "reject"]
+severity = "low"
+required = false
+remediation = "Move DMARC policy from none to quarantine or reject after monitoring."

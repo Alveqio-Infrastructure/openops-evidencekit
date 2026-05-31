@@ -23,6 +23,7 @@ from .collectors import (
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
 from .policy import evaluate_policy, parse_policy
+from .policypacks import render_policy_pack_list, read_policy_pack
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
 from .schema import (
@@ -106,6 +107,16 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("-o", "--output", default="-")
     check.set_defaults(func=cmd_check)
 
+    policy = sub.add_parser("policy", help="Inspect bundled policy packs")
+    policy_sub = policy.add_subparsers(required=True)
+    policy_list = policy_sub.add_parser("list", help="List bundled policy packs")
+    policy_list.add_argument("-f", "--format", choices=["table", "json"], default="table")
+    policy_list.set_defaults(func=cmd_policy_list)
+    policy_show = policy_sub.add_parser("show", help="Write a bundled policy pack")
+    policy_show.add_argument("name")
+    policy_show.add_argument("-o", "--output", default="-")
+    policy_show.set_defaults(func=cmd_policy_show)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -152,6 +163,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     init = sub.add_parser("init", help="Create starter policy and evidence files")
     init.add_argument("directory", nargs="?", default=".")
+    init.add_argument("--policy-pack", default="baseline")
     init.set_defaults(func=cmd_init)
     return parser
 
@@ -217,6 +229,16 @@ def cmd_check(args: argparse.Namespace) -> int:
     report = evaluate_policy(evidence, checks)
     write_text(args.output, dump_json(report))
     return 1 if report["summary"]["status"] == "fail" else 0
+
+
+def cmd_policy_list(args: argparse.Namespace) -> int:
+    write_text("-", render_policy_pack_list(args.format))
+    return 0
+
+
+def cmd_policy_show(args: argparse.Namespace) -> int:
+    write_text(args.output, read_policy_pack(args.name))
+    return 0
 
 
 def cmd_compare(args: argparse.Namespace) -> int:
@@ -305,9 +327,9 @@ def cmd_init(args: argparse.Namespace) -> int:
     target = Path(args.directory)
     target.mkdir(parents=True, exist_ok=True)
     package = "openops_evidence.templates"
-    policy = resources.files(package).joinpath("policy.baseline.toml").read_text(encoding="utf-8")
+    policy = read_policy_pack(args.policy_pack)
     evidence = resources.files(package).joinpath("evidence.sample.json").read_text(encoding="utf-8")
-    (target / "policy.baseline.toml").write_text(policy, encoding="utf-8")
+    (target / f"policy.{args.policy_pack}.toml").write_text(policy, encoding="utf-8")
     (target / "evidence.sample.json").write_text(evidence, encoding="utf-8")
     print(f"Created starter files in {target}")
     return 0

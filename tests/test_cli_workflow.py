@@ -55,6 +55,7 @@ class CliWorkflowTests(unittest.TestCase):
             )
             self.assertEqual(main(["report", "-i", str(report), "-f", "markdown", "-o", str(markdown)]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "bookstack", "-o", str(bookstack)]), 0)
+            self.assertEqual(main(["policy", "show", "baseline", "-o", str(temp / "policy.exported.toml")]), 0)
             self.assertEqual(
                 main(
                     [

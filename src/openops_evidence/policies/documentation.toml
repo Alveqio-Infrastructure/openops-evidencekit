@@ -1,0 +1,40 @@
+[metadata]
+name = "OpenOps documentation readiness policy"
+version = "0.1"
+
+[[checks]]
+id = "required_docs_present"
+title = "Required documentation files are present"
+path = "signals.docs.missing_required[*]"
+operator = "missing"
+severity = "medium"
+required = true
+remediation = "Create each required inventory or runbook file before sharing readiness evidence."
+
+[[checks]]
+id = "docs_not_stale"
+title = "Documentation files are not stale"
+path = "signals.docs.stale_documents[*]"
+operator = "missing"
+severity = "medium"
+required = true
+remediation = "Review stale documentation and update its timestamp through a real content change."
+
+[[checks]]
+id = "inventory_recent"
+title = "Inventory document is recent"
+path = "signals.docs.inventory_updated_at"
+operator = "within_days"
+value = 90
+severity = "medium"
+required = true
+remediation = "Update the infrastructure inventory."
+
+[[checks]]
+id = "runbook_present"
+title = "At least one runbook exists"
+path = "signals.docs.runbooks[*].name"
+operator = "exists"
+severity = "medium"
+required = true
+remediation = "Add at least one operational runbook."

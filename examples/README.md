@@ -17,6 +17,10 @@ documentation, demos, and issue reproduction.
 - `policy.documentation.toml` checks the documentation collector output for
   required and stale files.
 
+The same policies are also bundled as package policy packs. Use
+`openops-evidence policy list` and `openops-evidence policy show <name>` after
+installation.
+
 ## Collector Input Samples
 
 - `restic.snapshots.sample.json` mirrors the shape of `restic snapshots --json`.

@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1",
+  "packs": [
+    {
+      "name": "baseline",
+      "title": "Baseline readiness",
+      "version": "0.1",
+      "description": "General readiness checks for backups, monitoring, access, TLS, documentation, and mail.",
+      "file": "baseline.toml"
+    },
+    {
+      "name": "documentation",
+      "title": "Documentation readiness",
+      "version": "0.1",
+      "description": "Checks for required documentation files, stale documents, inventory recency, and runbook presence.",
+      "file": "documentation.toml"
+    },
+    {
+      "name": "security-minimum",
+      "title": "Minimum security",
+      "version": "0.1",
+      "description": "Small external-facing security baseline for administrative access, TLS, and mail domain posture.",
+      "file": "security-minimum.toml"
+    }
+  ]
+}

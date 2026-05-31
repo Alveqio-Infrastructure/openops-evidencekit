@@ -9,6 +9,7 @@ sensitive data, and render reports that can be reviewed by humans.
 - Getting started: `Getting-Started.md`
 - Evidence model: `Evidence-Model.md`
 - Policy authoring: `Policy-Authoring.md`
+- Policy packs: repository `docs/policy-packs.md`
 - Integrations: `Integrations.md`
 - Privacy and sharing: `Privacy-And-Sharing.md`
 - Maintainer guide: `Maintainer-Guide.md`

@@ -14,6 +14,9 @@ evidence.local.json
 evidence.merged.json
 evidence.redacted.json
 evidence-bundle.manifest.json
+policy.exported.toml
+policy.*exported.toml
+init-demo/
 borg.evidence.json
 docker.evidence.json
 docs.evidence.json

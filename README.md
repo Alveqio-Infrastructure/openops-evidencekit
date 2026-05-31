@@ -128,6 +128,13 @@ Create starter files for a new assessment:
 python -m openops_evidence init ./my-readiness-check
 ```
 
+List and export bundled policy packs:
+
+```powershell
+python -m openops_evidence policy list
+python -m openops_evidence policy show security-minimum -o policy.security-minimum.toml
+```
+
 ## Core Concepts
 
 EvidenceKit uses three files:
@@ -142,6 +149,7 @@ sources.
 JSON Schemas for generated artifacts live in [schemas/](schemas/).
 Example inputs and generated artifact shapes are described in
 [examples/README.md](examples/README.md).
+Bundled policies are described in [docs/policy-packs.md](docs/policy-packs.md).
 Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest.md).
 Report comparisons are described in [docs/report-comparison.md](docs/report-comparison.md).
 
