@@ -1,0 +1,43 @@
+[metadata]
+name = "OpenOps minimum security policy"
+version = "0.1"
+
+[[checks]]
+id = "public_ssh_closed"
+title = "Public SSH exposure is closed"
+path = "signals.access.ssh_public_exposed"
+operator = "equals"
+value = false
+severity = "critical"
+required = true
+remediation = "Move SSH behind a VPN, private overlay network, bastion, or SSO-controlled access path."
+
+[[checks]]
+id = "mfa_required"
+title = "Administrative MFA is required"
+path = "signals.access.mfa_required"
+operator = "equals"
+value = true
+severity = "high"
+required = true
+remediation = "Require MFA for every administrative entry point."
+
+[[checks]]
+id = "tls_not_expired"
+title = "TLS certificates are valid"
+path = "signals.tls.certificates[*].not_after"
+operator = "after_now"
+mode = "all"
+severity = "medium"
+required = true
+remediation = "Renew expired certificates and add certificate expiry monitoring."
+
+[[checks]]
+id = "mail_dmarc_policy"
+title = "Mail domain has DMARC enforcement"
+path = "signals.mail.domains[*].dmarc"
+operator = "one_of"
+value = ["quarantine", "reject"]
+severity = "medium"
+required = false
+remediation = "Move DMARC policy toward quarantine or reject after monitoring alignment."

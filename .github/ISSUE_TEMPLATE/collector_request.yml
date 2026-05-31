@@ -1,0 +1,31 @@
+name: Collector request
+description: Suggest a new evidence collector.
+title: "collector: "
+labels: ["collector", "enhancement"]
+body:
+  - type: input
+    id: system
+    attributes:
+      label: System or tool
+      placeholder: "restic, Borg, Prometheus, Uptime Kuma, systemd..."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence to collect
+      description: Which facts should the collector capture?
+    validations:
+      required: true
+  - type: textarea
+    id: sensitivity
+    attributes:
+      label: Sensitive fields to avoid
+      description: Which fields must never be collected?
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Synthetic sample output
+      description: Use fake `.invalid` domains and no real infrastructure data.

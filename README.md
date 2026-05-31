@@ -91,12 +91,7 @@ find obvious gaps before they become incidents.
 
 ## Roadmap
 
-- More collectors: restic, Borg, Docker, systemd timers, Prometheus, Uptime Kuma.
-- BookStack and Markdown runbook export profiles.
-- Signed evidence bundles.
-- JSON Schema for evidence and reports.
-- Policy packs for common small-team readiness baselines.
-- Optional AI-assisted report review that never changes check outcomes.
+See [docs/roadmap.md](docs/roadmap.md).
 
 ## License
 

@@ -37,3 +37,10 @@ assets[0].hostname
 - `matches`
 - `within_days`
 - `after_now`
+
+## Policy Packs
+
+The `examples/` directory contains:
+
+- `policy.baseline.toml`: broad operational readiness baseline.
+- `policy.security-minimum.toml`: small security-focused baseline.

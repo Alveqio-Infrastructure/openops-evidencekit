@@ -1,0 +1,30 @@
+name: Policy check proposal
+description: Suggest a new readiness check.
+title: "policy: "
+labels: ["policy", "enhancement"]
+body:
+  - type: textarea
+    id: check
+    attributes:
+      label: Proposed check
+      description: What should be checked and why?
+    validations:
+      required: true
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Remediation guidance
+      description: What should an operator do when the check fails?
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Suggested severity
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
