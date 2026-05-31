@@ -42,6 +42,10 @@ Signals contain observed facts. Common signal groups:
 Collectors may add new signal groups. Policies should use stable paths whenever
 possible.
 
+Documentation collectors use `signals.docs.documents`,
+`signals.docs.missing_required`, `signals.docs.stale_documents`,
+`signals.docs.inventory_updated_at`, and `signals.docs.runbooks`.
+
 ## Validation
 
 Run:

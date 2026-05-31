@@ -28,6 +28,7 @@ having to deploy a platform first.
 - Inventory completeness checks.
 - Evidence bundle manifest.
 - Bundle manifest validation.
+- Local documentation directory collector.
 
 ## 0.4 Assurance Pack
 

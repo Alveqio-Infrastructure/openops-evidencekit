@@ -98,6 +98,12 @@ docker ps -a --format '{{json .}}' > docker.containers.jsonl
 python -m openops_evidence collect docker-containers docker.containers.jsonl -o docker.evidence.json
 ```
 
+Collect documentation inventory and runbook evidence:
+
+```powershell
+python -m openops_evidence collect docs ./docs --required inventory.md --required runbooks/backup-restore.md --max-age-days 90 -o docs.evidence.json
+```
+
 Use redaction before sharing evidence outside your organization:
 
 ```powershell

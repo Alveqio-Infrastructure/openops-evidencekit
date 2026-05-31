@@ -21,12 +21,13 @@ Integrations should collect facts, not secrets.
 | Monitoring | Uptime Kuma | monitor count, enabled target count, alert channel references |
 | Runtime | systemd | enabled timers, failed units |
 | Runtime | Docker | running containers, restart policies |
+| Documentation | local directory | required files, stale files, runbook and inventory timestamps |
 
 ## Candidate Integrations
 
 | Area | Integration | Evidence examples |
 | --- | --- | --- |
-| Documentation | BookStack | page freshness, required runbook pages |
+| Documentation | BookStack | page freshness and required runbook pages from the BookStack API |
 | Access | SSH config | public exposure marker, access method evidence |
 
 ## AI-Assisted Integrations

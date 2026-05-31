@@ -1,10 +1,13 @@
+import os
 import tempfile
 import unittest
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from openops_evidence.collectors import (
     collect_borg_archives,
     collect_docker_containers,
+    collect_docs_directory,
     collect_prometheus_targets,
     collect_restic_snapshots,
     collect_systemd_timers,
@@ -130,6 +133,42 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(docker["containers_running"], 2)
         self.assertEqual(docker["containers_exited"], 1)
         self.assertEqual(docker["restart_policy_missing"], ["api"])
+
+    def test_collect_docs_directory(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "runbooks").mkdir()
+            inventory = root / "inventory.md"
+            runbook = root / "runbooks" / "backup-restore.md"
+            stale = root / "runbooks" / "old.md"
+            inventory.write_text("# Inventory\n", encoding="utf-8")
+            runbook.write_text("# Backup Restore\n", encoding="utf-8")
+            stale.write_text("# Old\n", encoding="utf-8")
+            old_timestamp = (datetime.now(UTC) - timedelta(days=120)).timestamp()
+            os.utime(stale, (old_timestamp, old_timestamp))
+
+            evidence = collect_docs_directory(
+                str(root),
+                required=["inventory.md", "runbooks/backup-restore.md", "runbooks/missing.md"],
+                max_age_days=90,
+            )
+
+        docs = evidence["signals"]["docs"]
+        self.assertEqual(docs["documents_total"], 3)
+        self.assertEqual(docs["required_total"], 3)
+        self.assertEqual(docs["required_present"], 2)
+        self.assertEqual(docs["missing_required"], ["runbooks/missing.md"])
+        self.assertEqual(docs["stale_documents"], ["runbooks/old.md"])
+        self.assertEqual(
+            [item["path"] for item in docs["runbooks"]],
+            ["runbooks/backup-restore.md", "runbooks/old.md"],
+        )
+        self.assertIsNotNone(docs["inventory_updated_at"])
+
+    def test_collect_docs_rejects_required_paths_outside_root(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaises(ValueError):
+                collect_docs_directory(temp_dir, required=["../outside.md"])
 
 
 if __name__ == "__main__":

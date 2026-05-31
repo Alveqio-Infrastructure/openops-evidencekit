@@ -31,6 +31,12 @@ curl http://prometheus.example.invalid/api/v1/targets > prometheus.targets.json
 python -m openops_evidence collect prometheus-targets prometheus.targets.json -o prometheus.evidence.json
 ```
 
+For documentation, scan a reviewed directory without embedding file contents:
+
+```powershell
+python -m openops_evidence collect docs ./docs --required inventory.md --required runbooks/backup-restore.md --max-age-days 90 -o docs.evidence.json
+```
+
 For production use, combine collector output with documented facts from backup,
 monitoring, access, and runbook systems.
 

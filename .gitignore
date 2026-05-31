@@ -16,9 +16,11 @@ evidence.redacted.json
 evidence-bundle.manifest.json
 borg.evidence.json
 docker.evidence.json
+docs.evidence.json
 report.local.json
 report.local.md
 report.local.html
+report.docs.json
 report.merged.json
 report.security.json
 restic.evidence.json

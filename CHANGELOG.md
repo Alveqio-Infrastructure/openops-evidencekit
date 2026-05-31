@@ -13,5 +13,6 @@
 - Add Uptime Kuma export collector.
 - Add Prometheus target health collector.
 - Add systemd timer and Docker container runtime collectors.
+- Add local documentation directory collector and documentation policy fixture.
 - Add evidence bundle manifest generation and validation.
 - Add end-to-end CLI workflow test and demo documentation.

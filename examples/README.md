@@ -14,6 +14,8 @@ documentation, demos, and issue reproduction.
   backups, monitoring, TLS, runbooks, and inventory.
 - `policy.security-minimum.toml` focuses on externally visible hygiene and
   administrative access signals.
+- `policy.documentation.toml` checks the documentation collector output for
+  required and stale files.
 
 ## Collector Input Samples
 
@@ -26,6 +28,7 @@ documentation, demos, and issue reproduction.
   JSON export.
 - `docker.containers.sample.jsonl` contains JSON lines produced by
   `docker ps --format '{{json .}}'`.
+- `docs-sample/` contains a tiny synthetic inventory and backup restore runbook.
 
 ## Regenerating Demo Output
 

@@ -22,10 +22,12 @@ Run these commands from the repository root:
 $env:PYTHONPATH = "src"
 python -m unittest discover -s tests
 python -m openops_evidence validate -i examples/evidence.sample.json
+python -m openops_evidence collect docs examples/docs-sample --required inventory.md --required runbooks/backup-restore.md --max-age-days 365 -o docs.evidence.json
+python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json
 python -m openops_evidence check -i examples/evidence.sample.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
-python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.local.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.local.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 ```
 

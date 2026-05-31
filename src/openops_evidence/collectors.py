@@ -5,7 +5,8 @@ import os
 import platform
 import socket
 import ssl
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from .io import load_json, read_text
@@ -368,6 +369,57 @@ def collect_docker_containers(path: str) -> dict[str, Any]:
     }
 
 
+def collect_docs_directory(
+    directory: str,
+    required: list[str] | None = None,
+    max_age_days: int | None = None,
+) -> dict[str, Any]:
+    root = Path(directory)
+    if not root.is_dir():
+        raise ValueError(
+            f"Documentation directory does not exist or is not a directory: {directory}"
+        )
+    required_paths = [_normalize_required_path(item) for item in (required or [])]
+    documents = _documentation_files(root)
+    documents_by_path = {document["path"]: document for document in documents}
+    missing_required = [path for path in required_paths if path not in documents_by_path]
+    stale_documents = _stale_documents(documents, max_age_days)
+    inventory_updated_at = _inventory_updated_at(documents)
+    runbooks = _runbook_documents(documents)
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "source": f"docs-directory:{root.name}",
+            "collector": "openops-evidencekit",
+        },
+        "assets": [
+            {
+                "id": document["path"],
+                "type": "document",
+                "roles": ["documentation"],
+                "tags": _document_tags(document, stale_documents),
+            }
+            for document in documents
+        ],
+        "signals": {
+            "docs": {
+                "documents_total": len(documents),
+                "required_total": len(required_paths),
+                "required_present": len(required_paths) - len(missing_required),
+                "required_missing": len(missing_required),
+                "missing_required": missing_required,
+                "max_age_days": max_age_days,
+                "stale_count": len(stale_documents),
+                "stale_documents": stale_documents,
+                "inventory_updated_at": inventory_updated_at,
+                "runbooks": runbooks,
+                "documents": documents,
+            }
+        },
+    }
+
+
 def collect_tls(hostname: str, port: int = 443, timeout: float = 5.0) -> dict[str, Any]:
     context = ssl.create_default_context()
     with socket.create_connection((hostname, port), timeout=timeout) as sock:
@@ -481,3 +533,87 @@ def _container_restart_policy(container: dict[str, Any]) -> str:
         if isinstance(policy, dict):
             value = policy.get("Name")
     return str(value or "").lower()
+
+
+def _documentation_files(root: Path) -> list[dict[str, Any]]:
+    documents = []
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or path.suffix.lower() not in {
+            ".md",
+            ".markdown",
+            ".txt",
+            ".rst",
+        }:
+            continue
+        relative_path = path.relative_to(root).as_posix()
+        updated_at = datetime.fromtimestamp(path.stat().st_mtime, UTC).isoformat()
+        documents.append(
+            {
+                "path": relative_path,
+                "name": path.stem,
+                "updated_at": updated_at,
+                "size_bytes": path.stat().st_size,
+            }
+        )
+    return documents
+
+
+def _normalize_required_path(path: str) -> str:
+    candidate = Path(path)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        raise ValueError(f"Required documentation paths must be relative: {path}")
+    normalized = candidate.as_posix()
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    if not normalized:
+        raise ValueError(
+            f"Required documentation paths must stay inside the documentation directory: {path}"
+        )
+    return normalized
+
+
+def _stale_documents(documents: list[dict[str, Any]], max_age_days: int | None) -> list[str]:
+    if max_age_days is None:
+        return []
+    cutoff = datetime.now(UTC) - timedelta(days=max_age_days)
+    stale = []
+    for document in documents:
+        updated_at = _parse_iso_datetime(str(document.get("updated_at", "")))
+        if updated_at is not None and updated_at < cutoff:
+            stale.append(str(document["path"]))
+    return sorted(stale)
+
+
+def _inventory_updated_at(documents: list[dict[str, Any]]) -> str | None:
+    inventory_documents = [
+        document
+        for document in documents
+        if "inventory" in str(document.get("path", "")).lower()
+    ]
+    if not inventory_documents:
+        return None
+    return max(str(document["updated_at"]) for document in inventory_documents)
+
+
+def _runbook_documents(documents: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    runbooks = []
+    for document in documents:
+        path = str(document.get("path", ""))
+        if not (path.lower().startswith("runbooks/") or "runbook" in path.lower()):
+            continue
+        runbooks.append(
+            {
+                "name": str(document.get("name", "")),
+                "path": path,
+                "updated_at": str(document.get("updated_at", "")),
+            }
+        )
+    return runbooks
+
+
+def _document_tags(document: dict[str, Any], stale_documents: list[str]) -> list[str]:
+    tags = ["present"]
+    path = str(document["path"])
+    if path in stale_documents:
+        tags.append("stale")
+    return tags

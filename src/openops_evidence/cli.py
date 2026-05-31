@@ -9,6 +9,7 @@ from .bundle import create_bundle_manifest
 from .collectors import (
     collect_borg_archives,
     collect_docker_containers,
+    collect_docs_directory,
     collect_fixture,
     collect_local,
     collect_prometheus_targets,
@@ -78,6 +79,12 @@ def build_parser() -> argparse.ArgumentParser:
     docker.add_argument("path")
     docker.add_argument("-o", "--output", default="-")
     docker.set_defaults(func=cmd_collect_docker)
+    docs = collect_sub.add_parser("docs", help="Collect documentation inventory evidence from a directory")
+    docs.add_argument("directory")
+    docs.add_argument("--required", action="append", default=[])
+    docs.add_argument("--max-age-days", type=int)
+    docs.add_argument("-o", "--output", default="-")
+    docs.set_defaults(func=cmd_collect_docs)
     tls = collect_sub.add_parser("tls", help="Collect TLS certificate evidence for a host")
     tls.add_argument("hostname")
     tls.add_argument("--port", type=int, default=443)
@@ -165,6 +172,12 @@ def cmd_collect_systemd(args: argparse.Namespace) -> int:
 
 def cmd_collect_docker(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(collect_docker_containers(args.path)))
+    return 0
+
+
+def cmd_collect_docs(args: argparse.Namespace) -> int:
+    evidence = collect_docs_directory(args.directory, args.required, args.max_age_days)
+    write_text(args.output, dump_json(evidence))
     return 0
 
 
