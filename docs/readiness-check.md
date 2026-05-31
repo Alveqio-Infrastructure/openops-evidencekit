@@ -49,3 +49,9 @@ python -m openops_evidence report -i report.json -f markdown -o report.md
 
 Store the report in your operations documentation system and track remediation
 work in your ticket system.
+
+For BookStack-style wiki pages:
+
+```powershell
+python -m openops_evidence report -i report.json -f bookstack -o readiness.bookstack.md
+```

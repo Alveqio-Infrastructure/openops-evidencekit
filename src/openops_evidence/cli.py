@@ -10,7 +10,7 @@ from .io import UserFacingError, dump_json, load_json, load_structured, write_te
 from .merge import merge_evidence
 from .policy import evaluate_policy, parse_policy
 from .redact import redact_document
-from .reports import render_html, render_markdown
+from .reports import render_bookstack_markdown, render_html, render_markdown
 from .schema import validate_evidence, validate_report
 
 
@@ -72,7 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     report = sub.add_parser("report", help="Render a check report")
     report.add_argument("-i", "--input", required=True)
-    report.add_argument("-f", "--format", choices=["markdown", "html"], default="markdown")
+    report.add_argument("-f", "--format", choices=["markdown", "bookstack", "html"], default="markdown")
     report.add_argument("-o", "--output", default="-")
     report.set_defaults(func=cmd_report)
 
@@ -149,7 +149,12 @@ def cmd_report(args: argparse.Namespace) -> int:
     errors = validate_report(report)
     if errors:
         raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
-    rendered = render_html(report) if args.format == "html" else render_markdown(report)
+    if args.format == "html":
+        rendered = render_html(report)
+    elif args.format == "bookstack":
+        rendered = render_bookstack_markdown(report)
+    else:
+        rendered = render_markdown(report)
     write_text(args.output, rendered)
     return 0
 

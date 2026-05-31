@@ -35,3 +35,4 @@ jobs:
           PYTHONPATH=src python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
           PYTHONPATH=src python -m openops_evidence validate -i report.local.json -t report
           PYTHONPATH=src python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
+          PYTHONPATH=src python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md

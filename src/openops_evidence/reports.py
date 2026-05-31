@@ -39,6 +39,66 @@ def render_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def render_bookstack_markdown(report: dict[str, Any]) -> str:
+    summary = report.get("summary", {})
+    failed = [item for item in report.get("results", []) if item.get("status") == "fail"]
+    warnings = [item for item in report.get("results", []) if item.get("status") == "warn"]
+    passed = [item for item in report.get("results", []) if item.get("status") == "pass"]
+    lines = [
+        "# Infrastructure Readiness Evidence",
+        "",
+        "## Summary",
+        "",
+        f"| Field | Value |",
+        "| --- | --- |",
+        f"| Generated | `{report.get('generated_at', 'unknown')}` |",
+        f"| Status | **{str(summary.get('status', 'unknown')).upper()}** |",
+        f"| Score | **{summary.get('score', 'n/a')}** |",
+        f"| Passed | {summary.get('checks_passed', 0)} |",
+        f"| Failed | {summary.get('checks_failed', 0)} |",
+        f"| Warnings | {summary.get('checks_warn', 0)} |",
+        "",
+        "## Required Action",
+        "",
+    ]
+    if not failed and not warnings:
+        lines.append("No failed checks or warnings were reported.")
+        lines.append("")
+    else:
+        for item in [*failed, *warnings]:
+            lines.extend(_bookstack_finding(item))
+    lines.extend(
+        [
+            "## Passed Checks",
+            "",
+        ]
+    )
+    for item in passed:
+        lines.append(f"- `{item['id']}`: {item['title']}")
+    lines.extend(
+        [
+            "",
+            "## Notes",
+            "",
+            "This report is operational evidence, not a legal certification. Review raw evidence and redaction status before sharing outside the operating team.",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _bookstack_finding(item: dict[str, Any]) -> list[str]:
+    return [
+        f"### {item['title']}",
+        "",
+        f"- Status: `{item['status']}`",
+        f"- Severity: `{item['severity']}`",
+        f"- Check ID: `{item['id']}`",
+        f"- Evidence path: `{item['path']}`",
+        f"- Remediation: {item.get('remediation') or 'No remediation text provided.'}",
+        "",
+    ]
+
+
 def render_html(report: dict[str, Any]) -> str:
     summary = report.get("summary", {})
     rows = []

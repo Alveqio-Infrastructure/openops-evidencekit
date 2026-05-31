@@ -8,3 +8,4 @@
 - Add Markdown and HTML report renderers.
 - Add redaction for common secret keys, email addresses, and IPv4 addresses.
 - Add draft JSON Schemas for evidence and report artifacts.
+- Add BookStack-oriented Markdown report output.

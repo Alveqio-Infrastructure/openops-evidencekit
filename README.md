@@ -34,6 +34,12 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 ```
 
+Render a wiki-friendly report:
+
+```powershell
+python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
+```
+
 Merge evidence from multiple sources:
 
 ```powershell
