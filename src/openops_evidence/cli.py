@@ -1,0 +1,120 @@
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+from .collectors import collect_fixture, collect_local, collect_tls
+from .io import UserFacingError, dump_json, load_json, load_structured, write_text
+from .policy import evaluate_policy, parse_policy
+from .redact import redact_document
+from .reports import render_html, render_markdown
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        return int(args.func(args) or 0)
+    except UserFacingError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, OSError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="openops-evidence",
+        description="Collect, check, redact, and report infrastructure operations evidence.",
+    )
+    sub = parser.add_subparsers(required=True)
+
+    collect = sub.add_parser("collect", help="Collect evidence")
+    collect_sub = collect.add_subparsers(required=True)
+    local = collect_sub.add_parser("local", help="Collect local host metadata")
+    local.add_argument("-o", "--output", default="-")
+    local.set_defaults(func=cmd_collect_local)
+    fixture = collect_sub.add_parser("fixture", help="Copy a fixture evidence file")
+    fixture.add_argument("path")
+    fixture.add_argument("-o", "--output", default="-")
+    fixture.set_defaults(func=cmd_collect_fixture)
+    tls = collect_sub.add_parser("tls", help="Collect TLS certificate evidence for a host")
+    tls.add_argument("hostname")
+    tls.add_argument("--port", type=int, default=443)
+    tls.add_argument("--timeout", type=float, default=5.0)
+    tls.add_argument("-o", "--output", default="-")
+    tls.set_defaults(func=cmd_collect_tls)
+
+    check = sub.add_parser("check", help="Evaluate evidence against a policy")
+    check.add_argument("-i", "--input", required=True)
+    check.add_argument("-p", "--policy", required=True)
+    check.add_argument("-o", "--output", default="-")
+    check.set_defaults(func=cmd_check)
+
+    report = sub.add_parser("report", help="Render a check report")
+    report.add_argument("-i", "--input", required=True)
+    report.add_argument("-f", "--format", choices=["markdown", "html"], default="markdown")
+    report.add_argument("-o", "--output", default="-")
+    report.set_defaults(func=cmd_report)
+
+    redact = sub.add_parser("redact", help="Redact sensitive values from evidence")
+    redact.add_argument("-i", "--input", required=True)
+    redact.add_argument("-o", "--output", default="-")
+    redact.add_argument("--redact-hostnames", action="store_true")
+    redact.set_defaults(func=cmd_redact)
+
+    init = sub.add_parser("init", help="Create starter policy and evidence files")
+    init.add_argument("directory", nargs="?", default=".")
+    init.set_defaults(func=cmd_init)
+    return parser
+
+
+def cmd_collect_local(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_local()))
+    return 0
+
+
+def cmd_collect_fixture(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_fixture(args.path)))
+    return 0
+
+
+def cmd_collect_tls(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_tls(args.hostname, args.port, args.timeout)))
+    return 0
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    policy_raw = load_structured(args.policy)
+    checks = parse_policy(policy_raw)
+    report = evaluate_policy(evidence, checks)
+    write_text(args.output, dump_json(report))
+    return 1 if report["summary"]["status"] == "fail" else 0
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    report = load_json(args.input)
+    rendered = render_html(report) if args.format == "html" else render_markdown(report)
+    write_text(args.output, rendered)
+    return 0
+
+
+def cmd_redact(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    redacted = redact_document(evidence, redact_hostnames=args.redact_hostnames)
+    write_text(args.output, dump_json(redacted))
+    return 0
+
+
+def cmd_init(args: argparse.Namespace) -> int:
+    target = Path(args.directory)
+    target.mkdir(parents=True, exist_ok=True)
+    policy = Path(__file__).resolve().parents[2] / "examples" / "policy.baseline.toml"
+    evidence = Path(__file__).resolve().parents[2] / "examples" / "evidence.sample.json"
+    (target / "policy.baseline.toml").write_text(policy.read_text(encoding="utf-8"), encoding="utf-8")
+    (target / "evidence.sample.json").write_text(evidence.read_text(encoding="utf-8"), encoding="utf-8")
+    print(f"Created starter files in {target}")
+    return 0

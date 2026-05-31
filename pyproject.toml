@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openops-evidencekit"
+version = "0.1.0"
+description = "Vendor-neutral evidence and readiness toolkit for small infrastructure operations."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [
+  { name = "OpenOps EvidenceKit maintainers" }
+]
+keywords = [
+  "infrastructure",
+  "operations",
+  "readiness",
+  "backup",
+  "monitoring",
+  "runbooks",
+  "evidence"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: System :: Monitoring",
+  "Topic :: System :: Systems Administration"
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Alveqio-Infrastructure/openops-evidencekit"
+Issues = "https://github.com/Alveqio-Infrastructure/openops-evidencekit/issues"
+
+[project.scripts]
+openops-evidence = "openops_evidence.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openops_evidence"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/tests",
+  "/examples",
+  "/docs",
+  "/README.md",
+  "/LICENSE",
+  "/SECURITY.md",
+  "/CONTRIBUTING.md"
+]
