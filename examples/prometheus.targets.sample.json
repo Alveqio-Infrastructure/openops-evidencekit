@@ -1,0 +1,33 @@
+{
+  "status": "success",
+  "data": {
+    "activeTargets": [
+      {
+        "discoveredLabels": {
+          "__address__": "web-01.example.invalid:9100"
+        },
+        "labels": {
+          "instance": "web-01.example.invalid:9100",
+          "job": "node"
+        },
+        "scrapeUrl": "http://web-01.example.invalid:9100/metrics",
+        "health": "up",
+        "lastError": "",
+        "lastScrape": "2026-05-31T09:59:00Z"
+      },
+      {
+        "discoveredLabels": {
+          "__address__": "db-01.example.invalid:9100"
+        },
+        "labels": {
+          "instance": "db-01.example.invalid:9100",
+          "job": "node"
+        },
+        "scrapeUrl": "http://db-01.example.invalid:9100/metrics",
+        "health": "down",
+        "lastError": "context deadline exceeded",
+        "lastScrape": "2026-05-31T09:58:00Z"
+      }
+    ]
+  }
+}

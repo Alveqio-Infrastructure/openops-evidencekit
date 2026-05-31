@@ -142,6 +142,52 @@ def collect_uptime_kuma_export(path: str) -> dict[str, Any]:
     }
 
 
+def collect_prometheus_targets(path: str) -> dict[str, Any]:
+    payload = load_json(path)
+    if not isinstance(payload, dict):
+        raise ValueError("Prometheus targets input must be a JSON object")
+    data = payload.get("data", payload)
+    if not isinstance(data, dict):
+        raise ValueError("Prometheus targets input must contain a data object")
+    active_targets = data.get("activeTargets", [])
+    if not isinstance(active_targets, list):
+        raise ValueError("Prometheus targets input must contain activeTargets")
+    rows = [item for item in active_targets if isinstance(item, dict)]
+    up = [item for item in rows if item.get("health") == "up"]
+    down = [item for item in rows if item.get("health") == "down"]
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "source": f"prometheus-targets:{path}",
+            "collector": "openops-evidencekit",
+        },
+        "assets": [
+            {
+                "id": str(item.get("scrapeUrl") or item.get("labels", {}).get("instance") or f"prometheus-target-{index}"),
+                "type": "monitor-target",
+                "hostname": str(item.get("labels", {}).get("instance") or item.get("scrapeUrl") or ""),
+                "roles": ["monitoring"],
+                "tags": ["prometheus", str(item.get("health", "unknown"))],
+            }
+            for index, item in enumerate(rows, start=1)
+        ],
+        "signals": {
+            "monitoring": {
+                "system": "prometheus",
+                "targets": len(up),
+                "targets_total": len(rows),
+                "targets_up": len(up),
+                "targets_down": len(down),
+                "down_targets": [
+                    item.get("labels", {}).get("instance") or item.get("scrapeUrl") or item.get("discoveredLabels", {}).get("__address__")
+                    for item in down
+                ],
+            }
+        },
+    }
+
+
 def collect_tls(hostname: str, port: int = 443, timeout: float = 5.0) -> dict[str, Any]:
     context = ssl.create_default_context()
     with socket.create_connection((hostname, port), timeout=timeout) as sock:

@@ -10,3 +10,4 @@
 - Add draft JSON Schemas for evidence and report artifacts.
 - Add BookStack-oriented Markdown report output.
 - Add Uptime Kuma export collector.
+- Add Prometheus target health collector.

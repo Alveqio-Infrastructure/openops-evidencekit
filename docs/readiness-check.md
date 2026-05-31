@@ -24,6 +24,13 @@ For Uptime Kuma, export or back up monitor configuration and import it:
 python -m openops_evidence collect uptime-kuma uptime-kuma-export.json -o monitoring.evidence.json
 ```
 
+For Prometheus, export target health:
+
+```powershell
+curl http://prometheus.example.invalid/api/v1/targets > prometheus.targets.json
+python -m openops_evidence collect prometheus-targets prometheus.targets.json -o prometheus.evidence.json
+```
+
 For production use, combine collector output with documented facts from backup,
 monitoring, access, and runbook systems.
 

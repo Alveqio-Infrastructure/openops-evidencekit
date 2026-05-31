@@ -17,4 +17,5 @@ report.local.md
 report.security.json
 restic.evidence.json
 uptime-kuma.evidence.json
+prometheus.evidence.json
 readiness.bookstack.md

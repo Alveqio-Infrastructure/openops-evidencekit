@@ -8,6 +8,7 @@ from pathlib import Path
 from .collectors import (
     collect_fixture,
     collect_local,
+    collect_prometheus_targets,
     collect_restic_snapshots,
     collect_tls,
     collect_uptime_kuma_export,
@@ -57,6 +58,10 @@ def build_parser() -> argparse.ArgumentParser:
     kuma.add_argument("path")
     kuma.add_argument("-o", "--output", default="-")
     kuma.set_defaults(func=cmd_collect_uptime_kuma)
+    prometheus = collect_sub.add_parser("prometheus-targets", help="Collect monitoring evidence from Prometheus /api/v1/targets JSON")
+    prometheus.add_argument("path")
+    prometheus.add_argument("-o", "--output", default="-")
+    prometheus.set_defaults(func=cmd_collect_prometheus)
     tls = collect_sub.add_parser("tls", help="Collect TLS certificate evidence for a host")
     tls.add_argument("hostname")
     tls.add_argument("--port", type=int, default=443)
@@ -115,6 +120,11 @@ def cmd_collect_restic(args: argparse.Namespace) -> int:
 
 def cmd_collect_uptime_kuma(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(collect_uptime_kuma_export(args.path)))
+    return 0
+
+
+def cmd_collect_prometheus(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_prometheus_targets(args.path)))
     return 0
 
 

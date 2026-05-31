@@ -65,6 +65,13 @@ Import an Uptime Kuma backup/export file:
 python -m openops_evidence collect uptime-kuma uptime-kuma-export.json -o monitoring.evidence.json
 ```
 
+Import Prometheus target health:
+
+```powershell
+curl http://prometheus.example.invalid/api/v1/targets > prometheus.targets.json
+python -m openops_evidence collect prometheus-targets prometheus.targets.json -o prometheus.evidence.json
+```
+
 Use redaction before sharing evidence outside your organization:
 
 ```powershell
