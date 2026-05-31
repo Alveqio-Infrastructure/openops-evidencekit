@@ -34,6 +34,12 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 ```
 
+Merge evidence from multiple sources:
+
+```powershell
+python -m openops_evidence merge examples/evidence.sample.json examples/evidence.tls.sample.json -o evidence.merged.json
+```
+
 Or inspect a TLS endpoint:
 
 ```powershell
@@ -59,6 +65,9 @@ EvidenceKit uses three files:
 - Evidence JSON: observed facts from infrastructure and documentation.
 - Policy TOML: readiness rules that say what "good enough" means.
 - Report JSON/Markdown/HTML: evaluated results with findings and remediation.
+
+Use `merge` when evidence comes from multiple collectors or manually reviewed
+sources.
 
 Policy checks are intentionally small:
 

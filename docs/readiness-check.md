@@ -13,6 +13,12 @@ python -m openops_evidence collect local -o evidence.local.json
 For production use, combine collector output with documented facts from backup,
 monitoring, access, and runbook systems.
 
+If evidence is split across files, merge it first:
+
+```powershell
+python -m openops_evidence merge backup.json monitoring.json docs.json -o evidence.merged.json
+```
+
 ## 2. Redact Before Sharing
 
 ```powershell

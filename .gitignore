@@ -11,5 +11,6 @@ dist/
 site/
 reports/
 evidence.local.json
+evidence.merged.json
 report.local.json
 report.local.md

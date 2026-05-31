@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1",
+  "generated_at": "2026-05-31T10:02:00+00:00",
+  "metadata": {
+    "source": "example-tls",
+    "environment": "production"
+  },
+  "assets": [
+    {
+      "id": "www.example.invalid",
+      "type": "endpoint",
+      "hostname": "www.example.invalid",
+      "roles": ["web", "tls"],
+      "tags": ["public"]
+    }
+  ],
+  "signals": {
+    "tls": {
+      "certificates": [
+        {
+          "hostname": "www.example.invalid",
+          "not_after": "2026-08-20T12:00:00+00:00",
+          "issuer": "Example CA"
+        }
+      ]
+    }
+  }
+}

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .collectors import collect_fixture, collect_local, collect_tls
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
+from .merge import merge_evidence
 from .policy import evaluate_policy, parse_policy
 from .redact import redact_document
 from .reports import render_html, render_markdown
@@ -54,6 +55,11 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("-p", "--policy", required=True)
     check.add_argument("-o", "--output", default="-")
     check.set_defaults(func=cmd_check)
+
+    merge = sub.add_parser("merge", help="Merge multiple evidence JSON files")
+    merge.add_argument("inputs", nargs="+")
+    merge.add_argument("-o", "--output", default="-")
+    merge.set_defaults(func=cmd_merge)
 
     validate = sub.add_parser("validate", help="Validate evidence or report JSON")
     validate.add_argument("-i", "--input", required=True)
@@ -103,6 +109,18 @@ def cmd_check(args: argparse.Namespace) -> int:
     report = evaluate_policy(evidence, checks)
     write_text(args.output, dump_json(report))
     return 1 if report["summary"]["status"] == "fail" else 0
+
+
+def cmd_merge(args: argparse.Namespace) -> int:
+    documents = []
+    for path in args.inputs:
+        evidence = load_json(path)
+        errors = validate_evidence(evidence)
+        if errors:
+            raise UserFacingError(f"Evidence validation failed for {path}:\n- " + "\n- ".join(errors))
+        documents.append(evidence)
+    write_text(args.output, dump_json(merge_evidence(documents)))
+    return 0
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
