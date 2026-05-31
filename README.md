@@ -134,6 +134,7 @@ List and export bundled policy packs:
 ```powershell
 python -m openops_evidence policy list
 python -m openops_evidence policy show security-minimum -o policy.security-minimum.toml
+python -m openops_evidence policy validate policy.security-minimum.toml
 ```
 
 ## Core Concepts

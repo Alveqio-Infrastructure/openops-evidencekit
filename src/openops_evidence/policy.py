@@ -8,6 +8,34 @@ from typing import Any
 from .pathquery import query
 
 
+SUPPORTED_OPERATORS = {
+    "after_now",
+    "at_least",
+    "at_most",
+    "contains",
+    "equals",
+    "exists",
+    "matches",
+    "missing",
+    "not_equals",
+    "one_of",
+    "within_days",
+}
+SUPPORTED_SEVERITIES = {"critical", "high", "medium", "low"}
+SUPPORTED_MODES = {"any", "all", "none"}
+OPERATORS_REQUIRING_VALUE = {
+    "at_least",
+    "at_most",
+    "contains",
+    "equals",
+    "matches",
+    "not_equals",
+    "one_of",
+    "within_days",
+}
+NUMERIC_VALUE_OPERATORS = {"at_least", "at_most", "within_days"}
+
+
 @dataclass(frozen=True)
 class Check:
     id: str
@@ -43,6 +71,46 @@ def parse_policy(raw: dict[str, Any]) -> list[Check]:
             )
         )
     return parsed
+
+
+def validate_policy_document(raw: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(raw, dict):
+        return ["Policy must be a table/object."]
+    metadata = raw.get("metadata")
+    if metadata is not None and not isinstance(metadata, dict):
+        errors.append("metadata must be a table/object when present.")
+    checks = raw.get("checks")
+    if not isinstance(checks, list):
+        return [*errors, "Policy must contain a list named 'checks'."]
+    if not checks:
+        errors.append("checks must contain at least one check.")
+    seen_ids: set[str] = set()
+    for index, item in enumerate(checks):
+        prefix = f"checks[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{prefix} must be a table/object.")
+            continue
+        check_id = _required_string(item, "id", errors, prefix)
+        if check_id:
+            if check_id in seen_ids:
+                errors.append(f"{prefix}.id duplicates another check id: {check_id}")
+            seen_ids.add(check_id)
+        _optional_string(item, "title", errors, prefix)
+        _required_string(item, "path", errors, prefix)
+        operator = _required_string(item, "operator", errors, prefix)
+        if operator and operator not in SUPPORTED_OPERATORS:
+            errors.append(f"{prefix}.operator is unsupported: {operator}")
+        severity = str(item.get("severity", "medium"))
+        if severity not in SUPPORTED_SEVERITIES:
+            errors.append(f"{prefix}.severity is unsupported: {severity}")
+        mode = str(item.get("mode", "any"))
+        if mode not in SUPPORTED_MODES:
+            errors.append(f"{prefix}.mode is unsupported: {mode}")
+        if "required" in item and not isinstance(item["required"], bool):
+            errors.append(f"{prefix}.required must be a boolean when present.")
+        _validate_operator_value(item, operator, errors, prefix)
+    return errors
 
 
 def evaluate_policy(evidence: dict[str, Any], checks: list[Check]) -> dict[str, Any]:
@@ -155,3 +223,40 @@ def _age_days(value: Any) -> float | None:
 
 def _severity_weight(severity: str) -> int:
     return {"critical": 5, "high": 3, "medium": 2, "low": 1}.get(severity, 2)
+
+
+def _required_string(item: dict[str, Any], key: str, errors: list[str], prefix: str) -> str | None:
+    value = item.get(key)
+    if not isinstance(value, str) or not value:
+        errors.append(f"{prefix}.{key} must be a non-empty string.")
+        return None
+    return value
+
+
+def _optional_string(item: dict[str, Any], key: str, errors: list[str], prefix: str) -> None:
+    if key in item and (not isinstance(item[key], str) or not item[key]):
+        errors.append(f"{prefix}.{key} must be a non-empty string when present.")
+
+
+def _validate_operator_value(
+    item: dict[str, Any],
+    operator: str | None,
+    errors: list[str],
+    prefix: str,
+) -> None:
+    if not operator:
+        return
+    if operator in OPERATORS_REQUIRING_VALUE and "value" not in item:
+        errors.append(f"{prefix}.value is required for operator {operator}.")
+        return
+    if operator == "one_of" and not isinstance(item.get("value"), list):
+        errors.append(f"{prefix}.value must be a list for operator one_of.")
+        return
+    if operator == "one_of" and not item.get("value"):
+        errors.append(f"{prefix}.value must not be empty for operator one_of.")
+        return
+    if operator in NUMERIC_VALUE_OPERATORS and "value" in item:
+        try:
+            float(item["value"])
+        except (TypeError, ValueError):
+            errors.append(f"{prefix}.value must be numeric for operator {operator}.")

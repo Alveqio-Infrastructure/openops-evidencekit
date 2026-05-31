@@ -13,6 +13,7 @@ and automation wrappers.
 
 - `check` returns `1` when required checks fail.
 - `validate` returns `1` when the selected artifact is invalid.
+- `policy validate` returns `1` when the selected policy is invalid.
 - `compare --fail-on-regression` returns `1` when an existing check regresses.
 
 Other commands should return `0` for successful generation and `2` for

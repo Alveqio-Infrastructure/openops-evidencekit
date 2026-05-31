@@ -22,7 +22,7 @@ from .collectors import (
 )
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
-from .policy import evaluate_policy, parse_policy
+from .policy import evaluate_policy, parse_policy, validate_policy_document
 from .policypacks import render_policy_pack_list, read_policy_pack
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
@@ -117,6 +117,9 @@ def build_parser() -> argparse.ArgumentParser:
     policy_show.add_argument("name")
     policy_show.add_argument("-o", "--output", default="-")
     policy_show.set_defaults(func=cmd_policy_show)
+    policy_validate = policy_sub.add_parser("validate", help="Validate a policy TOML or JSON file")
+    policy_validate.add_argument("path")
+    policy_validate.set_defaults(func=cmd_policy_validate)
 
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
@@ -232,6 +235,9 @@ def cmd_check(args: argparse.Namespace) -> int:
     if errors:
         raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
     policy_raw = load_structured(args.policy)
+    policy_errors = validate_policy_document(policy_raw)
+    if policy_errors:
+        raise UserFacingError("Policy validation failed:\n- " + "\n- ".join(policy_errors))
     checks = parse_policy(policy_raw)
     report = evaluate_policy(evidence, checks)
     write_text(args.output, dump_json(report))
@@ -245,6 +251,18 @@ def cmd_policy_list(args: argparse.Namespace) -> int:
 
 def cmd_policy_show(args: argparse.Namespace) -> int:
     write_text(args.output, read_policy_pack(args.name))
+    return 0
+
+
+def cmd_policy_validate(args: argparse.Namespace) -> int:
+    policy_raw = load_structured(args.path)
+    errors = validate_policy_document(policy_raw)
+    if errors:
+        print("invalid")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+    print("valid")
     return 0
 
 

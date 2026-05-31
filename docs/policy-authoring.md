@@ -7,6 +7,7 @@ Bundled policy packs can be listed and exported with:
 ```powershell
 python -m openops_evidence policy list
 python -m openops_evidence policy show baseline -o policy.baseline.toml
+python -m openops_evidence policy validate policy.baseline.toml
 ```
 
 See [policy-packs.md](policy-packs.md) for pack names and workflow guidance.
@@ -22,6 +23,18 @@ See [policy-packs.md](policy-packs.md) for pack names and workflow guidance.
 - `required`: required failures fail the report; optional failures warn.
 - `mode`: `any`, `all`, or `none` for multi-value paths.
 - `remediation`: practical next step.
+
+## Validation
+
+Run validation before using a custom policy in CI:
+
+```powershell
+python -m openops_evidence policy validate policy.baseline.toml
+```
+
+Validation catches missing fields, duplicate check IDs, unsupported operators,
+unsupported severities, unsupported modes, wrong `required` types, and missing
+or malformed operator values.
 
 ## Path Queries
 

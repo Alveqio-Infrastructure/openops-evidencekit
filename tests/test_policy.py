@@ -1,6 +1,6 @@
 import unittest
 
-from openops_evidence.policy import Check, evaluate_check, evaluate_policy
+from openops_evidence.policy import Check, evaluate_check, evaluate_policy, validate_policy_document
 
 
 class PolicyTests(unittest.TestCase):
@@ -50,6 +50,52 @@ class PolicyTests(unittest.TestCase):
         )
         self.assertEqual(report["summary"]["status"], "fail")
         self.assertEqual(report["summary"]["score"], 0)
+
+    def test_validate_policy_document_accepts_valid_policy(self):
+        errors = validate_policy_document(
+            {
+                "metadata": {"name": "test"},
+                "checks": [
+                    {
+                        "id": "backup_recent",
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                        "value": 2,
+                        "severity": "critical",
+                        "required": True,
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_validate_policy_document_reports_authoring_errors(self):
+        errors = validate_policy_document(
+            {
+                "checks": [
+                    {"id": "duplicate", "path": "signals.x", "operator": "unknown"},
+                    {
+                        "id": "duplicate",
+                        "title": "",
+                        "path": "signals.y",
+                        "operator": "one_of",
+                        "value": [],
+                        "severity": "urgent",
+                        "mode": "sometimes",
+                        "required": "yes",
+                    },
+                    {"id": "numeric", "path": "signals.z", "operator": "within_days", "value": "soon"},
+                ]
+            }
+        )
+        self.assertIn("checks[0].operator is unsupported: unknown", errors)
+        self.assertIn("checks[1].id duplicates another check id: duplicate", errors)
+        self.assertIn("checks[1].title must be a non-empty string when present.", errors)
+        self.assertIn("checks[1].severity is unsupported: urgent", errors)
+        self.assertIn("checks[1].mode is unsupported: sometimes", errors)
+        self.assertIn("checks[1].required must be a boolean when present.", errors)
+        self.assertIn("checks[1].value must not be empty for operator one_of.", errors)
+        self.assertIn("checks[2].value must be numeric for operator within_days.", errors)
 
 
 if __name__ == "__main__":

@@ -41,6 +41,7 @@ having to deploy a platform first.
 - CLI version and exit-code documentation.
 - Bundled policy pack discovery and export.
 - Bundle manifest verification.
+- Policy validation and authoring guardrails.
 
 ## 1.0
 

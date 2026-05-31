@@ -7,7 +7,7 @@ from io import StringIO
 from pathlib import Path
 
 from openops_evidence.cli import main
-from openops_evidence.policy import parse_policy
+from openops_evidence.policy import parse_policy, validate_policy_document
 from openops_evidence.policypacks import (
     list_policy_packs,
     read_policy_pack,
@@ -25,6 +25,7 @@ class PolicyPackTests(unittest.TestCase):
         for pack in list_policy_packs():
             with self.subTest(pack=pack["name"]):
                 raw = tomllib.loads(read_policy_pack(pack["name"]))
+                self.assertEqual(validate_policy_document(raw), [])
                 checks = parse_policy(raw)
                 self.assertGreater(len(checks), 0)
 
@@ -45,6 +46,22 @@ class PolicyPackTests(unittest.TestCase):
             self.assertEqual(main(["policy", "list"]), 0)
         self.assertIn("baseline", stdout.getvalue())
         self.assertIn("security-minimum", stdout.getvalue())
+
+    def test_cli_policy_validate(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "policy.toml"
+            self.assertEqual(main(["policy", "show", "baseline", "-o", str(output)]), 0)
+            with redirect_stdout(StringIO()) as stdout:
+                self.assertEqual(main(["policy", "validate", str(output)]), 0)
+        self.assertIn("valid", stdout.getvalue())
+
+    def test_cli_policy_validate_reports_invalid_policy(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "policy.toml"
+            output.write_text("[[checks]]\nid = \"bad\"\noperator = \"unknown\"\n", encoding="utf-8")
+            with redirect_stdout(StringIO()) as stdout:
+                self.assertEqual(main(["policy", "validate", str(output)]), 1)
+        self.assertIn("unsupported", stdout.getvalue())
 
     def test_init_can_use_policy_pack(self):
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -28,6 +28,31 @@ class CliExitCodeTests(unittest.TestCase):
             with redirect_stderr(StringIO()):
                 self.assertEqual(main(["validate", "-i", str(path)]), 2)
 
+    def test_check_returns_two_for_invalid_policy(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            evidence = temp / "evidence.json"
+            policy = temp / "policy.toml"
+            report = temp / "report.json"
+            evidence.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-05-31T10:00:00+00:00",
+                        "metadata": {},
+                        "assets": [],
+                        "signals": {},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            policy.write_text("[[checks]]\nid = \"bad\"\noperator = \"unknown\"\n", encoding="utf-8")
+            with redirect_stderr(StringIO()):
+                self.assertEqual(
+                    main(["check", "-i", str(evidence), "-p", str(policy), "-o", str(report)]),
+                    2,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

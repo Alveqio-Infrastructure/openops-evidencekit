@@ -8,6 +8,7 @@ $env:PYTHONPATH = "src"
 
 python -m openops_evidence policy list
 python -m openops_evidence policy show baseline -o policy.exported.toml
+python -m openops_evidence policy validate policy.exported.toml
 
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence collect restic-snapshots examples/restic.snapshots.sample.json -o restic.evidence.json

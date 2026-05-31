@@ -21,6 +21,7 @@ Bundled packs:
 
 ```powershell
 python -m openops_evidence policy show baseline -o policy.baseline.toml
+python -m openops_evidence policy validate policy.baseline.toml
 ```
 
 The exported TOML file is meant to be copied into a repository and adjusted for

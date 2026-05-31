@@ -19,5 +19,6 @@
 - Add documented automation exit codes and CLI version output.
 - Add bundled policy pack listing, export, and init support.
 - Add bundle manifest verification for artifact integrity checks.
+- Add policy validation for custom policy authoring.
 - Add wiki seed pages for public project documentation.
 - Add end-to-end CLI workflow test and demo documentation.

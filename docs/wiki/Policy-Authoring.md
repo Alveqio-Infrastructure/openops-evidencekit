@@ -5,6 +5,7 @@ Bundled policies can be listed and exported:
 ```powershell
 python -m openops_evidence policy list
 python -m openops_evidence policy show baseline -o policy.baseline.toml
+python -m openops_evidence policy validate policy.baseline.toml
 ```
 
 Policies are TOML files with one or more checks:
