@@ -34,6 +34,9 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 ```
 
+See [docs/demo-workflow.md](docs/demo-workflow.md) for a complete synthetic
+end-to-end run.
+
 Render a wiki-friendly report:
 
 ```powershell

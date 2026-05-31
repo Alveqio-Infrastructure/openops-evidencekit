@@ -11,3 +11,4 @@
 - Add BookStack-oriented Markdown report output.
 - Add Uptime Kuma export collector.
 - Add Prometheus target health collector.
+- Add end-to-end CLI workflow test and demo documentation.

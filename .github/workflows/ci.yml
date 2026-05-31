@@ -33,7 +33,9 @@ jobs:
           PYTHONPATH=src python -m openops_evidence collect uptime-kuma examples/uptime-kuma.export.sample.json -o uptime-kuma.evidence.json
           PYTHONPATH=src python -m openops_evidence collect prometheus-targets examples/prometheus.targets.sample.json -o prometheus.evidence.json
           PYTHONPATH=src python -m openops_evidence merge evidence.local.json examples/evidence.tls.sample.json restic.evidence.json uptime-kuma.evidence.json prometheus.evidence.json -o evidence.merged.json
+          PYTHONPATH=src python -m openops_evidence redact -i evidence.merged.json --redact-hostnames -o evidence.redacted.json
           PYTHONPATH=src python -m openops_evidence validate -i evidence.local.json
+          PYTHONPATH=src python -m openops_evidence validate -i evidence.redacted.json
           PYTHONPATH=src python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
           PYTHONPATH=src python -m openops_evidence validate -i report.local.json -t report
           PYTHONPATH=src python -m openops_evidence report -i report.local.json -f markdown -o report.local.md

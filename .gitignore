@@ -12,6 +12,7 @@ site/
 reports/
 evidence.local.json
 evidence.merged.json
+evidence.redacted.json
 report.local.json
 report.local.md
 report.security.json
