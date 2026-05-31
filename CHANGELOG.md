@@ -16,5 +16,6 @@
 - Add local documentation directory collector and documentation policy fixture.
 - Add evidence bundle manifest generation and validation.
 - Add report comparison output and regression guardrail.
+- Add documented automation exit codes and CLI version output.
 - Add wiki seed pages for public project documentation.
 - Add end-to-end CLI workflow test and demo documentation.

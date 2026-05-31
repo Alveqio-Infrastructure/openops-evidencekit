@@ -5,6 +5,7 @@ import sys
 from importlib import resources
 from pathlib import Path
 
+from . import __version__
 from .bundle import create_bundle_manifest
 from .compare import compare_reports, render_comparison_markdown
 from .collectors import (
@@ -50,6 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="openops-evidence",
         description="Collect, check, compare, redact, and report infrastructure operations evidence.",
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(required=True)
 
     collect = sub.add_parser("collect", help="Collect evidence")

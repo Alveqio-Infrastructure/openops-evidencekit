@@ -4,6 +4,7 @@ Run the synthetic demo from a checkout:
 
 ```powershell
 $env:PYTHONPATH = "src"
+python -m openops_evidence --version
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md

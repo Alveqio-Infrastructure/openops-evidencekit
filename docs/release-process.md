@@ -20,6 +20,7 @@ Run these commands from the repository root:
 
 ```powershell
 $env:PYTHONPATH = "src"
+python -m openops_evidence --version
 python -m unittest discover -s tests
 python -m openops_evidence validate -i examples/evidence.sample.json
 python -m openops_evidence collect docs examples/docs-sample --required inventory.md --required runbooks/backup-restore.md --max-age-days 365 -o docs.evidence.json

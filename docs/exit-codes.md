@@ -1,0 +1,33 @@
+# Exit Codes
+
+OpenOps EvidenceKit uses stable exit codes so it can run in CI, scheduled jobs,
+and automation wrappers.
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Command completed successfully. |
+| `1` | Command completed and found a policy failure or requested guardrail failure. |
+| `2` | Input, validation, parsing, filesystem, or usage error. |
+
+## Commands That May Return 1
+
+- `check` returns `1` when required checks fail.
+- `validate` returns `1` when the selected artifact is invalid.
+- `compare --fail-on-regression` returns `1` when an existing check regresses.
+
+Other commands should return `0` for successful generation and `2` for
+user-facing errors.
+
+## Version
+
+Use:
+
+```powershell
+python -m openops_evidence --version
+```
+
+The installed console script uses the same flag:
+
+```powershell
+openops-evidence --version
+```

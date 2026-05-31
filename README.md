@@ -18,6 +18,8 @@ The project intentionally keeps the core deterministic. AI systems can help
 review reports, suggest remediation, or draft runbooks, but the evidence checks
 themselves are plain rules that can be audited and run in CI.
 
+Automation exit codes are documented in [docs/exit-codes.md](docs/exit-codes.md).
+
 ## Status
 
 This project is in early alpha. The first release focuses on a stable evidence
@@ -28,6 +30,7 @@ shape, a small policy engine, redaction, and human-readable reports.
 Run from a checkout:
 
 ```powershell
+python -m openops_evidence --version
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
