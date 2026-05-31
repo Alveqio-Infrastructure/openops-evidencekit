@@ -5,7 +5,13 @@ import sys
 from importlib import resources
 from pathlib import Path
 
-from .collectors import collect_fixture, collect_local, collect_restic_snapshots, collect_tls
+from .collectors import (
+    collect_fixture,
+    collect_local,
+    collect_restic_snapshots,
+    collect_tls,
+    collect_uptime_kuma_export,
+)
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
 from .policy import evaluate_policy, parse_policy
@@ -47,6 +53,10 @@ def build_parser() -> argparse.ArgumentParser:
     restic.add_argument("path")
     restic.add_argument("-o", "--output", default="-")
     restic.set_defaults(func=cmd_collect_restic)
+    kuma = collect_sub.add_parser("uptime-kuma", help="Collect monitoring evidence from an Uptime Kuma export")
+    kuma.add_argument("path")
+    kuma.add_argument("-o", "--output", default="-")
+    kuma.set_defaults(func=cmd_collect_uptime_kuma)
     tls = collect_sub.add_parser("tls", help="Collect TLS certificate evidence for a host")
     tls.add_argument("hostname")
     tls.add_argument("--port", type=int, default=443)
@@ -100,6 +110,11 @@ def cmd_collect_fixture(args: argparse.Namespace) -> int:
 
 def cmd_collect_restic(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(collect_restic_snapshots(args.path)))
+    return 0
+
+
+def cmd_collect_uptime_kuma(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_uptime_kuma_export(args.path)))
     return 0
 
 

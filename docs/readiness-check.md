@@ -18,6 +18,12 @@ restic snapshots --json > restic.snapshots.json
 python -m openops_evidence collect restic-snapshots restic.snapshots.json -o backup.evidence.json
 ```
 
+For Uptime Kuma, export or back up monitor configuration and import it:
+
+```powershell
+python -m openops_evidence collect uptime-kuma uptime-kuma-export.json -o monitoring.evidence.json
+```
+
 For production use, combine collector output with documented facts from backup,
 monitoring, access, and runbook systems.
 

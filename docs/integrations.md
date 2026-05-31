@@ -18,7 +18,7 @@ Integrations should collect facts, not secrets.
 | Backup | restic | last successful snapshot, repository count, protected hosts and paths |
 | Backup | Borg | archive recency, repository reachability |
 | Monitoring | Prometheus | target count, alert rule count |
-| Monitoring | Uptime Kuma | monitor count, status page presence |
+| Monitoring | Uptime Kuma | monitor count, enabled target count, alert channel references |
 | Runtime | systemd | enabled timers, failed units |
 | Runtime | Docker | running containers, restart policies |
 | Documentation | BookStack | page freshness, required runbook pages |

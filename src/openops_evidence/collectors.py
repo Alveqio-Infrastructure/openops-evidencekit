@@ -94,6 +94,54 @@ def collect_restic_snapshots(path: str) -> dict[str, Any]:
     }
 
 
+def collect_uptime_kuma_export(path: str) -> dict[str, Any]:
+    export = load_json(path)
+    if not isinstance(export, dict):
+        raise ValueError("Uptime Kuma export must be a JSON object")
+    monitors = export.get("monitorList") or export.get("monitors") or []
+    if isinstance(monitors, dict):
+        monitors = list(monitors.values())
+    if not isinstance(monitors, list):
+        raise ValueError("Uptime Kuma export must contain monitorList or monitors")
+    monitor_rows = [item for item in monitors if isinstance(item, dict)]
+    enabled = [item for item in monitor_rows if item.get("active") is not False]
+    notification_ids = set()
+    for item in monitor_rows:
+        for key in ("notificationIDList", "notification_ids", "notifications"):
+            value = item.get(key)
+            if isinstance(value, list):
+                notification_ids.update(str(entry) for entry in value)
+            elif isinstance(value, dict):
+                notification_ids.update(str(entry) for entry in value)
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "source": f"uptime-kuma-export:{path}",
+            "collector": "openops-evidencekit",
+        },
+        "assets": [
+            {
+                "id": f"uptime-kuma-monitor-{item.get('id', index)}",
+                "type": "monitor",
+                "hostname": item.get("hostname") or item.get("url") or item.get("name"),
+                "roles": ["monitoring"],
+                "tags": [str(item.get("type", "unknown"))],
+            }
+            for index, item in enumerate(monitor_rows, start=1)
+        ],
+        "signals": {
+            "monitoring": {
+                "system": "uptime-kuma",
+                "targets": len(enabled),
+                "monitors_total": len(monitor_rows),
+                "monitors_enabled": len(enabled),
+                "alert_channels": sorted(notification_ids),
+            }
+        },
+    }
+
+
 def collect_tls(hostname: str, port: int = 443, timeout: float = 5.0) -> dict[str, Any]:
     context = ssl.create_default_context()
     with socket.create_connection((hostname, port), timeout=timeout) as sock:

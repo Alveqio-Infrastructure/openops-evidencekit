@@ -16,4 +16,5 @@ report.local.json
 report.local.md
 report.security.json
 restic.evidence.json
+uptime-kuma.evidence.json
 readiness.bookstack.md

@@ -1,0 +1,22 @@
+{
+  "version": "1.23.0",
+  "monitorList": [
+    {
+      "id": 1,
+      "name": "Website",
+      "type": "http",
+      "url": "https://www.example.invalid",
+      "active": true,
+      "notificationIDList": [1]
+    },
+    {
+      "id": 2,
+      "name": "SMTP",
+      "type": "port",
+      "hostname": "mail.example.invalid",
+      "port": 25,
+      "active": true,
+      "notificationIDList": [1]
+    }
+  ]
+}

@@ -59,6 +59,12 @@ restic snapshots --json > restic.snapshots.json
 python -m openops_evidence collect restic-snapshots restic.snapshots.json -o backup.evidence.json
 ```
 
+Import an Uptime Kuma backup/export file:
+
+```powershell
+python -m openops_evidence collect uptime-kuma uptime-kuma-export.json -o monitoring.evidence.json
+```
+
 Use redaction before sharing evidence outside your organization:
 
 ```powershell
