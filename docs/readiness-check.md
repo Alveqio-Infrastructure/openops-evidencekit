@@ -10,6 +10,14 @@ Start with a fixture or a collector:
 python -m openops_evidence collect local -o evidence.local.json
 ```
 
+For restic repositories, export snapshots first and then collect from the JSON
+file:
+
+```powershell
+restic snapshots --json > restic.snapshots.json
+python -m openops_evidence collect restic-snapshots restic.snapshots.json -o backup.evidence.json
+```
+
 For production use, combine collector output with documented facts from backup,
 monitoring, access, and runbook systems.
 

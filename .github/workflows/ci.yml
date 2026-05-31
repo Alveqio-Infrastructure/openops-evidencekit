@@ -29,6 +29,7 @@ jobs:
       - name: Run sample workflow
         run: |
           PYTHONPATH=src python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
+          PYTHONPATH=src python -m openops_evidence collect restic-snapshots examples/restic.snapshots.sample.json -o restic.evidence.json
           PYTHONPATH=src python -m openops_evidence merge evidence.local.json examples/evidence.tls.sample.json -o evidence.merged.json
           PYTHONPATH=src python -m openops_evidence validate -i evidence.local.json
           PYTHONPATH=src python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json

@@ -15,7 +15,7 @@ Integrations should collect facts, not secrets.
 
 | Area | Integration | Evidence examples |
 | --- | --- | --- |
-| Backup | restic | last successful snapshot, repository count, latest restore test |
+| Backup | restic | last successful snapshot, repository count, protected hosts and paths |
 | Backup | Borg | archive recency, repository reachability |
 | Monitoring | Prometheus | target count, alert rule count |
 | Monitoring | Uptime Kuma | monitor count, status page presence |

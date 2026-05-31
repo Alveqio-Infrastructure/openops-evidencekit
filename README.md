@@ -46,6 +46,13 @@ Or inspect a TLS endpoint:
 python -m openops_evidence collect tls example.com -o tls-evidence.json
 ```
 
+Turn `restic snapshots --json` output into backup evidence:
+
+```powershell
+restic snapshots --json > restic.snapshots.json
+python -m openops_evidence collect restic-snapshots restic.snapshots.json -o backup.evidence.json
+```
+
 Use redaction before sharing evidence outside your organization:
 
 ```powershell
