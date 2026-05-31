@@ -9,16 +9,16 @@ having to deploy a platform first.
 - TOML policy checks.
 - Local, fixture, and TLS collectors.
 - Merge, validate, redact, check, and report commands.
-- Markdown and HTML report output.
+- Markdown, BookStack Markdown, and HTML report output.
 
 ## 0.2 Collector Pack
 
 - restic backup evidence.
+- Prometheus target evidence.
+- Uptime Kuma monitor evidence.
 - Borg backup evidence.
 - systemd timer evidence.
 - Docker container evidence.
-- Prometheus target evidence.
-- Uptime Kuma monitor evidence.
 
 ## 0.3 Documentation Pack
 

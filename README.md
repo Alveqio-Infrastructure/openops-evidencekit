@@ -81,6 +81,9 @@ Use redaction before sharing evidence outside your organization:
 python -m openops_evidence redact -i evidence.local.json --redact-hostnames -o evidence.redacted.json
 ```
 
+Read [docs/privacy-model.md](docs/privacy-model.md) before publishing or
+sharing evidence bundles. Redaction is a safeguard, not a substitute for review.
+
 Create starter files for a new assessment:
 
 ```powershell
@@ -99,6 +102,8 @@ Use `merge` when evidence comes from multiple collectors or manually reviewed
 sources.
 
 JSON Schemas for generated artifacts live in [schemas/](schemas/).
+Example inputs and generated artifact shapes are described in
+[examples/README.md](examples/README.md).
 
 Policy checks are intentionally small:
 
@@ -123,6 +128,9 @@ find obvious gaps before they become incidents.
 ## Roadmap
 
 See [docs/roadmap.md](docs/roadmap.md).
+
+Maintainers should use [docs/release-process.md](docs/release-process.md) for
+release checks.
 
 ## License
 

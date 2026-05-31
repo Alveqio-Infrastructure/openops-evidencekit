@@ -1,0 +1,29 @@
+# Examples
+
+This directory contains synthetic data only. The files are safe to use in tests,
+documentation, demos, and issue reproduction.
+
+## Evidence Samples
+
+- `evidence.sample.json` shows a small but complete readiness evidence file.
+- `evidence.tls.sample.json` adds TLS certificate evidence for merge examples.
+
+## Policy Samples
+
+- `policy.baseline.toml` checks practical minimum readiness signals such as
+  backups, monitoring, TLS, runbooks, and inventory.
+- `policy.security-minimum.toml` focuses on externally visible hygiene and
+  administrative access signals.
+
+## Collector Input Samples
+
+- `restic.snapshots.sample.json` mirrors the shape of `restic snapshots --json`.
+- `uptime-kuma.export.sample.json` contains a trimmed Uptime Kuma export shape.
+- `prometheus.targets.sample.json` contains a trimmed Prometheus
+  `/api/v1/targets` response.
+
+## Regenerating Demo Output
+
+Use the workflow in `docs/demo-workflow.md` to regenerate local evidence and
+reports. Generated files are ignored by git so they can be reviewed without
+polluting commits.

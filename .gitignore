@@ -15,6 +15,7 @@ evidence.merged.json
 evidence.redacted.json
 report.local.json
 report.local.md
+report.merged.json
 report.security.json
 restic.evidence.json
 uptime-kuma.evidence.json
