@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from openops_evidence.bundle import classify_artifact, create_bundle_manifest
-from openops_evidence.schema import validate_bundle_manifest
+from openops_evidence.bundle import classify_artifact, create_bundle_manifest, verify_bundle_manifest
+from openops_evidence.schema import validate_bundle_manifest, validate_bundle_verification
 
 
 class BundleTests(unittest.TestCase):
@@ -60,10 +60,42 @@ class BundleTests(unittest.TestCase):
             manifest = create_bundle_manifest([str(path)])
         self.assertEqual(manifest["artifacts"][0]["path"], "policy.toml")
 
+    def test_verify_bundle_manifest_detects_mismatch(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            artifact = temp / "report.md"
+            artifact.write_text("# Report\n", encoding="utf-8", newline="\n")
+            manifest = create_bundle_manifest([str(artifact)], base_dir=str(temp))
+            artifact.write_text("# Changed\n", encoding="utf-8", newline="\n")
+
+            verification = verify_bundle_manifest(manifest, base_dir=str(temp))
+
+        self.assertEqual(validate_bundle_verification(verification), [])
+        self.assertEqual(verification["summary"]["status"], "fail")
+        self.assertEqual(verification["summary"]["mismatched_count"], 1)
+        self.assertEqual(verification["results"][0]["status"], "mismatch")
+
+    def test_verify_bundle_manifest_rejects_path_traversal(self):
+        manifest = {
+            "metadata": {"name": "bad"},
+            "artifacts": [
+                {
+                    "path": "../outside.txt",
+                    "role": "artifact",
+                    "size_bytes": 1,
+                    "sha256": "a" * 64,
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            verification = verify_bundle_manifest(manifest, base_dir=temp_dir)
+        self.assertEqual(verification["results"][0]["status"], "missing")
+
     def test_classifies_reports_and_policies(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)
             report = temp / "report.json"
+            comparison = temp / "comparison.json"
             report.write_text(
                 json.dumps(
                     {
@@ -75,9 +107,25 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            comparison.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-05-31T10:00:00+00:00",
+                        "summary": {},
+                        "regressions": [],
+                        "improvements": [],
+                        "neutral_changes": [],
+                        "added": [],
+                        "removed": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
             policy = temp / "policy.toml"
             policy.write_text("[[checks]]\nid = \"x\"\n", encoding="utf-8")
             self.assertEqual(classify_artifact(report), "report")
+            self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(policy), "policy")
 
 

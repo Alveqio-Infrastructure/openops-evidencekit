@@ -56,6 +56,7 @@ Create a hash manifest for the files you plan to share:
 
 ```powershell
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 ```
 
 Merge evidence from multiple sources:

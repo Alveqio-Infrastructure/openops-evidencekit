@@ -53,3 +53,5 @@ jobs:
           PYTHONPATH=src python -m openops_evidence validate -i report.comparison.json -t comparison
           PYTHONPATH=src python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.comparison.json report.local.md readiness.bookstack.md -o evidence-bundle.manifest.json
           PYTHONPATH=src python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
+          PYTHONPATH=src python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
+          PYTHONPATH=src python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification

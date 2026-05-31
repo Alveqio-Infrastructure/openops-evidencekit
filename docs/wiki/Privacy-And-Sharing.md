@@ -7,6 +7,7 @@ Before sharing:
 ```powershell
 python -m openops_evidence redact -i evidence.merged.json --redact-hostnames -o evidence.redacted.json
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.local.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 ```
 
 Then manually review the redacted file for:

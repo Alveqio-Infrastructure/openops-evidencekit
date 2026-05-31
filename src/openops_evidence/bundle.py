@@ -6,7 +6,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from .schema import validate_evidence, validate_report
+from .schema import (
+    validate_bundle_verification,
+    validate_evidence,
+    validate_report,
+    validate_report_comparison,
+)
 
 
 def create_bundle_manifest(
@@ -27,6 +32,30 @@ def create_bundle_manifest(
             "artifact_count": len(artifacts),
         },
         "artifacts": artifacts,
+    }
+
+
+def verify_bundle_manifest(manifest: dict[str, Any], base_dir: str | None = None) -> dict[str, Any]:
+    base = Path(base_dir).resolve() if base_dir else Path.cwd().resolve()
+    results = [_verify_artifact(artifact, base) for artifact in manifest.get("artifacts", [])]
+    missing = [item for item in results if item["status"] == "missing"]
+    mismatched = [item for item in results if item["status"] == "mismatch"]
+    verified = [item for item in results if item["status"] == "verified"]
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "manifest_name": manifest.get("metadata", {}).get("name"),
+            "base_dir": str(base),
+        },
+        "summary": {
+            "status": "fail" if missing or mismatched else "pass",
+            "artifacts_total": len(results),
+            "verified_count": len(verified),
+            "missing_count": len(missing),
+            "mismatched_count": len(mismatched),
+        },
+        "results": results,
     }
 
 
@@ -57,6 +86,10 @@ def classify_artifact(path: Path) -> str:
             return "report"
         if _looks_like_bundle_manifest(document):
             return "bundle-manifest"
+        if validate_bundle_verification(document) == []:
+            return "bundle-verification"
+        if validate_report_comparison(document) == []:
+            return "report-comparison"
         return "json"
     if suffix == ".toml":
         return "policy"
@@ -65,6 +98,48 @@ def classify_artifact(path: Path) -> str:
     if suffix in {".html", ".htm"}:
         return "report-html"
     return "artifact"
+
+
+def _verify_artifact(artifact: dict[str, Any], base_dir: Path) -> dict[str, Any]:
+    display_path = str(artifact.get("path") or "")
+    expected_size = artifact.get("size_bytes")
+    expected_sha256 = artifact.get("sha256")
+    result = {
+        "path": display_path,
+        "role": artifact.get("role"),
+        "expected_size_bytes": expected_size,
+        "expected_sha256": expected_sha256,
+        "actual_size_bytes": None,
+        "actual_sha256": None,
+        "status": "missing",
+    }
+    path = _resolve_manifest_path(display_path, base_dir)
+    if path is None or not path.is_file():
+        return result
+    actual_size = path.stat().st_size
+    actual_sha256 = _sha256(path)
+    result["actual_size_bytes"] = actual_size
+    result["actual_sha256"] = actual_sha256
+    result["status"] = (
+        "verified"
+        if actual_size == expected_size and actual_sha256 == expected_sha256
+        else "mismatch"
+    )
+    return result
+
+
+def _resolve_manifest_path(path: str, base_dir: Path) -> Path | None:
+    if not path:
+        return None
+    candidate = Path(path)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        return None
+    resolved = (base_dir / candidate).resolve()
+    try:
+        resolved.relative_to(base_dir)
+    except ValueError:
+        return None
+    return resolved
 
 
 def _display_path(path: Path, base_dir: Path | None) -> str:

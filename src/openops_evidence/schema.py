@@ -63,6 +63,25 @@ def validate_bundle_manifest(document: Any) -> list[str]:
     return errors
 
 
+def validate_bundle_verification(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Bundle verification must be a JSON object."]
+    _require_string(document, "schema_version", errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "results", errors)
+    for index, result in enumerate(document.get("results", [])):
+        if not isinstance(result, dict):
+            errors.append(f"results[{index}] must be an object.")
+            continue
+        prefix = f"results[{index}]."
+        _require_string(result, "path", errors, prefix=prefix)
+        _require_string(result, "status", errors, prefix=prefix)
+    return errors
+
+
 def validate_report_comparison(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

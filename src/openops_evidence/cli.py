@@ -6,7 +6,7 @@ from importlib import resources
 from pathlib import Path
 
 from . import __version__
-from .bundle import create_bundle_manifest
+from .bundle import create_bundle_manifest, verify_bundle_manifest
 from .compare import compare_reports, render_comparison_markdown
 from .collectors import (
     collect_borg_archives,
@@ -28,6 +28,7 @@ from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
 from .schema import (
     validate_bundle_manifest,
+    validate_bundle_verification,
     validate_evidence,
     validate_report,
     validate_report_comparison,
@@ -138,13 +139,19 @@ def build_parser() -> argparse.ArgumentParser:
     manifest.add_argument("--base-dir")
     manifest.add_argument("-o", "--output", default="-")
     manifest.set_defaults(func=cmd_bundle_manifest)
+    verify = bundle_sub.add_parser("verify", help="Verify artifact hashes from a bundle manifest")
+    verify.add_argument("manifest")
+    verify.add_argument("--base-dir")
+    verify.add_argument("--fail-on-mismatch", action="store_true")
+    verify.add_argument("-o", "--output", default="-")
+    verify.set_defaults(func=cmd_bundle_verify)
 
     validate = sub.add_parser("validate", help="Validate evidence, report, bundle, or comparison JSON")
     validate.add_argument("-i", "--input", required=True)
     validate.add_argument(
         "-t",
         "--type",
-        choices=["evidence", "report", "bundle", "comparison"],
+        choices=["evidence", "report", "bundle", "bundle-verification", "comparison"],
         default="evidence",
     )
     validate.set_defaults(func=cmd_validate)
@@ -282,12 +289,26 @@ def cmd_bundle_manifest(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_bundle_verify(args: argparse.Namespace) -> int:
+    manifest = load_json(args.manifest)
+    errors = validate_bundle_manifest(manifest)
+    if errors:
+        raise UserFacingError("Bundle manifest validation failed:\n- " + "\n- ".join(errors))
+    verification = verify_bundle_manifest(manifest, base_dir=args.base_dir)
+    write_text(args.output, dump_json(verification))
+    if args.fail_on_mismatch and verification["summary"]["status"] == "fail":
+        return 1
+    return 0
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     document = load_json(args.input)
     if args.type == "report":
         errors = validate_report(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
+    elif args.type == "bundle-verification":
+        errors = validate_bundle_verification(document)
     elif args.type == "comparison":
         errors = validate_report_comparison(document)
     else:

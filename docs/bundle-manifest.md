@@ -34,6 +34,19 @@ python -m openops_evidence bundle manifest out/evidence.redacted.json out/report
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 ```
 
+## Verify A Bundle
+
+After moving or sharing artifacts, verify that the files still match the
+manifest:
+
+```powershell
+python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
+python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
+```
+
+Use `--fail-on-mismatch` in CI when missing or changed bundle artifacts should
+fail the job.
+
 ## Manifest Shape
 
 ```json

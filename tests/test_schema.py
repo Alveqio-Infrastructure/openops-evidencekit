@@ -2,6 +2,7 @@ import unittest
 
 from openops_evidence.schema import (
     validate_bundle_manifest,
+    validate_bundle_verification,
     validate_evidence,
     validate_report,
     validate_report_comparison,
@@ -76,6 +77,18 @@ class SchemaTests(unittest.TestCase):
             }
         )
         self.assertIn("artifacts[0].sha256 must be a lowercase SHA-256 hex digest.", errors)
+
+    def test_valid_bundle_verification(self):
+        errors = validate_bundle_verification(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "metadata": {},
+                "summary": {},
+                "results": [{"path": "evidence.json", "status": "verified"}],
+            }
+        )
+        self.assertEqual(errors, [])
 
     def test_valid_report_comparison(self):
         errors = validate_report_comparison(

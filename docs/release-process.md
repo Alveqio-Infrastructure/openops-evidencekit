@@ -34,6 +34,8 @@ python -m openops_evidence report -i report.local.json -f markdown -o report.loc
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.comparison.json report.local.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
+python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
+python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
 ```
 
 Then inspect:
@@ -48,8 +50,8 @@ Then inspect:
 1. Update `CHANGELOG.md`.
 2. Confirm sample artifacts match the current schema.
 3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`,
-   `schemas/bundle-manifest.schema.json`, and
-   `schemas/report-comparison.schema.json` are still aligned with generated
+   `schemas/bundle-manifest.schema.json`, `schemas/bundle-verification.schema.json`,
+   and `schemas/report-comparison.schema.json` are still aligned with generated
    output.
 4. Run the pre-release checks.
 5. Create a signed git tag when signing is available.

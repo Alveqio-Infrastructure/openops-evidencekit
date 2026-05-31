@@ -32,6 +32,8 @@ python -m openops_evidence compare --base report.local.json --current report.loc
 python -m openops_evidence validate -i report.comparison.json -t comparison
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.local.md readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
+python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
+python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
 ```
 
 Expected result for the baseline fixture:
