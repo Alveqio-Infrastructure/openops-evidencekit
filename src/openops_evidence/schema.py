@@ -354,6 +354,69 @@ def validate_scope_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_service_catalog_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Service catalog report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "services", errors)
+    _require_list(document, "unassigned_assets", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn"}, errors, prefix="summary.")
+        for key in (
+            "services_total",
+            "services_passed",
+            "services_warn",
+            "critical_services",
+            "high_services",
+            "catalog_assets_total",
+            "evidence_assets_total",
+            "missing_catalog_assets_count",
+            "unassigned_evidence_assets_count",
+            "missing_domains_count",
+            "missing_runbooks_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, service in enumerate(document.get("services", [])):
+        if not isinstance(service, dict):
+            errors.append(f"services[{index}] must be an object.")
+            continue
+        prefix = f"services[{index}]."
+        _require_string(service, "id", errors, prefix=prefix)
+        _require_string(service, "name", errors, prefix=prefix)
+        _require_string(service, "owner", errors, prefix=prefix)
+        _require_enum(service, "criticality", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        _require_enum(service, "status", {"pass", "warn"}, errors, prefix=prefix)
+        for key in (
+            "contacts",
+            "assets",
+            "present_assets",
+            "missing_assets",
+            "domains",
+            "present_domains",
+            "missing_domains",
+            "runbooks",
+            "present_runbooks",
+            "missing_runbooks",
+        ):
+            _require_list(service, key, errors, prefix=prefix)
+    for index, asset in enumerate(document.get("unassigned_assets", [])):
+        if not isinstance(asset, dict):
+            errors.append(f"unassigned_assets[{index}] must be an object.")
+            continue
+        prefix = f"unassigned_assets[{index}]."
+        _require_string(asset, "id", errors, prefix=prefix)
+        for key in ("type", "hostname"):
+            _require_string_type(asset, key, errors, prefix=prefix)
+        _require_list(asset, "roles", errors, prefix=prefix)
+        _require_list(asset, "tags", errors, prefix=prefix)
+    return errors
+
+
 def _validate_drift_change(change: Any, errors: list[str], prefix: str, name_key: str) -> None:
     if not isinstance(change, dict):
         errors.append(f"{prefix[:-1]} must be an object.")

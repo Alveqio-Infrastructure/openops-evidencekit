@@ -20,6 +20,8 @@ documentation, demos, and issue reproduction.
   required and stale files.
 - `scope.sample.toml` declares a sample readiness review scope for assets and
   evidence domains.
+- `service-catalog.sample.toml` declares synthetic services, owners,
+  criticality, assets, evidence domains, runbooks, and contacts.
 
 The same policies are also bundled as package policy packs. Use
 `openops-evidence policy list` and `openops-evidence policy show <name>` after
@@ -53,9 +55,9 @@ is available.
 
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
-evidence scaffolds, scope reports, executive briefs, scorecards, history
-timelines, evidence drift reports, comparisons, action plans, ticket drafts,
-review packs, review attestations, and bundle manifests.
+evidence scaffolds, scope reports, service catalog reports, executive briefs,
+scorecards, history timelines, evidence drift reports, comparisons, action
+plans, ticket drafts, review packs, review attestations, and bundle manifests.
 Reports can also be rendered as JUnit XML for CI systems. Generated files are
 ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis

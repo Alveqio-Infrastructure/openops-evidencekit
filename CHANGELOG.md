@@ -61,3 +61,4 @@
 - Add optional evidence drift reports to generated review packs.
 - Add review attestation artifacts for manifest-bound sign-off records.
 - Add a README gallery image showing common generated report artifacts.
+- Add service catalog reports for service ownership and evidence coverage.

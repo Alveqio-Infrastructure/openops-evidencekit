@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/service-catalog.schema.json",
+  "title": "OpenOps Service Catalog Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "services", "unassigned_assets"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "services_total",
+        "services_passed",
+        "services_warn",
+        "critical_services",
+        "high_services",
+        "catalog_assets_total",
+        "evidence_assets_total",
+        "missing_catalog_assets_count",
+        "unassigned_evidence_assets_count",
+        "missing_domains_count",
+        "missing_runbooks_count"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn"]
+        },
+        "services_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_services": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_services": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "catalog_assets_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_assets_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_catalog_assets_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unassigned_evidence_assets_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_domains_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_runbooks_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/service"
+      }
+    },
+    "unassigned_assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    }
+  },
+  "$defs": {
+    "criticality": {
+      "enum": ["critical", "high", "medium", "low"]
+    },
+    "status": {
+      "enum": ["pass", "warn"]
+    },
+    "string_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "name",
+        "owner",
+        "criticality",
+        "status",
+        "contacts",
+        "assets",
+        "present_assets",
+        "missing_assets",
+        "domains",
+        "present_domains",
+        "missing_domains",
+        "runbooks",
+        "present_runbooks",
+        "missing_runbooks"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "criticality": {
+          "$ref": "#/$defs/criticality"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "contacts": {
+          "$ref": "#/$defs/string_list"
+        },
+        "assets": {
+          "$ref": "#/$defs/string_list"
+        },
+        "present_assets": {
+          "$ref": "#/$defs/string_list"
+        },
+        "missing_assets": {
+          "$ref": "#/$defs/string_list"
+        },
+        "domains": {
+          "$ref": "#/$defs/string_list"
+        },
+        "present_domains": {
+          "$ref": "#/$defs/string_list"
+        },
+        "missing_domains": {
+          "$ref": "#/$defs/string_list"
+        },
+        "runbooks": {
+          "$ref": "#/$defs/string_list"
+        },
+        "present_runbooks": {
+          "$ref": "#/$defs/string_list"
+        },
+        "missing_runbooks": {
+          "$ref": "#/$defs/string_list"
+        }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "type", "hostname", "roles", "tags"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "roles": {
+          "$ref": "#/$defs/string_list"
+        },
+        "tags": {
+          "$ref": "#/$defs/string_list"
+        }
+      }
+    }
+  }
+}

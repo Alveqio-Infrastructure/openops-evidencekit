@@ -20,9 +20,11 @@ class CliWorkflowTests(unittest.TestCase):
             workflow = temp / ".github" / "workflows" / "openops-evidence.yml"
             self.assertTrue((temp / "evidence.sample.json").is_file())
             self.assertTrue((temp / "policy.baseline.toml").is_file())
+            self.assertTrue((temp / "service-catalog.sample.toml").is_file())
             self.assertTrue(workflow.is_file())
             workflow_text = workflow.read_text(encoding="utf-8")
             self.assertIn("openops-evidence inventory evidence", workflow_text)
+            self.assertIn("openops-evidence catalog report", workflow_text)
             self.assertIn("openops-evidence questionnaire policy", workflow_text)
             self.assertIn("openops-evidence coverage report", workflow_text)
             self.assertIn("openops-evidence check", workflow_text)
@@ -53,6 +55,8 @@ class CliWorkflowTests(unittest.TestCase):
             inventory_markdown = temp / "inventory.md"
             scope_report = temp / "scope-report.json"
             scope_markdown = temp / "scope-report.md"
+            service_catalog = temp / "service-catalog.json"
+            service_catalog_markdown = temp / "service-catalog.md"
             evidence_drift = temp / "evidence-drift.json"
             evidence_drift_markdown = temp / "evidence-drift.md"
             coverage = temp / "policy-coverage.json"
@@ -138,6 +142,40 @@ class CliWorkflowTests(unittest.TestCase):
                         str(ROOT / "examples" / "scope.sample.toml"),
                         "-o",
                         str(scope_markdown),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(main(["catalog", "validate", str(ROOT / "examples" / "service-catalog.sample.toml")]), 0)
+            self.assertEqual(
+                main(
+                    [
+                        "catalog",
+                        "report",
+                        "-i",
+                        str(merged),
+                        "-c",
+                        str(ROOT / "examples" / "service-catalog.sample.toml"),
+                        "-f",
+                        "json",
+                        "-o",
+                        str(service_catalog),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(main(["validate", "-i", str(service_catalog), "-t", "service-catalog"]), 0)
+            self.assertEqual(
+                main(
+                    [
+                        "catalog",
+                        "report",
+                        "-i",
+                        str(merged),
+                        "-c",
+                        str(ROOT / "examples" / "service-catalog.sample.toml"),
+                        "-o",
+                        str(service_catalog_markdown),
                     ]
                 ),
                 0,
@@ -304,6 +342,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(merged),
                         str(inventory),
                         str(scope_report),
+                        str(service_catalog),
                         str(evidence_drift),
                         str(questionnaire),
                         str(coverage),
@@ -405,6 +444,7 @@ class CliWorkflowTests(unittest.TestCase):
             questionnaire_data = json.loads(questionnaire.read_text(encoding="utf-8"))
             coverage_data = json.loads(coverage.read_text(encoding="utf-8"))
             scope_data = json.loads(scope_report.read_text(encoding="utf-8"))
+            service_catalog_data = json.loads(service_catalog.read_text(encoding="utf-8"))
             evidence_drift_data = json.loads(evidence_drift.read_text(encoding="utf-8"))
             gate_data = json.loads(gate.read_text(encoding="utf-8"))
             badge_data = json.loads(badge.read_text(encoding="utf-8"))
@@ -422,6 +462,8 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(coverage_data["summary"]["coverage_percent"], 100)
             self.assertEqual(scope_data["summary"]["status"], "warn")
             self.assertEqual(scope_data["summary"]["missing_in_scope_assets"], 1)
+            self.assertEqual(service_catalog_data["summary"]["status"], "warn")
+            self.assertEqual(service_catalog_data["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(evidence_drift_data["summary"]["status"], "warn")
             self.assertGreater(evidence_drift_data["summary"]["asset_changes_count"], 0)
             self.assertEqual(gate_data["summary"]["status"], "pass")
@@ -429,9 +471,9 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(brief_data["summary"]["health"], "on_track")
             self.assertEqual(scorecard_data["summary"]["domains_total"], 6)
             self.assertEqual(history_data["summary"]["latest_score"], 100)
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 16)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 17)
             self.assertEqual(attestation_data["summary"]["status"], "warn")
-            self.assertEqual(attestation_data["manifest"]["artifact_count"], 16)
+            self.assertEqual(attestation_data["manifest"]["artifact_count"], 17)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -451,6 +493,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("<svg", history_svg.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Evidence Inventory", inventory_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Scope Report", scope_markdown.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Service Catalog Report", service_catalog_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Evidence Drift", evidence_drift_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Review Attestation", attestation_markdown.read_text(encoding="utf-8"))
 

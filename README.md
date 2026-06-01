@@ -29,7 +29,8 @@ Automation exit codes are documented in [docs/exit-codes.md](docs/exit-codes.md)
 The same report can be rendered for people, CI systems, dashboards, and
 handoff bundles: Markdown or BookStack pages, HTML, JUnit XML, SARIF JSON,
 Prometheus text metrics, a Shields-compatible badge, executive briefs, action
-plans, domain scorecards, tickets, and signed evidence bundles.
+plans, service catalog reports, domain scorecards, tickets, and signed evidence
+bundles.
 
 ### Report Artifact Gallery
 
@@ -57,6 +58,8 @@ python -m openops_evidence questionnaire policy examples/policy.baseline.toml -o
 python -m openops_evidence inventory evidence -i evidence.local.json -o inventory.md
 python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i evidence.local.json -s examples/scope.sample.toml -o scope-report.md
+python -m openops_evidence catalog validate examples/service-catalog.sample.toml
+python -m openops_evidence catalog report -i evidence.local.json -c examples/service-catalog.sample.toml -o service-catalog.md
 python -m openops_evidence evidence diff --base examples/evidence.previous.json --current evidence.local.json -f markdown -o evidence-drift.md
 python -m openops_evidence coverage report -i evidence.local.json -p examples/policy.baseline.toml -o policy-coverage.md
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
@@ -71,7 +74,7 @@ python -m openops_evidence report -i report.local.json -f markdown -o report.loc
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
 python -m openops_evidence report -i report.local.json -f prometheus -o report.local.prom
-python -m openops_evidence review create -i evidence.local.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
+python -m openops_evidence review create -i evidence.local.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --catalog examples/service-catalog.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
 python -m openops_evidence attest review --manifest review-pack/manifest.json --report review-pack/report.json --gate review-pack/gate-result.json --scope-report review-pack/scope-report.json --evidence-drift review-pack/evidence-drift.json --privacy-scan review-pack/privacy-scan.json --approver "Example Reviewer" --role "Operations" --statement "Reviewed generated artifacts for internal handoff." -o review-attestation.json
 ```
 
@@ -214,6 +217,8 @@ Use `inventory evidence` when raw evidence should become a Wiki- or
 spreadsheet-friendly asset and signal-domain inventory.
 Use `scope report` when the assessment needs explicit in-scope, out-of-scope,
 missing, and unclassified evidence boundaries.
+Use `catalog report` when service ownership, criticality, assets, evidence
+domains, and runbook coverage should be reviewed together.
 Use `evidence diff` when recurring runs should show asset and signal-domain
 drift before the policy result is interpreted.
 
@@ -235,6 +240,7 @@ Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence
 Evidence scaffolds are described in [docs/evidence-scaffold.md](docs/evidence-scaffold.md).
 Evidence drift reports are described in [docs/evidence-drift.md](docs/evidence-drift.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
+Service catalog reports are described in [docs/service-catalog.md](docs/service-catalog.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
 Review attestations are described in [docs/review-attestation.md](docs/review-attestation.md).
 Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).

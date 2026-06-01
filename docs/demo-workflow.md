@@ -38,6 +38,10 @@ python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i evidence.redacted.json -s examples/scope.sample.toml -f json -o scope-report.json
 python -m openops_evidence validate -i scope-report.json -t scope-report
 python -m openops_evidence scope report -i evidence.redacted.json -s examples/scope.sample.toml -o scope-report.md
+python -m openops_evidence catalog validate examples/service-catalog.sample.toml
+python -m openops_evidence catalog report -i evidence.redacted.json -c examples/service-catalog.sample.toml -f json -o service-catalog.json
+python -m openops_evidence validate -i service-catalog.json -t service-catalog
+python -m openops_evidence catalog report -i evidence.redacted.json -c examples/service-catalog.sample.toml -o service-catalog.md
 python -m openops_evidence evidence diff --base examples/evidence.previous.json --current evidence.redacted.json -f json -o evidence-drift.json
 python -m openops_evidence validate -i evidence-drift.json -t evidence-drift
 python -m openops_evidence evidence diff --base examples/evidence.previous.json --current evidence.redacted.json -f markdown -o evidence-drift.md
@@ -70,7 +74,7 @@ python -m openops_evidence report -i report.local.json -f junit -o report.local.
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
 python -m openops_evidence report -i report.local.json -f prometheus -o report.local.prom
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
-python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
+python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --catalog examples/service-catalog.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
 python -m openops_evidence compare --base report.local.json --current report.local.json -o report.comparison.json
 python -m openops_evidence compare --base report.local.json --current report.local.json -f markdown -o report.comparison.md
@@ -79,7 +83,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
 python -m openops_evidence ticket export -i action-plan.json -o action-tickets
-python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json scope-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json scope-report.json service-catalog.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification

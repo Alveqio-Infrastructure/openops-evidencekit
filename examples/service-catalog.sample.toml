@@ -1,0 +1,33 @@
+[metadata]
+name = "Example production service catalog"
+owner = "Example Operations Team"
+
+[[services]]
+id = "public-web"
+name = "Public website"
+owner = "platform"
+criticality = "high"
+assets = ["web-01"]
+domains = ["backup", "monitoring", "tls", "docs"]
+runbooks = ["backup-restore", "incident-escalation"]
+contacts = ["platform@example.invalid"]
+
+[[services]]
+id = "backup-platform"
+name = "Backup repository"
+owner = "backup"
+criticality = "critical"
+assets = ["backup-repo-01"]
+domains = ["backup", "docs"]
+runbooks = ["backup-restore"]
+contacts = ["backup@example.invalid"]
+
+[[services]]
+id = "database"
+name = "Primary database"
+owner = "platform"
+criticality = "critical"
+assets = ["db-01"]
+domains = ["backup", "monitoring", "docs"]
+runbooks = ["database-restore"]
+contacts = ["database@example.invalid"]

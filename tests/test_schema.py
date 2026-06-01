@@ -20,6 +20,7 @@ from openops_evidence.schema import (
     validate_report_history,
     validate_review_attestation,
     validate_scorecard,
+    validate_service_catalog_report,
     validate_scope_report,
 )
 
@@ -732,6 +733,50 @@ class SchemaTests(unittest.TestCase):
                         "reason": "Reviewed separately.",
                     }
                 ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_service_catalog_report(self):
+        errors = validate_service_catalog_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "services_total": 1,
+                    "services_passed": 0,
+                    "services_warn": 1,
+                    "critical_services": 1,
+                    "high_services": 0,
+                    "catalog_assets_total": 1,
+                    "evidence_assets_total": 0,
+                    "missing_catalog_assets_count": 1,
+                    "unassigned_evidence_assets_count": 0,
+                    "missing_domains_count": 0,
+                    "missing_runbooks_count": 1,
+                },
+                "services": [
+                    {
+                        "id": "database",
+                        "name": "Primary database",
+                        "owner": "platform",
+                        "criticality": "critical",
+                        "status": "warn",
+                        "contacts": ["database@example.invalid"],
+                        "assets": ["db-01"],
+                        "present_assets": [],
+                        "missing_assets": ["db-01"],
+                        "domains": ["backup"],
+                        "present_domains": ["backup"],
+                        "missing_domains": [],
+                        "runbooks": ["database-restore"],
+                        "present_runbooks": [],
+                        "missing_runbooks": ["database-restore"],
+                    }
+                ],
+                "unassigned_assets": [],
             }
         )
         self.assertEqual(errors, [])

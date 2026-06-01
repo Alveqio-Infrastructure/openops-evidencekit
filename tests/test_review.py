@@ -151,6 +151,65 @@ class ReviewPackTests(unittest.TestCase):
             )
             self.assertTrue((fail_pack / "manifest.json").is_file())
 
+    def test_review_create_can_include_service_catalog_report(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            pack = temp / "review-pack"
+            fail_pack = temp / "review-pack-fail"
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "--catalog",
+                        str(ROOT / "examples" / "service-catalog.sample.toml"),
+                        "-o",
+                        str(pack),
+                    ]
+                ),
+                0,
+            )
+
+            self.assertTrue((pack / "service-catalog.json").is_file())
+            self.assertTrue((pack / "service-catalog.md").is_file())
+            self.assertTrue((pack / "service-catalog.csv").is_file())
+            self.assertEqual(main(["validate", "-i", str(pack / "service-catalog.json"), "-t", "service-catalog"]), 0)
+
+            manifest = json.loads((pack / "manifest.json").read_text(encoding="utf-8"))
+            readme = (pack / "README.md").read_text(encoding="utf-8")
+            index = (pack / "index.html").read_text(encoding="utf-8")
+            service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["metadata"]["artifact_count"], 33)
+            self.assertEqual(service_catalog["summary"]["status"], "warn")
+            self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
+            self.assertIn("service-catalog.md", readme)
+            self.assertIn("Service Catalog", index)
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "--catalog",
+                        str(ROOT / "examples" / "service-catalog.sample.toml"),
+                        "--fail-on-catalog-warn",
+                        "-o",
+                        str(fail_pack),
+                    ]
+                ),
+                1,
+            )
+            self.assertTrue((fail_pack / "manifest.json").is_file())
+
     def test_review_create_can_include_evidence_drift_report(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)

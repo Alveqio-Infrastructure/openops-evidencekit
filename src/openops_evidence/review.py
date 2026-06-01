@@ -9,6 +9,11 @@ from .actions import create_action_plan, render_action_plan_csv, render_action_p
 from .badges import create_report_badge
 from .briefs import create_report_brief, render_brief_markdown
 from .bundle import create_bundle_manifest
+from .catalog import (
+    create_service_catalog_report,
+    render_service_catalog_csv,
+    render_service_catalog_markdown,
+)
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
@@ -41,6 +46,7 @@ def create_review_pack(
     *,
     waiver_document: dict[str, Any] | None = None,
     scope_document: dict[str, Any] | None = None,
+    catalog_document: dict[str, Any] | None = None,
     base_evidence: dict[str, Any] | None = None,
     name: str = "openops-review-pack",
     max_findings: int = 5,
@@ -58,6 +64,7 @@ def create_review_pack(
     inventory = create_evidence_inventory(evidence)
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
+    service_catalog = create_service_catalog_report(evidence, catalog_document) if catalog_document is not None else None
     policy_matrix = create_policy_matrix(checks)
     coverage = create_coverage_report(evidence, checks)
     scorecard = create_report_scorecard(report)
@@ -99,6 +106,25 @@ def create_review_pack(
         add_artifact("scope-report.json", dump_json(scope_report), "Scope report", "Machine-readable scope boundary report.")
         add_artifact("scope-report.md", render_scope_markdown(scope_report), "Scope report", "Human-readable scope boundary report.")
         add_artifact("scope-report.csv", render_scope_csv(scope_report), "Scope report", "Spreadsheet-friendly scope boundary report.")
+    if service_catalog is not None:
+        add_artifact(
+            "service-catalog.json",
+            dump_json(service_catalog),
+            "Service catalog",
+            "Machine-readable service ownership and evidence coverage report.",
+        )
+        add_artifact(
+            "service-catalog.md",
+            render_service_catalog_markdown(service_catalog),
+            "Service catalog",
+            "Human-readable service ownership and evidence coverage report.",
+        )
+        add_artifact(
+            "service-catalog.csv",
+            render_service_catalog_csv(service_catalog),
+            "Service catalog",
+            "Spreadsheet-friendly service catalog report.",
+        )
     add_artifact("policy-matrix.json", dump_json(policy_matrix), "Policy matrix", "Machine-readable policy coverage map.")
     add_artifact("policy-matrix.md", render_policy_matrix_markdown(policy_matrix), "Policy matrix", "Reviewable policy coverage table.")
     add_artifact("policy-matrix.csv", render_policy_matrix_csv(policy_matrix), "Policy matrix", "Spreadsheet-friendly policy coverage export.")
@@ -157,6 +183,7 @@ def create_review_pack(
         "gate": gate,
         "evidence_drift": evidence_drift,
         "scope_report": scope_report,
+        "service_catalog": service_catalog,
         "privacy_scan": privacy_scan,
         "manifest": manifest,
     }
@@ -178,6 +205,8 @@ def render_review_pack_readme(
     ]
     if any(artifact.get("filename") == "scope-report.md" for artifact in artifacts):
         suggested_steps.append("Check `scope-report.md` for in-scope, out-of-scope, and unclassified evidence.")
+    if any(artifact.get("filename") == "service-catalog.md" for artifact in artifacts):
+        suggested_steps.append("Review `service-catalog.md` for service ownership, criticality, assets, and runbook gaps.")
     if any(artifact.get("filename") == "evidence-drift.md" for artifact in artifacts):
         suggested_steps.append("Review `evidence-drift.md` for asset and signal-domain changes since the base evidence.")
     suggested_steps.extend(
@@ -394,6 +423,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("executive-brief.md", "Executive Brief"),
         ("scorecard.html", "Scorecard"),
         ("scope-report.md", "Scope Report"),
+        ("service-catalog.md", "Service Catalog"),
         ("evidence-drift.md", "Evidence Drift"),
         ("report.md", "Report"),
         ("action-plan.md", "Action Plan"),

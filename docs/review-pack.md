@@ -4,7 +4,7 @@
 readiness handoff folder.
 
 ```powershell
-python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml --scope scope.toml --base-evidence previous-evidence.json -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
+python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml --scope scope.toml --catalog service-catalog.toml --base-evidence previous-evidence.json -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
 ```
 
 The command evaluates the policy and writes the common outputs that different
@@ -20,6 +20,7 @@ audiences need:
 | `inventory.json` / `inventory.md` / `inventory.csv` | Asset and signal-domain inventory from evidence. |
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
 | `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
+| `service-catalog.json` / `service-catalog.md` / `service-catalog.csv` | Optional service ownership and evidence coverage report when `--catalog` is provided. |
 | `policy-matrix.json` / `policy-matrix.md` / `policy-matrix.csv` | Coverage map for the policy that was evaluated. |
 | `policy-coverage.json` / `policy-coverage.md` / `policy-coverage.csv` | Evidence-domain coverage and gap analysis for the evaluated policy. |
 | `scorecard.json` / `scorecard.md` / `scorecard.csv` / `scorecard.html` | Readiness summary grouped by operational evidence area. |
@@ -60,6 +61,10 @@ python -m openops_evidence review create -i evidence.redacted.json -p policy.bas
 When `--scope` is provided, add `--fail-on-scope-warn` if unclassified evidence,
 out-of-scope evidence, or missing required scope items should fail the review
 pack command after the pack has been written.
+
+When `--catalog` is provided, add `--fail-on-catalog-warn` if missing service
+assets, evidence domains, runbooks, or unassigned evidence assets should fail
+the review pack command after the pack has been written.
 
 When `--base-evidence` is provided, add `--fail-on-drift` if asset or
 signal-domain drift should fail the review pack command after the pack has been

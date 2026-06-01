@@ -32,6 +32,9 @@ readiness-badge.json
 /scope-report.json
 /scope-report.md
 /scope-report.csv
+/service-catalog.json
+/service-catalog.md
+/service-catalog.csv
 /questionnaire.*
 /evidence-questionnaire.*
 /executive-brief.json

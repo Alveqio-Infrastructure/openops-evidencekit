@@ -51,6 +51,7 @@ having to deploy a platform first.
 - SVG trend rendering for readiness history dashboards.
 - Executive brief export for stakeholder handoff.
 - Scope report export for explicit in-scope and out-of-scope boundaries.
+- Service catalog reports for service ownership and evidence coverage.
 - Review-pack generation for complete readiness handoff folders.
 - Review attestation export for manifest-bound sign-off records.
 - Domain scorecard export for operational area summaries.

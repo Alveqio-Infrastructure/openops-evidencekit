@@ -20,6 +20,12 @@ from .bundle import (
     verify_bundle_manifest,
     verify_bundle_signature,
 )
+from .catalog import (
+    create_service_catalog_report,
+    render_service_catalog_csv,
+    render_service_catalog_markdown,
+    validate_catalog_document,
+)
 from .compare import compare_reports, render_comparison_markdown
 from .collectors import (
     collect_borg_archives,
@@ -83,6 +89,7 @@ from .schema import (
     validate_report_history,
     validate_review_attestation,
     validate_scorecard,
+    validate_service_catalog_report,
     validate_scope_report,
 )
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
@@ -249,6 +256,19 @@ def build_parser() -> argparse.ArgumentParser:
     scope_report.add_argument("-o", "--output", default="-")
     scope_report.set_defaults(func=cmd_scope_report)
 
+    catalog = sub.add_parser("catalog", help="Check a service catalog against evidence")
+    catalog_sub = catalog.add_subparsers(required=True)
+    catalog_validate = catalog_sub.add_parser("validate", help="Validate a service catalog TOML or JSON file")
+    catalog_validate.add_argument("path")
+    catalog_validate.set_defaults(func=cmd_catalog_validate)
+    catalog_report = catalog_sub.add_parser("report", help="Render service ownership and evidence coverage")
+    catalog_report.add_argument("-i", "--input", required=True)
+    catalog_report.add_argument("-c", "--catalog", required=True)
+    catalog_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    catalog_report.add_argument("--fail-on-warn", action="store_true")
+    catalog_report.add_argument("-o", "--output", default="-")
+    catalog_report.set_defaults(func=cmd_catalog_report)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -321,6 +341,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--name", default="openops-review-pack")
     review_create.add_argument("--waivers", help="TOML or JSON file with accepted risk waivers")
     review_create.add_argument("--scope", help="TOML or JSON file declaring in-scope and out-of-scope evidence")
+    review_create.add_argument("--catalog", help="TOML or JSON file declaring service ownership and expected evidence")
     review_create.add_argument("--base-evidence", help="Previous evidence JSON file for optional drift reporting")
     review_create.add_argument("--max-findings", type=int, default=5)
     review_create.add_argument("--min-score", type=int)
@@ -332,6 +353,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-gate", action="store_true")
     review_create.add_argument("--fail-on-drift", action="store_true")
     review_create.add_argument("--fail-on-scope-warn", action="store_true")
+    review_create.add_argument("--fail-on-catalog-warn", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
 
@@ -432,6 +454,7 @@ def build_parser() -> argparse.ArgumentParser:
             "history",
             "scorecard",
             "scope-report",
+            "service-catalog",
             "bundle",
             "bundle-verification",
             "bundle-signature",
@@ -701,6 +724,40 @@ def cmd_scope_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_catalog_validate(args: argparse.Namespace) -> int:
+    catalog_raw = load_structured(args.path)
+    errors = validate_catalog_document(catalog_raw)
+    if errors:
+        print("invalid")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+    print("valid")
+    return 0
+
+
+def cmd_catalog_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    catalog_raw = load_structured(args.catalog)
+    catalog_errors = validate_catalog_document(catalog_raw)
+    if catalog_errors:
+        raise UserFacingError("Service catalog validation failed:\n- " + "\n- ".join(catalog_errors))
+    report = create_service_catalog_report(evidence, catalog_raw)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_service_catalog_csv(report)
+    else:
+        rendered = render_service_catalog_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] == "warn":
+        return 1
+    return 0
+
+
 def cmd_evidence_diff(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -892,6 +949,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         scope_errors = validate_scope_document(scope_document)
         if scope_errors:
             raise UserFacingError("Scope validation failed:\n- " + "\n- ".join(scope_errors))
+    catalog_document = None
+    if args.catalog:
+        catalog_document = load_structured(args.catalog)
+        catalog_errors = validate_catalog_document(catalog_document)
+        if catalog_errors:
+            raise UserFacingError("Service catalog validation failed:\n- " + "\n- ".join(catalog_errors))
     base_evidence = None
     if args.base_evidence:
         base_evidence = load_json(args.base_evidence)
@@ -907,6 +970,7 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         args.output_dir,
         waiver_document=waiver_document,
         scope_document=scope_document,
+        catalog_document=catalog_document,
         base_evidence=base_evidence,
         name=args.name,
         max_findings=args.max_findings,
@@ -944,6 +1008,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         args.fail_on_scope_warn
         and pack.get("scope_report") is not None
         and pack["scope_report"]["summary"]["status"] == "warn"
+    ):
+        return 1
+    if (
+        args.fail_on_catalog_warn
+        and pack.get("service_catalog") is not None
+        and pack["service_catalog"]["summary"]["status"] == "warn"
     ):
         return 1
     return 0
@@ -1132,6 +1202,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_scorecard(document)
     elif args.type == "scope-report":
         errors = validate_scope_report(document)
+    elif args.type == "service-catalog":
+        errors = validate_service_catalog_report(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":
@@ -1198,8 +1270,10 @@ def cmd_init(args: argparse.Namespace) -> int:
     policy = read_policy_pack(args.policy_pack)
     policy_filename = f"policy.{pack['name']}.toml"
     evidence = resources.files(package).joinpath("evidence.sample.json").read_text(encoding="utf-8")
+    catalog = resources.files(package).joinpath("service-catalog.sample.toml").read_text(encoding="utf-8")
     (target / policy_filename).write_text(policy, encoding="utf-8")
     (target / "evidence.sample.json").write_text(evidence, encoding="utf-8")
+    (target / "service-catalog.sample.toml").write_text(catalog, encoding="utf-8")
     if args.github_actions:
         workflow = (
             resources.files(package)

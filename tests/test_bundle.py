@@ -205,6 +205,7 @@ class BundleTests(unittest.TestCase):
             attestation = temp / "review-attestation.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
+            service_catalog = temp / "service-catalog.json"
             sarif = temp / "report.sarif.json"
             prometheus = temp / "report.prom"
             svg = temp / "history.svg"
@@ -540,6 +541,50 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            service_catalog.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "services_total": 1,
+                            "services_passed": 1,
+                            "services_warn": 0,
+                            "critical_services": 0,
+                            "high_services": 1,
+                            "catalog_assets_total": 1,
+                            "evidence_assets_total": 1,
+                            "missing_catalog_assets_count": 0,
+                            "unassigned_evidence_assets_count": 0,
+                            "missing_domains_count": 0,
+                            "missing_runbooks_count": 0,
+                        },
+                        "services": [
+                            {
+                                "id": "public-web",
+                                "name": "Public website",
+                                "owner": "platform",
+                                "criticality": "high",
+                                "status": "pass",
+                                "contacts": ["platform@example.invalid"],
+                                "assets": ["web-01"],
+                                "present_assets": ["web-01"],
+                                "missing_assets": [],
+                                "domains": ["backup"],
+                                "present_domains": ["backup"],
+                                "missing_domains": [],
+                                "runbooks": [],
+                                "present_runbooks": [],
+                                "missing_runbooks": [],
+                            }
+                        ],
+                        "unassigned_assets": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
             comparison.write_text(
                 json.dumps(
                     {
@@ -668,6 +713,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(attestation), "review-attestation")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
+            self.assertEqual(classify_artifact(service_catalog), "service-catalog")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(svg), "visual")
