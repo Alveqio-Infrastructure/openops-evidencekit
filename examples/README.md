@@ -46,7 +46,8 @@ policy matrices, reports, comparisons, action plans, ticket drafts, and bundle
 manifests. Reports can also be rendered as JUnit XML for CI systems. Generated
 files are ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis
-result uploads.
+result uploads. Badge JSON is available for README, portal, or dashboard status
+widgets that understand Shields-compatible endpoint output.
 Run `privacy scan` on generated sharing artifacts before attaching them to
 issues, tickets, or public discussions.
 Use `gate report` when CI should enforce score, warning, or severity thresholds

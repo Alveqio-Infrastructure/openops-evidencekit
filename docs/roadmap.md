@@ -40,6 +40,7 @@ having to deploy a platform first.
 - CI-ready machine output with stable exit codes.
 - JUnit report export for CI test-result publishing.
 - SARIF report export for review tooling.
+- Shields-compatible readiness badge export.
 - Report gates for score and finding thresholds.
 - Report comparison and regression guardrails.
 - Action plan ticket export.

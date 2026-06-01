@@ -7,6 +7,7 @@ from pathlib import Path
 
 from . import __version__
 from .actions import create_action_plan, render_action_plan_csv, render_action_plan_markdown
+from .badges import create_report_badge
 from .bundle import (
     DEFAULT_SIGNING_KEY_ENV,
     create_bundle_manifest,
@@ -47,6 +48,7 @@ from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_junit, render_markdown, render_sarif
 from .schema import (
     validate_action_plan,
+    validate_badge,
     validate_bundle_manifest,
     validate_bundle_signature,
     validate_bundle_verification,
@@ -192,6 +194,14 @@ def build_parser() -> argparse.ArgumentParser:
     gate_report.add_argument("-o", "--output", default="-")
     gate_report.set_defaults(func=cmd_gate_report)
 
+    badge = sub.add_parser("badge", help="Create status badge artifacts")
+    badge_sub = badge.add_subparsers(required=True)
+    badge_report = badge_sub.add_parser("report", help="Create a Shields-compatible badge JSON from a report")
+    badge_report.add_argument("-i", "--input", required=True)
+    badge_report.add_argument("--label", default="openops")
+    badge_report.add_argument("-o", "--output", default="-")
+    badge_report.set_defaults(func=cmd_badge_report)
+
     ticket = sub.add_parser("ticket", help="Export action plans into ticket-friendly files")
     ticket_sub = ticket.add_subparsers(required=True)
     ticket_export = ticket_sub.add_parser("export", help="Export action plan items as Markdown ticket files")
@@ -251,6 +261,7 @@ def build_parser() -> argparse.ArgumentParser:
             "report",
             "action-plan",
             "gate-result",
+            "badge",
             "policy-matrix",
             "privacy-scan",
             "bundle",
@@ -486,6 +497,16 @@ def cmd_gate_report(args: argparse.Namespace) -> int:
     return 1 if gate["summary"]["status"] == "fail" else 0
 
 
+def cmd_badge_report(args: argparse.Namespace) -> int:
+    report = load_json(args.input)
+    errors = validate_report(report)
+    if errors:
+        raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
+    badge = create_report_badge(report, label=args.label)
+    write_text(args.output, dump_json(badge))
+    return 0
+
+
 def _validate_gate_args(args: argparse.Namespace) -> None:
     if args.min_score is not None and not 0 <= args.min_score <= 100:
         raise UserFacingError("--min-score must be between 0 and 100")
@@ -586,6 +607,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_action_plan(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
+    elif args.type == "badge":
+        errors = validate_badge(document)
     elif args.type == "policy-matrix":
         errors = validate_policy_matrix(document)
     elif args.type == "privacy-scan":

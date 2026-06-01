@@ -39,3 +39,4 @@
 - Add privacy scanning for artifacts before sharing.
 - Add configurable report gates for CI thresholds.
 - Add SARIF report output for review tooling.
+- Add Shields-compatible readiness badge output.

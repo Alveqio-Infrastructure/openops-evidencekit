@@ -2,6 +2,7 @@ import unittest
 
 from openops_evidence.schema import (
     validate_action_plan,
+    validate_badge,
     validate_bundle_manifest,
     validate_bundle_signature,
     validate_bundle_verification,
@@ -411,6 +412,31 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("conditions[0].operator must be a non-empty string.", errors)
         self.assertIn("conditions[0].observed is required.", errors)
         self.assertIn("conditions[0].expected is required.", errors)
+
+    def test_valid_badge(self):
+        errors = validate_badge(
+            {
+                "schemaVersion": 1,
+                "label": "openops",
+                "message": "pass 100",
+                "color": "brightgreen",
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_badge_is_reported(self):
+        errors = validate_badge(
+            {
+                "schemaVersion": 2,
+                "label": "",
+                "message": "",
+                "color": "",
+            }
+        )
+        self.assertIn("schemaVersion must be 1.", errors)
+        self.assertIn("label must be a non-empty string.", errors)
+        self.assertIn("message must be a non-empty string.", errors)
+        self.assertIn("color must be a non-empty string.", errors)
 
     def test_valid_bundle_manifest(self):
         errors = validate_bundle_manifest(

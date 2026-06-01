@@ -215,6 +215,18 @@ def validate_gate_result(document: Any) -> list[str]:
     return errors
 
 
+def validate_badge(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Badge must be a JSON object."]
+    schema_version = document.get("schemaVersion")
+    if schema_version != 1:
+        errors.append("schemaVersion must be 1.")
+    for key in ("label", "message", "color"):
+        _require_string(document, key, errors)
+    return errors
+
+
 def validate_bundle_manifest(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

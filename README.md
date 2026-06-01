@@ -37,6 +37,7 @@ python -m openops_evidence collect fixture examples/evidence.sample.json -o evid
 python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
+python -m openops_evidence badge report -i report.local.json -o readiness-badge.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
@@ -189,6 +190,9 @@ Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest
 Report comparisons are described in [docs/report-comparison.md](docs/report-comparison.md).
 Action plans are described in [docs/action-plan.md](docs/action-plan.md).
 CI gates are described in [docs/gates.md](docs/gates.md).
+Status badges are emitted as Shields-compatible endpoint JSON and can be used
+in README files, internal portals, or wiki dashboards. See
+[docs/status-badges.md](docs/status-badges.md).
 
 Policy checks are intentionally small:
 

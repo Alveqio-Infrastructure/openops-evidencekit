@@ -12,6 +12,7 @@ from typing import Any
 
 from .schema import (
     validate_action_plan,
+    validate_badge,
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
@@ -243,6 +244,8 @@ def classify_artifact(path: Path) -> str:
             return "action-plan"
         if validate_gate_result(document) == []:
             return "gate-result"
+        if validate_badge(document) == []:
+            return "badge"
         if _looks_like_bundle_manifest(document):
             return "bundle-manifest"
         if validate_bundle_signature(document) == []:

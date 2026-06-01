@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/badge.schema.json",
+  "title": "OpenOps Badge",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schemaVersion", "label", "message", "color"],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    },
+    "color": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

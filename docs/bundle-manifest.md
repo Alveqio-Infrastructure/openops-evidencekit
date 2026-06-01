@@ -121,6 +121,7 @@ EvidenceKit infers a simple role for each artifact:
 - `report` for valid report JSON
 - `report-sarif` for SARIF report JSON
 - `gate-result` for valid gate result JSON
+- `badge` for Shields-compatible status badge JSON
 - `bundle-manifest` for manifest JSON
 - `waivers` for valid waiver JSON or TOML files
 - `policy` for other TOML files

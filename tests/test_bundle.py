@@ -197,6 +197,7 @@ class BundleTests(unittest.TestCase):
             temp = Path(temp_dir)
             report = temp / "report.json"
             gate = temp / "gate.json"
+            badge = temp / "badge.json"
             sarif = temp / "report.sarif.json"
             comparison = temp / "comparison.json"
             signature = temp / "signature.json"
@@ -237,6 +238,17 @@ class BundleTests(unittest.TestCase):
                             "source_warnings": 0,
                         },
                         "conditions": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            badge.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "label": "openops",
+                        "message": "pass 100",
+                        "color": "brightgreen",
                     }
                 ),
                 encoding="utf-8",
@@ -292,6 +304,7 @@ class BundleTests(unittest.TestCase):
             )
             self.assertEqual(classify_artifact(report), "report")
             self.assertEqual(classify_artifact(gate), "gate-result")
+            self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
