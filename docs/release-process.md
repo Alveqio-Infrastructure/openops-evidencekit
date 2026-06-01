@@ -14,6 +14,10 @@ Use semantic versioning once the first public package is published:
 Before 1.0, schema changes are allowed, but they must be documented in the
 changelog and examples must be updated in the same change.
 
+Artifact validators accept the current `0.1` schema family, including
+patch-compatible versions such as `0.1.1`. Incompatible envelope, field type, or
+semantic changes require a new major/minor schema version and a migration note.
+
 ## Pre-Release Checks
 
 Run these commands from the repository root:

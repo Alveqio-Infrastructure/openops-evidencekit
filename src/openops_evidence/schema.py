@@ -4,11 +4,14 @@ from datetime import datetime
 from typing import Any
 
 
+SUPPORTED_SCHEMA_MAJOR_MINOR = "0.1"
+
+
 def validate_evidence(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
         return ["Evidence must be a JSON object."]
-    _require_string(document, "schema_version", errors)
+    _require_supported_schema_version(document, errors)
     _require_datetime(document, "generated_at", errors)
     _require_mapping(document, "metadata", errors)
     _require_list(document, "assets", errors)
@@ -30,7 +33,7 @@ def validate_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
         return ["Report must be a JSON object."]
-    _require_string(document, "schema_version", errors)
+    _require_supported_schema_version(document, errors)
     _require_datetime(document, "generated_at", errors)
     _require_mapping(document, "summary", errors)
     _require_list(document, "results", errors)
@@ -41,7 +44,7 @@ def validate_bundle_manifest(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
         return ["Bundle manifest must be a JSON object."]
-    _require_string(document, "schema_version", errors)
+    _require_supported_schema_version(document, errors)
     _require_datetime(document, "generated_at", errors)
     _require_mapping(document, "metadata", errors)
     _require_list(document, "artifacts", errors)
@@ -67,7 +70,7 @@ def validate_bundle_verification(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
         return ["Bundle verification must be a JSON object."]
-    _require_string(document, "schema_version", errors)
+    _require_supported_schema_version(document, errors)
     _require_datetime(document, "generated_at", errors)
     _require_mapping(document, "metadata", errors)
     _require_mapping(document, "summary", errors)
@@ -86,7 +89,7 @@ def validate_bundle_signature(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
         return ["Bundle signature must be a JSON object."]
-    _require_string(document, "schema_version", errors)
+    _require_supported_schema_version(document, errors)
     _require_datetime(document, "generated_at", errors)
     _require_mapping(document, "metadata", errors)
     _require_mapping(document, "manifest", errors)
@@ -116,7 +119,7 @@ def validate_report_comparison(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
         return ["Report comparison must be a JSON object."]
-    _require_string(document, "schema_version", errors)
+    _require_supported_schema_version(document, errors)
     _require_datetime(document, "generated_at", errors)
     _require_mapping(document, "summary", errors)
     _require_list(document, "regressions", errors)
@@ -135,6 +138,25 @@ def _require_string(document: dict[str, Any], key: str, errors: list[str], prefi
     value = document.get(key)
     if not isinstance(value, str) or not value:
         errors.append(f"{prefix}{key} must be a non-empty string.")
+
+
+def _require_supported_schema_version(document: dict[str, Any], errors: list[str], prefix: str = "") -> None:
+    _require_string(document, "schema_version", errors, prefix=prefix)
+    value = document.get("schema_version")
+    if not isinstance(value, str) or not value:
+        return
+    parts = value.split(".")
+    if len(parts) < 2 or not all(part.isdigit() for part in parts):
+        errors.append(
+            f"{prefix}schema_version must be {SUPPORTED_SCHEMA_MAJOR_MINOR} or "
+            f"{SUPPORTED_SCHEMA_MAJOR_MINOR}.x."
+        )
+        return
+    if ".".join(parts[:2]) != SUPPORTED_SCHEMA_MAJOR_MINOR:
+        errors.append(
+            f"{prefix}schema_version {value!r} is not supported; expected "
+            f"{SUPPORTED_SCHEMA_MAJOR_MINOR} or {SUPPORTED_SCHEMA_MAJOR_MINOR}.x."
+        )
 
 
 def _require_datetime(document: dict[str, Any], key: str, errors: list[str], prefix: str = "") -> None:

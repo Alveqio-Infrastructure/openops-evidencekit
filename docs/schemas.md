@@ -14,6 +14,17 @@ The bundled `validate` command uses a lightweight built-in validator so the CLI
 does not need a JSON Schema dependency. The schema files are still useful for
 editors, CI systems, documentation sites, and downstream tooling.
 
+## Compatibility
+
+Generated artifacts currently use `schema_version` `0.1`. Validators accept
+`0.1` and patch-compatible versions such as `0.1.1`, but reject unknown
+major/minor versions such as `0.2` or `1.0`. That keeps automation from silently
+processing artifacts whose structure may have changed.
+
+Patch-level schema versions may add optional fields. Removing required fields,
+renaming fields, changing field types, or changing policy/report semantics must
+use a new major/minor schema version and include a migration note.
+
 ## Evidence
 
 Evidence files must contain:

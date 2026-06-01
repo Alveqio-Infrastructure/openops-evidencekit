@@ -28,6 +28,41 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("schema_version must be a non-empty string.", errors)
         self.assertIn("signals must be an object.", errors)
 
+    def test_patch_level_schema_versions_are_compatible(self):
+        errors = validate_evidence(
+            {
+                "schema_version": "0.1.7",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "metadata": {},
+                "assets": [],
+                "signals": {},
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_unknown_schema_versions_are_rejected(self):
+        errors = validate_evidence(
+            {
+                "schema_version": "0.2",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "metadata": {},
+                "assets": [],
+                "signals": {},
+            }
+        )
+        self.assertIn("schema_version '0.2' is not supported; expected 0.1 or 0.1.x.", errors)
+
+    def test_malformed_schema_versions_are_rejected(self):
+        errors = validate_report(
+            {
+                "schema_version": "0.1-beta",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "summary": {},
+                "results": [],
+            }
+        )
+        self.assertIn("schema_version must be 0.1 or 0.1.x.", errors)
+
     def test_valid_report(self):
         errors = validate_report(
             {

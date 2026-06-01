@@ -24,3 +24,4 @@
 - Add end-to-end CLI workflow test and demo documentation.
 - Add detached HMAC-SHA256 signatures for evidence bundle manifests.
 - Add explicit `name@version` references for bundled policy packs.
+- Add schema-version compatibility checks for generated artifact validators.
