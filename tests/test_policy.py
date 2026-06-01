@@ -1,9 +1,43 @@
+import json
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 
-from openops_evidence.policy import Check, evaluate_check, evaluate_policy, validate_policy_document
+from openops_evidence.cli import main
+from openops_evidence.policy import (
+    SUPPORTED_OPERATORS,
+    Check,
+    evaluate_check,
+    evaluate_policy,
+    list_policy_operators,
+    render_policy_operator_list,
+    validate_policy_document,
+)
 
 
 class PolicyTests(unittest.TestCase):
+    def test_operator_catalog_matches_supported_operators(self):
+        operators = list_policy_operators()
+        names = {operator["name"] for operator in operators}
+        self.assertEqual(names, SUPPORTED_OPERATORS)
+        self.assertEqual(len(names), len(operators))
+        self.assertEqual(
+            {operator["value"] for operator in operators},
+            {"none", "required", "non-empty list", "numeric", "safe regex", "numeric days"},
+        )
+
+    def test_render_operator_catalog_as_json(self):
+        payload = json.loads(render_policy_operator_list("json"))
+        self.assertEqual(payload["operators"][0]["name"], "exists")
+        self.assertIn("semantics", payload["operators"][0])
+
+    def test_cli_policy_operators_writes_table(self):
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            self.assertEqual(main(["policy", "operators"]), 0)
+        self.assertIn("within_days", stdout.getvalue())
+        self.assertIn("safe regex", stdout.getvalue())
+
     def test_evaluate_equals_check_passes(self):
         evidence = {"signals": {"access": {"mfa_required": True}}}
         result = evaluate_check(

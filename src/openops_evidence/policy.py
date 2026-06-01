@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -9,31 +10,67 @@ from typing import Any
 from .pathquery import query
 
 
-SUPPORTED_OPERATORS = {
-    "after_now",
-    "at_least",
-    "at_most",
-    "contains",
-    "equals",
-    "exists",
-    "matches",
-    "missing",
-    "not_equals",
-    "one_of",
-    "within_days",
-}
+OPERATOR_SPECS = [
+    {
+        "name": "exists",
+        "value": "none",
+        "semantics": "Passes when at least one selected value is not null and not an empty string.",
+    },
+    {
+        "name": "missing",
+        "value": "none",
+        "semantics": "Passes when the path selects no values.",
+    },
+    {
+        "name": "equals",
+        "value": "required",
+        "semantics": "Passes when a selected value is exactly equal to value.",
+    },
+    {
+        "name": "not_equals",
+        "value": "required",
+        "semantics": "Passes when a selected value is not exactly equal to value.",
+    },
+    {
+        "name": "contains",
+        "value": "required",
+        "semantics": "Passes when value is contained in a selected string, list, or object key set.",
+    },
+    {
+        "name": "one_of",
+        "value": "non-empty list",
+        "semantics": "Passes when a selected value is a member of the configured value list.",
+    },
+    {
+        "name": "at_least",
+        "value": "numeric",
+        "semantics": "Passes when a selected value is numerically greater than or equal to value.",
+    },
+    {
+        "name": "at_most",
+        "value": "numeric",
+        "semantics": "Passes when a selected value is numerically less than or equal to value.",
+    },
+    {
+        "name": "matches",
+        "value": "safe regex",
+        "semantics": "Passes when a safe regular expression matches the selected value converted to text.",
+    },
+    {
+        "name": "within_days",
+        "value": "numeric days",
+        "semantics": "Passes when a selected ISO 8601 timestamp is no older than value days.",
+    },
+    {
+        "name": "after_now",
+        "value": "none",
+        "semantics": "Passes when a selected ISO 8601 timestamp is strictly in the future.",
+    },
+]
+SUPPORTED_OPERATORS = {operator["name"] for operator in OPERATOR_SPECS}
 SUPPORTED_SEVERITIES = {"critical", "high", "medium", "low"}
 SUPPORTED_MODES = {"any", "all", "none"}
-OPERATORS_REQUIRING_VALUE = {
-    "at_least",
-    "at_most",
-    "contains",
-    "equals",
-    "matches",
-    "not_equals",
-    "one_of",
-    "within_days",
-}
+OPERATORS_REQUIRING_VALUE = {operator["name"] for operator in OPERATOR_SPECS if operator["value"] != "none"}
 NUMERIC_VALUE_OPERATORS = {"at_least", "at_most", "within_days"}
 MAX_REGEX_PATTERN_LENGTH = 256
 
@@ -49,6 +86,22 @@ class Check:
     mode: str = "any"
     required: bool = True
     remediation: str = ""
+
+
+def list_policy_operators() -> list[dict[str, str]]:
+    return [dict(operator) for operator in OPERATOR_SPECS]
+
+
+def render_policy_operator_list(format_name: str = "table") -> str:
+    operators = list_policy_operators()
+    if format_name == "json":
+        return json.dumps({"operators": operators}, indent=2, sort_keys=True) + "\n"
+    if format_name != "table":
+        raise ValueError(f"Unsupported operator list format: {format_name}")
+    lines = ["Name | Value | Semantics", "--- | --- | ---"]
+    for operator in operators:
+        lines.append(f"{operator['name']} | {operator['value']} | {operator['semantics']}")
+    return "\n".join(lines) + "\n"
 
 
 def parse_policy(raw: dict[str, Any]) -> list[Check]:

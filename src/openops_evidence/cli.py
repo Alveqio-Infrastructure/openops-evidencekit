@@ -29,7 +29,7 @@ from .collectors import (
 )
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
-from .policy import evaluate_policy, parse_policy, validate_policy_document
+from .policy import evaluate_policy, parse_policy, render_policy_operator_list, validate_policy_document
 from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_pack
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
@@ -121,6 +121,9 @@ def build_parser() -> argparse.ArgumentParser:
     policy_list = policy_sub.add_parser("list", help="List bundled policy packs")
     policy_list.add_argument("-f", "--format", choices=["table", "json"], default="table")
     policy_list.set_defaults(func=cmd_policy_list)
+    policy_operators = policy_sub.add_parser("operators", help="List supported policy operators")
+    policy_operators.add_argument("-f", "--format", choices=["table", "json"], default="table")
+    policy_operators.set_defaults(func=cmd_policy_operators)
     policy_show = policy_sub.add_parser("show", help="Write a bundled policy pack")
     policy_show.add_argument("name")
     policy_show.add_argument("-o", "--output", default="-")
@@ -269,6 +272,11 @@ def cmd_check(args: argparse.Namespace) -> int:
 
 def cmd_policy_list(args: argparse.Namespace) -> int:
     write_text("-", render_policy_pack_list(args.format))
+    return 0
+
+
+def cmd_policy_operators(args: argparse.Namespace) -> int:
+    write_text("-", render_policy_operator_list(args.format))
     return 0
 
 

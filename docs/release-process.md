@@ -27,6 +27,7 @@ $env:PYTHONPATH = "src"
 python -m openops_evidence --version
 python -m unittest discover -s tests
 python -m openops_evidence policy list
+python -m openops_evidence policy operators
 python -m openops_evidence policy show baseline -o policy.exported.toml
 python -m openops_evidence policy validate policy.exported.toml
 python -m openops_evidence validate -i examples/evidence.sample.json

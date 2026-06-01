@@ -140,6 +140,7 @@ List and export bundled policy packs:
 
 ```powershell
 python -m openops_evidence policy list
+python -m openops_evidence policy operators
 python -m openops_evidence policy show security-minimum -o policy.security-minimum.toml
 python -m openops_evidence policy show security-minimum@0.1 -o policy.security-minimum.toml
 python -m openops_evidence policy validate policy.security-minimum.toml

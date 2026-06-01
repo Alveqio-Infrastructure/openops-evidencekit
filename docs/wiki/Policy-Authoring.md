@@ -24,17 +24,15 @@ remediation = "Configure backups and record the last successful backup timestamp
 
 ## Operators
 
-- `exists`
-- `missing`
-- `equals`
-- `not_equals`
-- `contains`
-- `one_of`
-- `at_least`
-- `at_most`
-- `matches`
-- `within_days`
-- `after_now`
+Use the CLI to list the stable operator catalog:
+
+```powershell
+python -m openops_evidence policy operators
+```
+
+Common operators include `exists`, `missing`, `equals`, `one_of`, `matches`,
+`within_days`, and `after_now`. Use `policy operators -f json` when automation
+needs the machine-readable semantics.
 
 ## Modes
 
