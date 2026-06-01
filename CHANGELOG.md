@@ -27,3 +27,4 @@
 - Add schema-version compatibility checks for generated artifact validators.
 - Add a CLI-visible policy operator catalog with stable semantics.
 - Enforce the published report summary and result contract in built-in validation.
+- Add governance and maintainer policy documentation.

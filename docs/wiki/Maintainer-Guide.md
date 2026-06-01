@@ -18,4 +18,5 @@ Also verify:
 - redacted evidence does not contain sensitive data
 
 Security issues should follow `SECURITY.md`. Release steps should follow
-`docs/release-process.md`.
+`docs/release-process.md`. Maintainer decisions and compatibility rules should
+follow `GOVERNANCE.md`.

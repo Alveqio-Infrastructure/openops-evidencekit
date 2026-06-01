@@ -22,3 +22,4 @@ IP addresses, or exploitable details.
 ## Supported Versions
 
 The project is in early alpha. Security fixes target the latest released version.
+Maintainer security responsibilities are documented in [GOVERNANCE.md](GOVERNANCE.md).

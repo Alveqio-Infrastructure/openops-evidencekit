@@ -23,6 +23,9 @@ Use focused pull requests. Include sample evidence for new collectors, and make
 sure fixtures do not contain real customer names, hostnames, IP addresses, tokens,
 or private infrastructure details.
 
+Maintainer decisions, compatibility rules, and security governance are described
+in [GOVERNANCE.md](GOVERNANCE.md).
+
 ## Commit Style
 
 Use short imperative commit messages:

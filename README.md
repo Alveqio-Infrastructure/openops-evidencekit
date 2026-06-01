@@ -189,7 +189,7 @@ find obvious gaps before they become incidents.
 See [docs/roadmap.md](docs/roadmap.md).
 
 Maintainers should use [docs/release-process.md](docs/release-process.md) for
-release checks.
+release checks and [GOVERNANCE.md](GOVERNANCE.md) for maintainer policy.
 
 A short wiki seed for GitHub Wiki or BookStack lives in [docs/wiki/](docs/wiki/).
 
