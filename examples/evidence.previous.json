@@ -1,0 +1,60 @@
+{
+  "schema_version": "0.1",
+  "generated_at": "2026-05-24T10:00:00+00:00",
+  "metadata": {
+    "source": "example",
+    "organization": "Example Operations Team",
+    "environment": "production"
+  },
+  "assets": [
+    {
+      "id": "web-01",
+      "type": "host",
+      "hostname": "web-01.example.invalid",
+      "roles": ["web"],
+      "tags": ["linux"]
+    },
+    {
+      "id": "worker-legacy-01",
+      "type": "host",
+      "hostname": "worker-legacy-01.example.invalid",
+      "roles": ["worker"],
+      "tags": ["linux", "retired"]
+    }
+  ],
+  "signals": {
+    "backup": {
+      "tool": "restic",
+      "last_success_at": "2026-05-23T22:10:00+00:00",
+      "restore_test_at": "2026-05-01T13:30:00+00:00"
+    },
+    "monitoring": {
+      "system": "prometheus",
+      "targets": 10,
+      "alert_channels": ["email"]
+    },
+    "access": {
+      "ssh_public_exposed": false,
+      "mfa_required": true,
+      "admin_entrypoints": ["vpn"]
+    },
+    "tls": {
+      "certificates": [
+        {
+          "hostname": "www.example.invalid",
+          "not_after": "2026-08-20T12:00:00+00:00",
+          "issuer": "Example CA"
+        }
+      ]
+    },
+    "docs": {
+      "inventory_updated_at": "2026-05-20T16:45:00+00:00",
+      "runbooks": [
+        {
+          "name": "backup-restore",
+          "updated_at": "2026-05-20T09:00:00+00:00"
+        }
+      ]
+    }
+  }
+}

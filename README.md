@@ -49,6 +49,7 @@ python -m openops_evidence questionnaire policy examples/policy.baseline.toml -o
 python -m openops_evidence inventory evidence -i evidence.local.json -o inventory.md
 python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i evidence.local.json -s examples/scope.sample.toml -o scope-report.md
+python -m openops_evidence evidence diff --base examples/evidence.previous.json --current evidence.local.json -f markdown -o evidence-drift.md
 python -m openops_evidence coverage report -i evidence.local.json -p examples/policy.baseline.toml -o policy-coverage.md
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
@@ -204,6 +205,8 @@ Use `inventory evidence` when raw evidence should become a Wiki- or
 spreadsheet-friendly asset and signal-domain inventory.
 Use `scope report` when the assessment needs explicit in-scope, out-of-scope,
 missing, and unclassified evidence boundaries.
+Use `evidence diff` when recurring runs should show asset and signal-domain
+drift before the policy result is interpreted.
 
 Action plans can also consume risk waiver TOML/JSON. Waivers require an owner,
 reason, check ID, and expiry date, so accepted risks stay explicit and expire
@@ -221,6 +224,7 @@ Report history tracking is described in [docs/report-history.md](docs/report-his
 Executive briefs are described in [docs/executive-brief.md](docs/executive-brief.md).
 Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence-inventory.md).
 Evidence scaffolds are described in [docs/evidence-scaffold.md](docs/evidence-scaffold.md).
+Evidence drift reports are described in [docs/evidence-drift.md](docs/evidence-drift.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
 Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).

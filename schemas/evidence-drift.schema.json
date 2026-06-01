@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/evidence-drift.schema.json",
+  "title": "OpenOps Evidence Drift",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "asset_changes", "domain_changes"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "base_assets",
+        "current_assets",
+        "asset_changes_count",
+        "asset_added_count",
+        "asset_removed_count",
+        "asset_changed_count",
+        "base_domains",
+        "current_domains",
+        "domain_changes_count",
+        "domain_added_count",
+        "domain_removed_count",
+        "domain_changed_count"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn"]
+        },
+        "base_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "current_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "asset_changes_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "asset_added_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "asset_removed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "asset_changed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "base_domains": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "current_domains": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domain_changes_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domain_added_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domain_removed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domain_changed_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "asset_changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset_change"
+      }
+    },
+    "domain_changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/domain_change"
+      }
+    }
+  },
+  "$defs": {
+    "change_type": {
+      "enum": ["added", "removed", "changed"]
+    },
+    "asset_change": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "change_type", "before", "after", "changed_fields"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "change_type": {
+          "$ref": "#/$defs/change_type"
+        },
+        "before": {
+          "anyOf": [{"type": "object"}, {"type": "null"}]
+        },
+        "after": {
+          "anyOf": [{"type": "object"}, {"type": "null"}]
+        },
+        "changed_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "domain_change": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name", "change_type", "before", "after", "changed_fields"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "change_type": {
+          "$ref": "#/$defs/change_type"
+        },
+        "before": {
+          "anyOf": [{"type": "object"}, {"type": "null"}]
+        },
+        "after": {
+          "anyOf": [{"type": "object"}, {"type": "null"}]
+        },
+        "changed_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

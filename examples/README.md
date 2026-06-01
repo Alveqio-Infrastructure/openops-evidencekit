@@ -6,6 +6,8 @@ documentation, demos, and issue reproduction.
 ## Evidence Samples
 
 - `evidence.sample.json` shows a small but complete readiness evidence file.
+- `evidence.previous.json` provides an older synthetic snapshot for evidence
+  drift examples.
 - `evidence.tls.sample.json` adds TLS certificate evidence for merge examples.
 
 ## Policy Samples
@@ -52,8 +54,8 @@ is available.
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
 evidence scaffolds, scope reports, executive briefs, scorecards, history
-timelines, comparisons, action plans, ticket drafts, review packs, and bundle
-manifests.
+timelines, evidence drift reports, comparisons, action plans, ticket drafts,
+review packs, and bundle manifests.
 Reports can also be rendered as JUnit XML for CI systems. Generated files are
 ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis

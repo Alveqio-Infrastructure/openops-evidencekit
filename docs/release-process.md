@@ -49,6 +49,9 @@ python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i examples/evidence.sample.json -s examples/scope.sample.toml -f json -o scope-report.json
 python -m openops_evidence validate -i scope-report.json -t scope-report
 python -m openops_evidence scope report -i examples/evidence.sample.json -s examples/scope.sample.toml -o scope-report.md
+python -m openops_evidence evidence diff --base examples/evidence.previous.json --current examples/evidence.sample.json -f json -o evidence-drift.json
+python -m openops_evidence validate -i evidence-drift.json -t evidence-drift
+python -m openops_evidence evidence diff --base examples/evidence.previous.json --current examples/evidence.sample.json -f markdown -o evidence-drift.md
 python -m openops_evidence coverage report -i examples/evidence.sample.json -p examples/policy.baseline.toml -f json -o policy-coverage.json
 python -m openops_evidence validate -i policy-coverage.json -t policy-coverage
 python -m openops_evidence coverage report -i examples/evidence.sample.json -p examples/policy.baseline.toml -o policy-coverage.md
@@ -85,7 +88,7 @@ python -m openops_evidence privacy scan evidence.redacted.json report.local.md -
 python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
 python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
-python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json questionnaire.json inventory.json scope-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json scope-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
@@ -109,6 +112,7 @@ Then inspect:
 3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`,
    `schemas/report-history.schema.json`,
    `schemas/executive-brief.schema.json`,
+   `schemas/evidence-drift.schema.json`,
    `schemas/scorecard.schema.json`,
    `schemas/scope-report.schema.json`,
    `schemas/action-plan.schema.json`, `schemas/gate-result.schema.json`,

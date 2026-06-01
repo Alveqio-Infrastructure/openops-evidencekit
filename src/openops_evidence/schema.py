@@ -189,6 +189,41 @@ def validate_inventory(document: Any) -> list[str]:
     return errors
 
 
+def validate_evidence_drift(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Evidence drift report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "asset_changes", errors)
+    _require_list(document, "domain_changes", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn"}, errors, prefix="summary.")
+        for key in (
+            "base_assets",
+            "current_assets",
+            "asset_changes_count",
+            "asset_added_count",
+            "asset_removed_count",
+            "asset_changed_count",
+            "base_domains",
+            "current_domains",
+            "domain_changes_count",
+            "domain_added_count",
+            "domain_removed_count",
+            "domain_changed_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, change in enumerate(document.get("asset_changes", [])):
+        _validate_drift_change(change, errors, f"asset_changes[{index}].", "id")
+    for index, change in enumerate(document.get("domain_changes", [])):
+        _validate_drift_change(change, errors, f"domain_changes[{index}].", "name")
+    return errors
+
+
 def validate_scope_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
@@ -274,6 +309,23 @@ def validate_scope_report(document: Any) -> list[str]:
         for key in ("owner", "reason"):
             _require_string_type(domain, key, errors, prefix=prefix)
     return errors
+
+
+def _validate_drift_change(change: Any, errors: list[str], prefix: str, name_key: str) -> None:
+    if not isinstance(change, dict):
+        errors.append(f"{prefix[:-1]} must be an object.")
+        return
+    _require_string(change, name_key, errors, prefix=prefix)
+    _require_enum(change, "change_type", {"added", "removed", "changed"}, errors, prefix=prefix)
+    if "before" not in change:
+        errors.append(f"{prefix}before is required.")
+    elif change["before"] is not None and not isinstance(change["before"], dict):
+        errors.append(f"{prefix}before must be an object or null.")
+    if "after" not in change:
+        errors.append(f"{prefix}after is required.")
+    elif change["after"] is not None and not isinstance(change["after"], dict):
+        errors.append(f"{prefix}after must be an object or null.")
+    _require_list(change, "changed_fields", errors, prefix=prefix)
 
 
 def validate_policy_coverage(document: Any) -> list[str]:

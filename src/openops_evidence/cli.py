@@ -33,6 +33,7 @@ from .collectors import (
     collect_uptime_kuma_export,
 )
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
+from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .history import append_report_history, render_history_csv, render_history_markdown, render_history_svg
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
@@ -68,6 +69,7 @@ from .schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_evidence_drift,
     validate_executive_brief,
     validate_gate_result,
     validate_inventory,
@@ -221,6 +223,16 @@ def build_parser() -> argparse.ArgumentParser:
     inventory_evidence.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
     inventory_evidence.add_argument("-o", "--output", default="-")
     inventory_evidence.set_defaults(func=cmd_inventory_evidence)
+
+    evidence = sub.add_parser("evidence", help="Inspect and compare evidence files")
+    evidence_sub = evidence.add_subparsers(required=True)
+    evidence_diff = evidence_sub.add_parser("diff", help="Compare two evidence JSON files for asset and signal drift")
+    evidence_diff.add_argument("--base", required=True)
+    evidence_diff.add_argument("--current", required=True)
+    evidence_diff.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="json")
+    evidence_diff.add_argument("--fail-on-drift", action="store_true")
+    evidence_diff.add_argument("-o", "--output", default="-")
+    evidence_diff.set_defaults(func=cmd_evidence_diff)
 
     scope = sub.add_parser("scope", help="Check review scope against evidence")
     scope_sub = scope.add_subparsers(required=True)
@@ -386,6 +398,7 @@ def build_parser() -> argparse.ArgumentParser:
             "report",
             "action-plan",
             "executive-brief",
+            "evidence-drift",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -661,6 +674,28 @@ def cmd_scope_report(args: argparse.Namespace) -> int:
         rendered = render_scope_markdown(report)
     write_text(args.output, rendered)
     if args.fail_on_warn and report["summary"]["status"] == "warn":
+        return 1
+    return 0
+
+
+def cmd_evidence_diff(args: argparse.Namespace) -> int:
+    base = load_json(args.base)
+    current = load_json(args.current)
+    base_errors = validate_evidence(base)
+    if base_errors:
+        raise UserFacingError("Base evidence validation failed:\n- " + "\n- ".join(base_errors))
+    current_errors = validate_evidence(current)
+    if current_errors:
+        raise UserFacingError("Current evidence validation failed:\n- " + "\n- ".join(current_errors))
+    diff = compare_evidence(base, current)
+    if args.format == "markdown":
+        rendered = render_evidence_diff_markdown(diff)
+    elif args.format == "csv":
+        rendered = render_evidence_diff_csv(diff)
+    else:
+        rendered = dump_json(diff)
+    write_text(args.output, rendered)
+    if args.fail_on_drift and diff["summary"]["status"] == "warn":
         return 1
     return 0
 
@@ -988,6 +1023,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_action_plan(document)
     elif args.type == "executive-brief":
         errors = validate_executive_brief(document)
+    elif args.type == "evidence-drift":
+        errors = validate_evidence_drift(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

@@ -44,6 +44,7 @@
 - Add GitHub Actions starter workflow generation to `init`.
 - Add a visual report preview to the README.
 - Add report history tracking for recurring readiness reviews.
+- Add evidence drift reports for asset and signal-domain changes between runs.
 - Add deterministic executive brief export for stakeholder handoff.
 - Add evidence inventory export for assets and signal domains.
 - Add scope report export for explicit assessment boundaries.

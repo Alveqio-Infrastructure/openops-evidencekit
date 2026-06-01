@@ -53,6 +53,8 @@ class CliWorkflowTests(unittest.TestCase):
             inventory_markdown = temp / "inventory.md"
             scope_report = temp / "scope-report.json"
             scope_markdown = temp / "scope-report.md"
+            evidence_drift = temp / "evidence-drift.json"
+            evidence_drift_markdown = temp / "evidence-drift.md"
             coverage = temp / "policy-coverage.json"
             coverage_markdown = temp / "policy-coverage.md"
             questionnaire = temp / "questionnaire.json"
@@ -134,6 +136,39 @@ class CliWorkflowTests(unittest.TestCase):
                         str(ROOT / "examples" / "scope.sample.toml"),
                         "-o",
                         str(scope_markdown),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(
+                main(
+                    [
+                        "evidence",
+                        "diff",
+                        "--base",
+                        str(ROOT / "examples" / "evidence.previous.json"),
+                        "--current",
+                        str(evidence),
+                        "-o",
+                        str(evidence_drift),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(main(["validate", "-i", str(evidence_drift), "-t", "evidence-drift"]), 0)
+            self.assertEqual(
+                main(
+                    [
+                        "evidence",
+                        "diff",
+                        "--base",
+                        str(ROOT / "examples" / "evidence.previous.json"),
+                        "--current",
+                        str(evidence),
+                        "-f",
+                        "markdown",
+                        "-o",
+                        str(evidence_drift_markdown),
                     ]
                 ),
                 0,
@@ -267,6 +302,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(merged),
                         str(inventory),
                         str(scope_report),
+                        str(evidence_drift),
                         str(questionnaire),
                         str(coverage),
                         str(report),
@@ -344,6 +380,7 @@ class CliWorkflowTests(unittest.TestCase):
             questionnaire_data = json.loads(questionnaire.read_text(encoding="utf-8"))
             coverage_data = json.loads(coverage.read_text(encoding="utf-8"))
             scope_data = json.loads(scope_report.read_text(encoding="utf-8"))
+            evidence_drift_data = json.loads(evidence_drift.read_text(encoding="utf-8"))
             gate_data = json.loads(gate.read_text(encoding="utf-8"))
             badge_data = json.loads(badge.read_text(encoding="utf-8"))
             brief_data = json.loads(brief.read_text(encoding="utf-8"))
@@ -359,12 +396,14 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(coverage_data["summary"]["coverage_percent"], 100)
             self.assertEqual(scope_data["summary"]["status"], "warn")
             self.assertEqual(scope_data["summary"]["missing_in_scope_assets"], 1)
+            self.assertEqual(evidence_drift_data["summary"]["status"], "warn")
+            self.assertGreater(evidence_drift_data["summary"]["asset_changes_count"], 0)
             self.assertEqual(gate_data["summary"]["status"], "pass")
             self.assertEqual(badge_data["message"], "pass 100")
             self.assertEqual(brief_data["summary"]["health"], "on_track")
             self.assertEqual(scorecard_data["summary"]["domains_total"], 6)
             self.assertEqual(history_data["summary"]["latest_score"], 100)
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 15)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 16)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -384,6 +423,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("<svg", history_svg.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Evidence Inventory", inventory_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Scope Report", scope_markdown.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Evidence Drift", evidence_drift_markdown.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

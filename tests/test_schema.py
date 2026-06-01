@@ -7,6 +7,7 @@ from openops_evidence.schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_evidence_drift,
     validate_executive_brief,
     validate_gate_result,
     validate_inventory,
@@ -477,6 +478,49 @@ class SchemaTests(unittest.TestCase):
                         "kind": "object",
                         "item_count": 2,
                         "fields": ["tool", "last_success_at"],
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_evidence_drift(self):
+        errors = validate_evidence_drift(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "base_assets": 1,
+                    "current_assets": 1,
+                    "asset_changes_count": 1,
+                    "asset_added_count": 0,
+                    "asset_removed_count": 0,
+                    "asset_changed_count": 1,
+                    "base_domains": 1,
+                    "current_domains": 1,
+                    "domain_changes_count": 1,
+                    "domain_added_count": 0,
+                    "domain_removed_count": 0,
+                    "domain_changed_count": 1,
+                },
+                "asset_changes": [
+                    {
+                        "id": "web-01",
+                        "change_type": "changed",
+                        "before": {"id": "web-01", "tags": ["linux"]},
+                        "after": {"id": "web-01", "tags": ["linux", "web"]},
+                        "changed_fields": ["tags"],
+                    }
+                ],
+                "domain_changes": [
+                    {
+                        "name": "backup",
+                        "change_type": "changed",
+                        "before": {"kind": "object", "sha256": "a" * 64},
+                        "after": {"kind": "object", "sha256": "b" * 64},
+                        "changed_fields": ["value"],
                     }
                 ],
             }

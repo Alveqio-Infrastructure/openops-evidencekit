@@ -201,6 +201,7 @@ class BundleTests(unittest.TestCase):
             gate = temp / "gate.json"
             badge = temp / "badge.json"
             brief = temp / "executive-brief.json"
+            evidence_drift = temp / "evidence-drift.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             sarif = temp / "report.sarif.json"
@@ -359,6 +360,41 @@ class BundleTests(unittest.TestCase):
                         },
                         "top_findings": [],
                         "next_steps": ["Keep reviewing evidence."],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            evidence_drift.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "warn",
+                            "base_assets": 1,
+                            "current_assets": 1,
+                            "asset_changes_count": 1,
+                            "asset_added_count": 0,
+                            "asset_removed_count": 0,
+                            "asset_changed_count": 1,
+                            "base_domains": 1,
+                            "current_domains": 1,
+                            "domain_changes_count": 0,
+                            "domain_added_count": 0,
+                            "domain_removed_count": 0,
+                            "domain_changed_count": 0,
+                        },
+                        "asset_changes": [
+                            {
+                                "id": "web-01",
+                                "change_type": "changed",
+                                "before": {"id": "web-01", "tags": ["linux"]},
+                                "after": {"id": "web-01", "tags": ["linux", "web"]},
+                                "changed_fields": ["tags"],
+                            }
+                        ],
+                        "domain_changes": [],
                     }
                 ),
                 encoding="utf-8",
@@ -590,6 +626,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(gate), "gate-result")
             self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(brief), "executive-brief")
+            self.assertEqual(classify_artifact(evidence_drift), "evidence-drift")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(sarif), "report-sarif")

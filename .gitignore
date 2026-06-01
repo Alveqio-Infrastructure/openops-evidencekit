@@ -14,6 +14,9 @@ evidence.local.json
 evidence.merged.json
 evidence.redacted.json
 /evidence.scaffold.json
+/evidence-drift.json
+/evidence-drift.md
+/evidence-drift.csv
 privacy-scan.json
 privacy-scan.md
 gate-result.json
