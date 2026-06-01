@@ -69,6 +69,7 @@ from .reports import (
     render_sarif,
 )
 from .review import create_review_pack
+from .risk import create_risk_register, render_risk_register_csv, render_risk_register_markdown
 from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scaffold import create_evidence_scaffold
 from .schema import (
@@ -91,6 +92,7 @@ from .schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
     validate_service_catalog_report,
@@ -343,6 +345,17 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("-o", "--output", default="-")
     plan.set_defaults(func=cmd_plan)
 
+    risk = sub.add_parser("risk", help="Create risk registers from reports")
+    risk_sub = risk.add_subparsers(required=True)
+    risk_register = risk_sub.add_parser("register", help="Render open and accepted risks from a report")
+    risk_register.add_argument("-i", "--input", required=True)
+    risk_register.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="json")
+    risk_register.add_argument("--include-pass", action="store_true")
+    risk_register.add_argument("--waivers", help="TOML or JSON file with accepted risk waivers")
+    risk_register.add_argument("--fail-on-open", action="store_true")
+    risk_register.add_argument("-o", "--output", default="-")
+    risk_register.set_defaults(func=cmd_risk_register)
+
     gate = sub.add_parser("gate", help="Evaluate CI gate conditions against generated artifacts")
     gate_sub = gate.add_subparsers(required=True)
     gate_report = gate_sub.add_parser("report", help="Evaluate thresholds against a report JSON file")
@@ -382,6 +395,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-catalog-warn", action="store_true")
     review_create.add_argument("--fail-on-runbook-warn", action="store_true")
     review_create.add_argument("--fail-on-freshness-warn", action="store_true")
+    review_create.add_argument("--fail-on-open-risk", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
 
@@ -469,6 +483,7 @@ def build_parser() -> argparse.ArgumentParser:
             "evidence",
             "report",
             "action-plan",
+            "risk-register",
             "executive-brief",
             "evidence-drift",
             "review-attestation",
@@ -986,6 +1001,33 @@ def cmd_plan(args: argparse.Namespace) -> int:
     return 1 if plan["summary"]["action_required_count"] > 0 else 0
 
 
+def cmd_risk_register(args: argparse.Namespace) -> int:
+    report = load_json(args.input)
+    errors = validate_report(report)
+    if errors:
+        raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
+    waiver_document = None
+    if args.waivers:
+        waiver_document = load_structured(args.waivers)
+        waiver_errors = validate_waiver_document(waiver_document)
+        if waiver_errors:
+            raise UserFacingError("Waiver validation failed:\n- " + "\n- ".join(waiver_errors))
+    register = create_risk_register(
+        report,
+        waiver_document=waiver_document,
+        include_pass=args.include_pass,
+    )
+    if args.format == "markdown":
+        write_text(args.output, render_risk_register_markdown(register))
+    elif args.format == "csv":
+        write_text(args.output, render_risk_register_csv(register))
+    else:
+        write_text(args.output, dump_json(register))
+    if args.fail_on_open and register["summary"]["open_count"] > 0:
+        return 1
+    return 0
+
+
 def cmd_gate_report(args: argparse.Namespace) -> int:
     report = load_json(args.input)
     errors = validate_report(report)
@@ -1106,6 +1148,8 @@ def cmd_review_create(args: argparse.Namespace) -> int:
     ):
         return 1
     if args.fail_on_freshness_warn and pack["freshness_report"]["summary"]["status"] == "warn":
+        return 1
+    if args.fail_on_open_risk and pack["risk_register"]["summary"]["open_count"] > 0:
         return 1
     return 0
 
@@ -1267,6 +1311,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_report(document)
     elif args.type == "action-plan":
         errors = validate_action_plan(document)
+    elif args.type == "risk-register":
+        errors = validate_risk_register(document)
     elif args.type == "executive-brief":
         errors = validate_executive_brief(document)
     elif args.type == "evidence-drift":

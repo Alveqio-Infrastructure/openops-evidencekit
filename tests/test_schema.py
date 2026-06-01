@@ -20,6 +20,7 @@ from openops_evidence.schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
     validate_service_catalog_report,
@@ -824,6 +825,50 @@ class SchemaTests(unittest.TestCase):
                         "runbooks": ["database-restore"],
                         "present_runbooks": [],
                         "missing_runbooks": ["database-restore"],
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_risk_register(self):
+        errors = validate_risk_register(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "action_required",
+                    "risks_total": 1,
+                    "open_count": 1,
+                    "accepted_count": 0,
+                    "closed_count": 0,
+                    "expired_acceptance_count": 0,
+                    "fail_count": 1,
+                    "warn_count": 0,
+                    "pass_count": 0,
+                    "critical_count": 1,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "risks": [
+                    {
+                        "priority": "P0",
+                        "id": "backup_recent",
+                        "title": "Recent backup",
+                        "risk_status": "open",
+                        "source_status": "fail",
+                        "severity": "critical",
+                        "required": True,
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                        "observed_count": 0,
+                        "owner": "",
+                        "waiver_status": "none",
+                        "waiver_expires_at": "",
+                        "acceptance_reason": "",
+                        "recommended_action": "Configure backups.",
                     }
                 ],
             }

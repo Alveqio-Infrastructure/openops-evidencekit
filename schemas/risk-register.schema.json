@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/risk-register.schema.json",
+  "title": "OpenOps Risk Register",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "risks"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "risks_total",
+        "open_count",
+        "accepted_count",
+        "closed_count",
+        "expired_acceptance_count",
+        "fail_count",
+        "warn_count",
+        "pass_count",
+        "critical_count",
+        "high_count",
+        "medium_count",
+        "low_count"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "action_required"]
+        },
+        "risks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accepted_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "closed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expired_acceptance_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fail_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warn_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pass_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/risk"
+      }
+    }
+  },
+  "$defs": {
+    "risk": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "priority",
+        "id",
+        "title",
+        "risk_status",
+        "source_status",
+        "severity",
+        "required",
+        "path",
+        "operator",
+        "observed_count",
+        "owner",
+        "waiver_status",
+        "waiver_expires_at",
+        "acceptance_reason",
+        "recommended_action"
+      ],
+      "properties": {
+        "priority": {
+          "enum": ["P0", "P1", "P2", "P3"]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "risk_status": {
+          "enum": ["open", "accepted", "closed"]
+        },
+        "source_status": {
+          "enum": ["fail", "warn", "pass"]
+        },
+        "severity": {
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "observed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "owner": {
+          "type": "string"
+        },
+        "waiver_status": {
+          "type": "string"
+        },
+        "waiver_expires_at": {
+          "type": "string"
+        },
+        "acceptance_reason": {
+          "type": "string"
+        },
+        "recommended_action": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

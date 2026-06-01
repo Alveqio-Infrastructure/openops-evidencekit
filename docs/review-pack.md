@@ -17,6 +17,7 @@ audiences need:
 | `report.json` / `report.md` | Canonical check results and a human-readable report. |
 | `executive-brief.json` / `executive-brief.md` | Stakeholder summary with top findings and next steps. |
 | `action-plan.json` / `action-plan.md` / `action-plan.csv` | Prioritized remediation queue. |
+| `risk-register.json` / `risk-register.md` / `risk-register.csv` | Open, accepted, expired, and closed risk register. |
 | `inventory.json` / `inventory.md` / `inventory.csv` | Asset and signal-domain inventory from evidence. |
 | `freshness-report.json` / `freshness-report.md` / `freshness-report.csv` | Evidence timestamp freshness report. |
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
@@ -76,6 +77,9 @@ Add `--fail-on-freshness-warn` when stale or invalid evidence timestamps should
 fail the review pack command after the pack has been written. Use
 `--freshness-max-age-days` to tune the default 30-day freshness window.
 
+Add `--fail-on-open-risk` when open, non-accepted risks in the generated risk
+register should fail the review pack command after the pack has been written.
+
 When `--base-evidence` is provided, add `--fail-on-drift` if asset or
 signal-domain drift should fail the review pack command after the pack has been
 written.
@@ -85,3 +89,6 @@ Risk waivers can be applied to the generated action plan:
 ```powershell
 python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml --waivers waivers.toml -o review-pack
 ```
+
+The same waivers also feed `risk-register.*`, so accepted risks remain visible
+with owner, reason, and expiry in the review pack.

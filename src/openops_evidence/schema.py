@@ -108,6 +108,60 @@ def validate_action_plan(document: Any) -> list[str]:
     return errors
 
 
+def validate_risk_register(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Risk register must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "risks", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "action_required"}, errors, prefix="summary.")
+        for key in (
+            "risks_total",
+            "open_count",
+            "accepted_count",
+            "closed_count",
+            "expired_acceptance_count",
+            "fail_count",
+            "warn_count",
+            "pass_count",
+            "critical_count",
+            "high_count",
+            "medium_count",
+            "low_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, risk in enumerate(document.get("risks", [])):
+        if not isinstance(risk, dict):
+            errors.append(f"risks[{index}] must be an object.")
+            continue
+        prefix = f"risks[{index}]."
+        _require_enum(risk, "priority", {"P0", "P1", "P2", "P3"}, errors, prefix=prefix)
+        _require_string(risk, "id", errors, prefix=prefix)
+        _require_string(risk, "title", errors, prefix=prefix)
+        _require_enum(risk, "risk_status", {"open", "accepted", "closed"}, errors, prefix=prefix)
+        _require_enum(risk, "source_status", {"fail", "warn", "pass"}, errors, prefix=prefix)
+        _require_enum(risk, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        if not isinstance(risk.get("required"), bool):
+            errors.append(f"{prefix}required must be a boolean.")
+        for key in (
+            "path",
+            "operator",
+            "owner",
+            "waiver_status",
+            "waiver_expires_at",
+            "acceptance_reason",
+            "recommended_action",
+        ):
+            _require_string_type(risk, key, errors, prefix=prefix)
+        _require_int_range(risk, "observed_count", errors, minimum=0, prefix=prefix)
+    return errors
+
+
 def validate_policy_matrix(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

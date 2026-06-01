@@ -64,3 +64,4 @@
 - Add service catalog reports for service ownership and evidence coverage.
 - Add runbook coverage reports for freshness and service references.
 - Add evidence freshness reports for timestamp recency review.
+- Add risk register export for open and accepted operational risks.

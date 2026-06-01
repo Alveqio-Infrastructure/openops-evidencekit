@@ -36,6 +36,7 @@ from .reports import (
     render_prometheus,
     render_sarif,
 )
+from .risk import create_risk_register, render_risk_register_csv, render_risk_register_markdown
 from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown
@@ -75,6 +76,7 @@ def create_review_pack(
     scorecard = create_report_scorecard(report)
     brief = create_report_brief(report, max_findings=max_findings)
     action_plan = create_action_plan(report, waiver_document=waiver_document)
+    risk_register = create_risk_register(report, waiver_document=waiver_document)
     badge = create_report_badge(report)
     gate = evaluate_report_gate(
         report,
@@ -157,6 +159,9 @@ def create_review_pack(
     add_artifact("action-plan.json", dump_json(action_plan), "Action plan", "Machine-readable remediation queue.")
     add_artifact("action-plan.md", render_action_plan_markdown(action_plan), "Action plan", "Prioritized remediation plan.")
     add_artifact("action-plan.csv", render_action_plan_csv(action_plan), "Action plan", "Spreadsheet-friendly remediation queue.")
+    add_artifact("risk-register.json", dump_json(risk_register), "Risk register", "Machine-readable open and accepted risk register.")
+    add_artifact("risk-register.md", render_risk_register_markdown(risk_register), "Risk register", "Human-readable open and accepted risk register.")
+    add_artifact("risk-register.csv", render_risk_register_csv(risk_register), "Risk register", "Spreadsheet-friendly risk register export.")
     add_artifact("readiness-badge.json", dump_json(badge), "Readiness badge", "Shields-compatible endpoint JSON.")
     add_artifact("gate-result.json", dump_json(gate), "Gate result", "Machine-readable CI gate decision.")
     add_artifact("gate-result.md", render_gate_markdown(gate), "Gate result", "Human-readable CI gate decision.")
@@ -194,6 +199,7 @@ def create_review_pack(
         "report": report,
         "gate": gate,
         "freshness_report": freshness_report,
+        "risk_register": risk_register,
         "evidence_drift": evidence_drift,
         "scope_report": scope_report,
         "service_catalog": service_catalog,
@@ -231,6 +237,7 @@ def render_review_pack_readme(
         [
             "Open `report.md` and `gate-result.md` for the technical decision.",
             "Use `action-plan.md` or `action-plan.csv` to assign remediation work.",
+            "Use `risk-register.md` to review open, accepted, and expired accepted risks.",
             "Check `privacy-scan.md` before sending the pack to anyone else.",
             "Verify `manifest.json` before archiving or publishing the pack.",
         ]
@@ -447,6 +454,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("evidence-drift.md", "Evidence Drift"),
         ("report.md", "Report"),
         ("action-plan.md", "Action Plan"),
+        ("risk-register.md", "Risk Register"),
         ("privacy-scan.md", "Privacy Scan"),
     ]
     lines = [

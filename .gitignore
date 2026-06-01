@@ -58,6 +58,9 @@ evidence-bundle.zip
 /action-plan.md
 /action-plan.csv
 /action-tickets/
+/risk-register.json
+/risk-register.md
+/risk-register.csv
 policy.exported.toml
 policy.*exported.toml
 policy.matrix.*

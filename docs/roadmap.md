@@ -58,6 +58,7 @@ having to deploy a platform first.
 - Review attestation export for manifest-bound sign-off records.
 - Domain scorecard export for operational area summaries.
 - Action plan ticket export.
+- Risk register export for open and accepted operational risks.
 - CLI version and exit-code documentation.
 - Bundled policy pack discovery and export.
 - Policy coverage matrix export.

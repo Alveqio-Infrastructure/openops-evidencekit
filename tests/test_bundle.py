@@ -198,6 +198,7 @@ class BundleTests(unittest.TestCase):
             report = temp / "report.json"
             inventory = temp / "inventory.json"
             coverage = temp / "policy-coverage.json"
+            risk_register = temp / "risk-register.json"
             gate = temp / "gate.json"
             badge = temp / "badge.json"
             brief = temp / "executive-brief.json"
@@ -296,6 +297,50 @@ class BundleTests(unittest.TestCase):
                                 "optional_count": 0,
                                 "check_ids": ["backup_recent"],
                                 "paths": ["signals.backup.last_success_at"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            risk_register.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "action_required",
+                            "risks_total": 1,
+                            "open_count": 1,
+                            "accepted_count": 0,
+                            "closed_count": 0,
+                            "expired_acceptance_count": 0,
+                            "fail_count": 1,
+                            "warn_count": 0,
+                            "pass_count": 0,
+                            "critical_count": 1,
+                            "high_count": 0,
+                            "medium_count": 0,
+                            "low_count": 0,
+                        },
+                        "risks": [
+                            {
+                                "priority": "P0",
+                                "id": "backup_recent",
+                                "title": "Recent backup",
+                                "risk_status": "open",
+                                "source_status": "fail",
+                                "severity": "critical",
+                                "required": True,
+                                "path": "signals.backup.last_success_at",
+                                "operator": "within_days",
+                                "observed_count": 0,
+                                "owner": "",
+                                "waiver_status": "none",
+                                "waiver_expires_at": "",
+                                "acceptance_reason": "",
+                                "recommended_action": "Configure backups.",
                             }
                         ],
                     }
@@ -787,6 +832,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(report), "report")
             self.assertEqual(classify_artifact(inventory), "inventory")
             self.assertEqual(classify_artifact(coverage), "policy-coverage")
+            self.assertEqual(classify_artifact(risk_register), "risk-register")
             self.assertEqual(classify_artifact(gate), "gate-result")
             self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(brief), "executive-brief")

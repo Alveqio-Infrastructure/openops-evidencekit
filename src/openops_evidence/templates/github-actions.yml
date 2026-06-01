@@ -43,6 +43,9 @@ jobs:
           openops-evidence validate -i report.openops.json -t report
           openops-evidence badge report -i report.openops.json -o readiness-badge.json
           openops-evidence brief report -i report.openops.json -o executive-brief.md
+          openops-evidence risk register -i report.openops.json -f markdown -o risk-register.md
+          openops-evidence risk register -i report.openops.json -o risk-register.json
+          openops-evidence validate -i risk-register.json -t risk-register
           openops-evidence scorecard report -i report.openops.json -o scorecard.md
           openops-evidence scorecard report -i report.openops.json -f html -o scorecard.html
           openops-evidence history append -i report.openops.json --source github-actions -o readiness-history.json
@@ -76,6 +79,8 @@ jobs:
             report.openops.prom
             readiness-badge.json
             executive-brief.md
+            risk-register.json
+            risk-register.md
             scorecard.md
             scorecard.html
             readiness-history.json

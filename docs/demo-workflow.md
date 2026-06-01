@@ -67,6 +67,9 @@ python -m openops_evidence validate -i readiness-badge.json -t badge
 python -m openops_evidence brief report -i report.local.json -f json -o executive-brief.json
 python -m openops_evidence validate -i executive-brief.json -t executive-brief
 python -m openops_evidence brief report -i report.local.json -o executive-brief.md
+python -m openops_evidence risk register -i report.local.json --waivers examples/waivers.sample.toml -o risk-register.json
+python -m openops_evidence validate -i risk-register.json -t risk-register
+python -m openops_evidence risk register -i report.local.json --waivers examples/waivers.sample.toml -f markdown -o risk-register.md
 python -m openops_evidence scorecard report -i report.local.json -f json -o scorecard.json
 python -m openops_evidence validate -i scorecard.json -t scorecard
 python -m openops_evidence scorecard report -i report.local.json -o scorecard.md
@@ -89,7 +92,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
 python -m openops_evidence ticket export -i action-plan.json -o action-tickets
-python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json freshness-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json freshness-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification

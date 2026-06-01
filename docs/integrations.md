@@ -43,6 +43,7 @@ produces the common CI artifacts below.
 | Review attestation | `openops-evidence attest review --manifest review-pack/manifest.json --approver "Reviewer" --role "Operations" --statement "Reviewed." -o review-attestation.json` | Record a review sign-off bound to a manifest hash. |
 | Badge JSON | `openops-evidence badge report -i report.json -o readiness-badge.json` | Publish a compact Shields-compatible readiness status. |
 | Executive brief | `openops-evidence brief report -i report.json -o executive-brief.md` | Share a concise stakeholder summary. |
+| Risk register | `openops-evidence risk register -i report.json --waivers waivers.toml -o risk-register.json` | Track open, accepted, expired, and closed operational risks. |
 | Domain scorecard | `openops-evidence scorecard report -i report.json -o scorecard.md` | Summarize readiness by operational evidence area. |
 | History JSON | `openops-evidence history append -i report.json -o readiness-history.json` | Track score and finding changes across recurring reviews. |
 | History SVG | `openops-evidence history render -i readiness-history.json -f svg -o readiness-history.svg` | Publish a compact trend graphic for README, wiki, or portal dashboards. |

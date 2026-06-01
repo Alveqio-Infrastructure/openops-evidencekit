@@ -15,6 +15,7 @@ machine-readable artifacts:
 - `schemas/service-catalog.schema.json`
 - `schemas/runbook-report.schema.json`
 - `schemas/action-plan.schema.json`
+- `schemas/risk-register.schema.json`
 - `schemas/gate-result.schema.json`
 - `schemas/badge.schema.json`
 - `schemas/policy-matrix.schema.json`
@@ -194,6 +195,17 @@ They are generated from report JSON and sort failed or warning checks into a
 deterministic remediation queue. Each item includes a priority, check identity,
 status, severity, source path, operator, observed count, waiver metadata, and
 recommended action.
+
+## Risk Registers
+
+Risk registers contain:
+
+- `summary`
+- `risks`
+
+They are generated from report JSON and optional waivers. Each risk records the
+source check, source status, risk status, severity, owner, waiver state,
+acceptance reason, expiry, and recommended treatment.
 
 ## Policy Matrices
 

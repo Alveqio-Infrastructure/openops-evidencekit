@@ -29,8 +29,8 @@ Automation exit codes are documented in [docs/exit-codes.md](docs/exit-codes.md)
 The same report can be rendered for people, CI systems, dashboards, and
 handoff bundles: Markdown or BookStack pages, HTML, JUnit XML, SARIF JSON,
 Prometheus text metrics, a Shields-compatible badge, executive briefs, action
-plans, service catalog reports, evidence freshness reports, domain scorecards,
-tickets, and signed evidence bundles.
+plans, risk registers, service catalog reports, evidence freshness reports,
+domain scorecards, tickets, and signed evidence bundles.
 
 ### Report Artifact Gallery
 
@@ -38,7 +38,7 @@ tickets, and signed evidence bundles.
 
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
-review packs with manifests and attestations.
+risk registers, and review packs with manifests and attestations.
 
 ## Status
 
@@ -68,6 +68,7 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
 python -m openops_evidence badge report -i report.local.json -o readiness-badge.json
 python -m openops_evidence brief report -i report.local.json -o executive-brief.md
+python -m openops_evidence risk register -i report.local.json --waivers examples/waivers.sample.toml -f markdown -o risk-register.md
 python -m openops_evidence scorecard report -i report.local.json -o scorecard.md
 python -m openops_evidence history append -i report.local.json --source local -o readiness-history.json
 python -m openops_evidence history render -i readiness-history.json -f markdown -o readiness-history.md
@@ -102,6 +103,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence plan -i report.local.json -f csv -o action-plan.csv
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
+python -m openops_evidence risk register -i report.local.json --waivers examples/waivers.sample.toml -o risk-register.json
 python -m openops_evidence ticket export -i action-plan.json -o action-tickets
 ```
 
@@ -233,6 +235,8 @@ reason, check ID, and expiry date, so accepted risks stay explicit and expire
 back into the remediation queue. Ticket export turns non-waived action items
 into Markdown files that can be copied into GitHub Issues, GitLab, Jira, service
 desk tools, or a plain Git-backed runbook queue.
+Risk registers use the same waivers to distinguish open, accepted, expired, and
+closed risks for recurring review meetings.
 
 JSON Schemas for generated artifacts live in [schemas/](schemas/).
 Example inputs and generated artifact shapes are described in
@@ -255,6 +259,7 @@ Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).
 Policy coverage reports are described in [docs/policy-coverage.md](docs/policy-coverage.md).
 Policy questionnaires are described in [docs/questionnaire.md](docs/questionnaire.md).
 Action plans are described in [docs/action-plan.md](docs/action-plan.md).
+Risk registers are described in [docs/risk-register.md](docs/risk-register.md).
 CI gates are described in [docs/gates.md](docs/gates.md).
 Status badges are emitted as Shields-compatible endpoint JSON and can be used
 in README files, internal portals, or wiki dashboards. See
