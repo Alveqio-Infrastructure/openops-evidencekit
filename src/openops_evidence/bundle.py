@@ -285,6 +285,8 @@ def classify_artifact(path: Path) -> str:
         return "policy"
     if suffix in {".md", ".markdown"}:
         return "report-markdown"
+    if suffix == ".svg":
+        return "visual"
     if suffix in {".html", ".htm"}:
         return "report-html"
     if suffix in {".prom", ".metrics"}:
@@ -404,6 +406,8 @@ def _media_type(path: Path) -> str:
         return "text/markdown"
     if suffix in {".html", ".htm"}:
         return "text/html"
+    if suffix == ".svg":
+        return "image/svg+xml"
     if suffix in {".prom", ".metrics"}:
         return "text/plain"
     if suffix == ".txt":

@@ -21,6 +21,7 @@ input history and output path should differ.
 ```powershell
 python -m openops_evidence history render -i readiness-history.json -f markdown -o readiness-history.md
 python -m openops_evidence history render -i readiness-history.json -f csv -o readiness-history.csv
+python -m openops_evidence history render -i readiness-history.json -f svg -o readiness-history.svg
 ```
 
 The JSON history records:
@@ -32,5 +33,6 @@ The JSON history records:
 - one entry per appended report with source and note fields
 
 Keep the machine-readable JSON when you need auditability. Render Markdown for
-BookStack, GitHub, customer handoff, or release notes, and CSV for spreadsheets
-or lightweight reporting.
+BookStack, GitHub, customer handoff, or release notes, CSV for spreadsheets or
+lightweight reporting, and SVG when a wiki, README, or dashboard should show a
+compact score trend.

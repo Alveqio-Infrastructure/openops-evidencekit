@@ -47,6 +47,7 @@ having to deploy a platform first.
 - Report gates for score and finding thresholds.
 - Report comparison and regression guardrails.
 - Report history timeline for recurring readiness reviews.
+- SVG trend rendering for readiness history dashboards.
 - Executive brief export for stakeholder handoff.
 - Review-pack generation for complete readiness handoff folders.
 - Domain scorecard export for operational area summaries.

@@ -51,3 +51,4 @@
 - Add self-contained HTML dashboard output for domain scorecards.
 - Add policy coverage reports for evidence-domain gap analysis.
 - Add policy questionnaire export for evidence request workflows.
+- Add SVG trend rendering for readiness report history.

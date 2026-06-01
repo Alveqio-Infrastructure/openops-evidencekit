@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import html
 from datetime import UTC, datetime
 from io import StringIO
 from typing import Any
@@ -73,6 +74,41 @@ def render_history_csv(history: dict[str, Any]) -> str:
     return output.getvalue()
 
 
+def render_history_svg(history: dict[str, Any]) -> str:
+    entries = [entry for entry in history.get("entries", []) if isinstance(entry, dict)]
+    summary = history.get("summary", {})
+    width = 760
+    height = 320
+    left = 56
+    right = 28
+    top = 48
+    bottom = 58
+    plot_width = width - left - right
+    plot_height = height - top - bottom
+    points = [_point(index, len(entries), entry, left, top, plot_width, plot_height) for index, entry in enumerate(entries)]
+    polyline = " ".join(f"{x},{y}" for x, y, _entry in points)
+    circles = "\n".join(_circle_svg(x, y, entry) for x, y, entry in points)
+    labels = "\n".join(_point_label_svg(x, y, entry) for x, y, entry in points)
+    latest_score = _int(summary.get("latest_score"))
+    status = html.escape(str(summary.get("latest_status", "unknown")).upper())
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="OpenOps readiness history">
+  <rect width="{width}" height="{height}" fill="#f8fafc"/>
+  <text x="{left}" y="28" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#17202a">OpenOps Readiness History</text>
+  <text x="{width - right}" y="28" font-family="Arial, sans-serif" font-size="14" text-anchor="end" fill="#566573">Latest {latest_score} / {status}</text>
+  <line x1="{left}" y1="{top}" x2="{left}" y2="{top + plot_height}" stroke="#9aa6b2" stroke-width="1"/>
+  <line x1="{left}" y1="{top + plot_height}" x2="{left + plot_width}" y2="{top + plot_height}" stroke="#9aa6b2" stroke-width="1"/>
+  <line x1="{left}" y1="{top}" x2="{left + plot_width}" y2="{top}" stroke="#d5dde5" stroke-width="1"/>
+  <line x1="{left}" y1="{top + plot_height / 2:.1f}" x2="{left + plot_width}" y2="{top + plot_height / 2:.1f}" stroke="#d5dde5" stroke-width="1"/>
+  <text x="{left - 10}" y="{top + 4}" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#566573">100</text>
+  <text x="{left - 10}" y="{top + plot_height / 2 + 4:.1f}" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#566573">50</text>
+  <text x="{left - 10}" y="{top + plot_height + 4}" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#566573">0</text>
+  <polyline points="{polyline}" fill="none" stroke="#2874a6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+{circles}
+{labels}
+</svg>
+"""
+
+
 def _history_document(entries: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "schema_version": "0.1",
@@ -136,3 +172,37 @@ def _signed(value: Any) -> str:
     if number > 0:
         return f"+{number}"
     return str(number)
+
+
+def _point(
+    index: int,
+    count: int,
+    entry: dict[str, Any],
+    left: int,
+    top: int,
+    plot_width: int,
+    plot_height: int,
+) -> tuple[float, float, dict[str, Any]]:
+    if count <= 1:
+        x = left + plot_width / 2
+    else:
+        x = left + (plot_width * index / (count - 1))
+    score = max(0, min(100, _int(entry.get("score"))))
+    y = top + plot_height - (plot_height * score / 100)
+    return round(x, 1), round(y, 1), entry
+
+
+def _circle_svg(x: float, y: float, entry: dict[str, Any]) -> str:
+    status = str(entry.get("status", "fail"))
+    color = "#1e8449" if status == "pass" else "#b03a2e"
+    return f'  <circle cx="{x}" cy="{y}" r="5" fill="{color}" stroke="#ffffff" stroke-width="2"/>'
+
+
+def _point_label_svg(x: float, y: float, entry: dict[str, Any]) -> str:
+    source = html.escape(str(entry.get("source") or entry.get("report_generated_at") or "run"))
+    score = _int(entry.get("score"))
+    label_y = y - 12 if y > 70 else y + 22
+    return (
+        f'  <text x="{x}" y="{label_y:.1f}" font-family="Arial, sans-serif" '
+        f'font-size="11" text-anchor="middle" fill="#17202a">{score} {source}</text>'
+    )

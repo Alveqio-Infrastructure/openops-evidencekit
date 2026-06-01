@@ -133,6 +133,7 @@ EvidenceKit infers a simple role for each artifact:
 - `policy` for other TOML files
 - `report-markdown` for Markdown files
 - `report-html` for HTML files
+- `visual` for SVG visual artifacts
 - `report-prometheus` for Prometheus/OpenMetrics text output
 - `json` or `artifact` as fallback
 

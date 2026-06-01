@@ -34,7 +34,7 @@ from .collectors import (
 )
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
-from .history import append_report_history, render_history_csv, render_history_markdown
+from .history import append_report_history, render_history_csv, render_history_markdown, render_history_svg
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
@@ -228,7 +228,7 @@ def build_parser() -> argparse.ArgumentParser:
     history_append.set_defaults(func=cmd_history_append)
     history_render = history_sub.add_parser("render", help="Render a report history")
     history_render.add_argument("-i", "--input", required=True)
-    history_render.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    history_render.add_argument("-f", "--format", choices=["json", "markdown", "csv", "svg"], default="markdown")
     history_render.add_argument("-o", "--output", default="-")
     history_render.set_defaults(func=cmd_history_render)
 
@@ -632,6 +632,8 @@ def cmd_history_render(args: argparse.Namespace) -> int:
         rendered = dump_json(history)
     elif args.format == "csv":
         rendered = render_history_csv(history)
+    elif args.format == "svg":
+        rendered = render_history_svg(history)
     else:
         rendered = render_history_markdown(history)
     write_text(args.output, rendered)

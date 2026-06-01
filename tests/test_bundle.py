@@ -204,6 +204,7 @@ class BundleTests(unittest.TestCase):
             scorecard = temp / "scorecard.json"
             sarif = temp / "report.sarif.json"
             prometheus = temp / "report.prom"
+            svg = temp / "history.svg"
             comparison = temp / "comparison.json"
             history = temp / "history.json"
             questionnaire = temp / "questionnaire.json"
@@ -303,6 +304,7 @@ class BundleTests(unittest.TestCase):
                 "openops_readiness_score 100\n",
                 encoding="utf-8",
             )
+            svg.write_text("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>\n", encoding="utf-8")
             gate.write_text(
                 json.dumps(
                     {
@@ -535,6 +537,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
+            self.assertEqual(classify_artifact(svg), "visual")
             self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(history), "report-history")
             self.assertEqual(classify_artifact(questionnaire), "questionnaire")

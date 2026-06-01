@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from openops_evidence.cli import main
-from openops_evidence.history import append_report_history, render_history_csv, render_history_markdown
+from openops_evidence.history import append_report_history, render_history_csv, render_history_markdown, render_history_svg
 from openops_evidence.schema import validate_report_history
 
 
@@ -56,11 +56,14 @@ class HistoryTests(unittest.TestCase):
 
         markdown = render_history_markdown(history)
         csv_output = render_history_csv(history)
+        svg = render_history_svg(history)
 
         self.assertIn("# OpenOps Readiness History", markdown)
         self.assertIn("Release check", markdown)
         self.assertIn("recorded_at,report_generated_at,source,status,score", csv_output)
         self.assertIn("Release check", csv_output)
+        self.assertIn("<svg", svg)
+        self.assertIn("OpenOps Readiness History", svg)
 
     def test_cli_history_append_validates_and_renders(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -69,6 +72,7 @@ class HistoryTests(unittest.TestCase):
             report_two = temp / "report-two.json"
             history_path = temp / "readiness-history.json"
             markdown_path = temp / "readiness-history.md"
+            svg_path = temp / "readiness-history.svg"
             report_one.write_text(json.dumps(_report("fail", 80, failed=1)), encoding="utf-8")
             report_two.write_text(json.dumps(_report("pass", 100, failed=0)), encoding="utf-8")
 
@@ -109,11 +113,16 @@ class HistoryTests(unittest.TestCase):
                 main(["history", "render", "-i", str(history_path), "-f", "markdown", "-o", str(markdown_path)]),
                 0,
             )
+            self.assertEqual(
+                main(["history", "render", "-i", str(history_path), "-f", "svg", "-o", str(svg_path)]),
+                0,
+            )
 
             history = json.loads(history_path.read_text(encoding="utf-8"))
             self.assertEqual(history["summary"]["entries_total"], 2)
             self.assertEqual(history["summary"]["latest_score"], 100)
             self.assertIn("All checks green", markdown_path.read_text(encoding="utf-8"))
+            self.assertIn("<polyline", svg_path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
