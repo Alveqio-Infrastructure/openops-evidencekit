@@ -19,6 +19,7 @@ evidence-bundle.zip
 /action-plan.json
 /action-plan.md
 /action-plan.csv
+/action-tickets/
 policy.exported.toml
 policy.*exported.toml
 init-demo/

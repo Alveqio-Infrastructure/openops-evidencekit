@@ -61,6 +61,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence plan -i report.local.json -f csv -o action-plan.csv
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
+python -m openops_evidence ticket export -i action-plan.json -o action-tickets
 ```
 
 Create a hash manifest for the files you plan to share:
@@ -171,7 +172,9 @@ sources.
 
 Action plans can also consume risk waiver TOML/JSON. Waivers require an owner,
 reason, check ID, and expiry date, so accepted risks stay explicit and expire
-back into the remediation queue.
+back into the remediation queue. Ticket export turns non-waived action items
+into Markdown files that can be copied into GitHub Issues, GitLab, Jira, service
+desk tools, or a plain Git-backed runbook queue.
 
 JSON Schemas for generated artifacts live in [schemas/](schemas/).
 Example inputs and generated artifact shapes are described in

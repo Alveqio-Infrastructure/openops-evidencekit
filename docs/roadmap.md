@@ -38,6 +38,7 @@ having to deploy a platform first.
 - Policy pack versioning.
 - CI-ready machine output with stable exit codes.
 - Report comparison and regression guardrails.
+- Action plan ticket export.
 - CLI version and exit-code documentation.
 - Bundled policy pack discovery and export.
 - Bundle manifest verification.

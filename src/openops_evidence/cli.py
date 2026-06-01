@@ -44,6 +44,7 @@ from .schema import (
     validate_report,
     validate_report_comparison,
 )
+from .tickets import export_action_plan_tickets
 from .waivers import validate_waiver_document
 
 
@@ -158,6 +159,14 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--waivers", help="TOML or JSON file with accepted risk waivers")
     plan.add_argument("-o", "--output", default="-")
     plan.set_defaults(func=cmd_plan)
+
+    ticket = sub.add_parser("ticket", help="Export action plans into ticket-friendly files")
+    ticket_sub = ticket.add_subparsers(required=True)
+    ticket_export = ticket_sub.add_parser("export", help="Export action plan items as Markdown ticket files")
+    ticket_export.add_argument("-i", "--input", required=True)
+    ticket_export.add_argument("-o", "--output-dir", required=True)
+    ticket_export.add_argument("--include-waived", action="store_true")
+    ticket_export.set_defaults(func=cmd_ticket_export)
 
     merge = sub.add_parser("merge", help="Merge multiple evidence JSON files")
     merge.add_argument("inputs", nargs="+")
@@ -389,6 +398,20 @@ def cmd_plan(args: argparse.Namespace) -> int:
     else:
         write_text(args.output, dump_json(plan))
     return 1 if plan["summary"]["action_required_count"] > 0 else 0
+
+
+def cmd_ticket_export(args: argparse.Namespace) -> int:
+    plan = load_json(args.input)
+    errors = validate_action_plan(plan)
+    if errors:
+        raise UserFacingError("Action plan validation failed:\n- " + "\n- ".join(errors))
+    summary = export_action_plan_tickets(
+        plan,
+        args.output_dir,
+        include_waived=args.include_waived,
+    )
+    print(f"exported {summary['summary']['ticket_count']} ticket(s) to {args.output_dir}")
+    return 0
 
 
 def cmd_merge(args: argparse.Namespace) -> int:

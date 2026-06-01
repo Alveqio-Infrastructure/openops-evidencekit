@@ -33,3 +33,4 @@
 - Add a workflow visual to the README and architecture documentation.
 - Add verified ZIP archive creation for evidence bundles.
 - Add owner-approved risk waivers for action plans.
+- Add Markdown ticket export for action plan items.

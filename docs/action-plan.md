@@ -12,6 +12,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence plan -i report.local.json -f csv -o action-plan.csv
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
+python -m openops_evidence ticket export -i action-plan.json -o action-tickets
 ```
 
 By default, the plan includes failed and warning checks. Use `--fail-only` when
@@ -61,6 +62,21 @@ expires_at = "2099-12-31T00:00:00+00:00"
 Active waivers set the item `waived` flag, include the waiver metadata in JSON
 and CSV output, and do not contribute to `action_required_count`. Expired
 waivers stay visible, but the finding returns to the active remediation queue.
+
+## Ticket Export
+
+Use `ticket export` when findings should become concrete ticket drafts without
+binding the workflow to one vendor API:
+
+```powershell
+python -m openops_evidence ticket export -i action-plan.json -o action-tickets
+python -m openops_evidence ticket export -i action-plan.json -o action-tickets --include-waived
+```
+
+The command writes an `index.md` and one Markdown file per non-waived failing or
+warning item. Pass `--include-waived` when accepted risks should also become
+review tickets. Existing files with the same generated names are overwritten;
+unrelated files in the output directory are left untouched.
 
 ## JSON Shape
 

@@ -34,6 +34,7 @@ python -m openops_evidence validate -i report.comparison.json -t comparison
 python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.md
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
+python -m openops_evidence ticket export -i action-plan.json -o action-tickets
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.local.md readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
