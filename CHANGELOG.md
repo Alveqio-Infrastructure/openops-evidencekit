@@ -23,3 +23,4 @@
 - Add wiki seed pages for public project documentation.
 - Add end-to-end CLI workflow test and demo documentation.
 - Add detached HMAC-SHA256 signatures for evidence bundle manifests.
+- Add explicit `name@version` references for bundled policy packs.

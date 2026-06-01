@@ -24,6 +24,13 @@ python -m openops_evidence policy show baseline -o policy.baseline.toml
 python -m openops_evidence policy validate policy.baseline.toml
 ```
 
+Pin a specific bundled version when reproducibility matters:
+
+```powershell
+python -m openops_evidence policy show baseline@0.1 -o policy.baseline.toml
+python -m openops_evidence init ./my-check --policy-pack security-minimum@0.1
+```
+
 The exported TOML file is meant to be copied into a repository and adjusted for
 local requirements. Keep custom policy files under version control so threshold
 changes are reviewable.
@@ -38,5 +45,9 @@ This creates `policy.security-minimum.toml` and `evidence.sample.json`.
 
 ## Versioning
 
-Policy pack names are stable. Individual checks may evolve before 1.0, and any
-user-visible change should be documented in `CHANGELOG.md`.
+Policy pack names are stable. A pack can be referenced as `name` for the current
+bundled version or as `name@version` for an explicit version. The CLI rejects an
+unknown version instead of silently exporting a different policy.
+
+Individual checks may evolve before 1.0, and any user-visible change should be
+documented in `CHANGELOG.md`.

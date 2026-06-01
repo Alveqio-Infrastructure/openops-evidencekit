@@ -17,11 +17,27 @@ def list_policy_packs() -> list[dict[str, Any]]:
 
 
 def get_policy_pack(name: str) -> dict[str, Any]:
+    pack_name, requested_version = parse_policy_pack_reference(name)
     for pack in list_policy_packs():
-        if pack["name"] == name:
+        if pack["name"] == pack_name and (
+            requested_version is None or pack["version"] == requested_version
+        ):
             return pack
-    known = ", ".join(pack["name"] for pack in list_policy_packs())
+    packs = list_policy_packs()
+    if requested_version is not None and any(pack["name"] == pack_name for pack in packs):
+        known_versions = ", ".join(
+            f"{pack['name']}@{pack['version']}" for pack in packs if pack["name"] == pack_name
+        )
+        raise ValueError(f"Unknown policy pack version {name!r}. Available versions: {known_versions}")
+    known = ", ".join(pack["name"] for pack in packs)
     raise ValueError(f"Unknown policy pack {name!r}. Available packs: {known}")
+
+
+def parse_policy_pack_reference(reference: str) -> tuple[str, str | None]:
+    name, separator, version = reference.partition("@")
+    if not name or (separator and not version):
+        raise ValueError("Policy pack reference must use name or name@version.")
+    return name, version or None
 
 
 def read_policy_pack(name: str) -> str:

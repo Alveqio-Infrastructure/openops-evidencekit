@@ -30,7 +30,7 @@ from .collectors import (
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
 from .policy import evaluate_policy, parse_policy, validate_policy_document
-from .policypacks import render_policy_pack_list, read_policy_pack
+from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_pack
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
 from .schema import (
@@ -411,9 +411,10 @@ def cmd_init(args: argparse.Namespace) -> int:
     target = Path(args.directory)
     target.mkdir(parents=True, exist_ok=True)
     package = "openops_evidence.templates"
+    pack = get_policy_pack(args.policy_pack)
     policy = read_policy_pack(args.policy_pack)
     evidence = resources.files(package).joinpath("evidence.sample.json").read_text(encoding="utf-8")
-    (target / f"policy.{args.policy_pack}.toml").write_text(policy, encoding="utf-8")
+    (target / f"policy.{pack['name']}.toml").write_text(policy, encoding="utf-8")
     (target / "evidence.sample.json").write_text(evidence, encoding="utf-8")
     print(f"Created starter files in {target}")
     return 0
