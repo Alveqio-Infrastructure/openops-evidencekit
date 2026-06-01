@@ -47,6 +47,34 @@ python -m openops_evidence validate -i evidence-bundle.verification.json -t bund
 Use `--fail-on-mismatch` in CI when missing or changed bundle artifacts should
 fail the job.
 
+## Sign A Manifest
+
+Use a detached signature when a reviewed manifest should carry stronger
+provenance than hashes alone. EvidenceKit signs the exact manifest bytes with
+HMAC-SHA256 and writes a separate signature document. Keep the signing key in a
+secret store, environment variable, or local key file; do not commit it.
+
+```powershell
+python -m openops_evidence bundle sign evidence-bundle.manifest.json --key-file .secrets/openops-bundle-signing.key --key-id ops-2026 -o evidence-bundle.signature.json
+python -m openops_evidence validate -i evidence-bundle.signature.json -t bundle-signature
+```
+
+For CI systems, the default `--key-env OPENOPS_BUNDLE_SIGNING_KEY` can read the
+key from an injected secret environment variable instead.
+
+## Verify A Signature
+
+Signature verification checks both the manifest hash recorded in the signature
+document and the HMAC over the current manifest bytes:
+
+```powershell
+python -m openops_evidence bundle verify-signature evidence-bundle.manifest.json evidence-bundle.signature.json --key-file .secrets/openops-bundle-signing.key --fail-on-invalid -o evidence-bundle.signature-verification.json
+```
+
+The verification output uses the same lightweight shape as bundle verification:
+`summary.status` is `pass` only when the signature document is valid, the
+manifest hash matches, and the HMAC matches.
+
 ## Manifest Shape
 
 ```json
@@ -89,5 +117,10 @@ or safe to share.
 ## Trust Notes
 
 The manifest includes SHA-256 hashes and file sizes. It is useful for integrity
-checks, but it is not a signature. A future release may add signing support for
-teams that need stronger provenance guarantees.
+checks by itself, and a detached HMAC signature can prove that someone with the
+shared signing key reviewed the exact manifest bytes.
+
+HMAC signatures are symmetric: the same key signs and verifies. They are useful
+for small teams and CI workflows, but they are not a public-key trust model. If
+you need third-party verification without sharing a secret, use an external
+signing system around the generated manifest and keep that policy documented.

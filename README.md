@@ -59,6 +59,13 @@ python -m openops_evidence bundle manifest evidence.redacted.json report.local.j
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 ```
 
+Sign the reviewed bundle manifest before sharing it:
+
+```powershell
+python -m openops_evidence bundle sign evidence-bundle.manifest.json --key-file .secrets/openops-bundle-signing.key --key-id ops-2026 -o evidence-bundle.signature.json
+python -m openops_evidence bundle verify-signature evidence-bundle.manifest.json evidence-bundle.signature.json --key-file .secrets/openops-bundle-signing.key --fail-on-invalid -o evidence-bundle.signature-verification.json
+```
+
 Merge evidence from multiple sources:
 
 ```powershell

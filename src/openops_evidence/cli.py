@@ -6,7 +6,14 @@ from importlib import resources
 from pathlib import Path
 
 from . import __version__
-from .bundle import create_bundle_manifest, verify_bundle_manifest
+from .bundle import (
+    DEFAULT_SIGNING_KEY_ENV,
+    create_bundle_manifest,
+    create_bundle_signature,
+    load_signing_key,
+    verify_bundle_manifest,
+    verify_bundle_signature,
+)
 from .compare import compare_reports, render_comparison_markdown
 from .collectors import (
     collect_borg_archives,
@@ -28,6 +35,7 @@ from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
 from .schema import (
     validate_bundle_manifest,
+    validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
     validate_report,
@@ -148,13 +156,28 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--fail-on-mismatch", action="store_true")
     verify.add_argument("-o", "--output", default="-")
     verify.set_defaults(func=cmd_bundle_verify)
+    sign = bundle_sub.add_parser("sign", help="Create a detached signature for a bundle manifest")
+    sign.add_argument("manifest")
+    sign.add_argument("--key-env", default=DEFAULT_SIGNING_KEY_ENV)
+    sign.add_argument("--key-file")
+    sign.add_argument("--key-id")
+    sign.add_argument("-o", "--output", default="-")
+    sign.set_defaults(func=cmd_bundle_sign)
+    verify_signature = bundle_sub.add_parser("verify-signature", help="Verify a detached bundle manifest signature")
+    verify_signature.add_argument("manifest")
+    verify_signature.add_argument("signature")
+    verify_signature.add_argument("--key-env", default=DEFAULT_SIGNING_KEY_ENV)
+    verify_signature.add_argument("--key-file")
+    verify_signature.add_argument("--fail-on-invalid", action="store_true")
+    verify_signature.add_argument("-o", "--output", default="-")
+    verify_signature.set_defaults(func=cmd_bundle_verify_signature)
 
-    validate = sub.add_parser("validate", help="Validate evidence, report, bundle, or comparison JSON")
+    validate = sub.add_parser("validate", help="Validate evidence, report, bundle, signature, or comparison JSON")
     validate.add_argument("-i", "--input", required=True)
     validate.add_argument(
         "-t",
         "--type",
-        choices=["evidence", "report", "bundle", "bundle-verification", "comparison"],
+        choices=["evidence", "report", "bundle", "bundle-verification", "bundle-signature", "comparison"],
         default="evidence",
     )
     validate.set_defaults(func=cmd_validate)
@@ -319,6 +342,26 @@ def cmd_bundle_verify(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_bundle_sign(args: argparse.Namespace) -> int:
+    key = load_signing_key(key_file=args.key_file, key_env=args.key_env)
+    signature = create_bundle_signature(args.manifest, key, key_id=args.key_id)
+    write_text(args.output, dump_json(signature))
+    return 0
+
+
+def cmd_bundle_verify_signature(args: argparse.Namespace) -> int:
+    key = load_signing_key(key_file=args.key_file, key_env=args.key_env)
+    signature = load_json(args.signature)
+    errors = validate_bundle_signature(signature)
+    if errors:
+        raise UserFacingError("Bundle signature validation failed:\n- " + "\n- ".join(errors))
+    verification = verify_bundle_signature(args.manifest, signature, key)
+    write_text(args.output, dump_json(verification))
+    if args.fail_on_invalid and verification["summary"]["status"] == "fail":
+        return 1
+    return 0
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     document = load_json(args.input)
     if args.type == "report":
@@ -327,6 +370,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":
         errors = validate_bundle_verification(document)
+    elif args.type == "bundle-signature":
+        errors = validate_bundle_signature(document)
     elif args.type == "comparison":
         errors = validate_report_comparison(document)
     else:

@@ -33,7 +33,7 @@ having to deploy a platform first.
 
 ## 0.4 Assurance Pack
 
-- Signed evidence bundles.
+- Signed evidence bundle manifests.
 - JSON Schema distribution.
 - Policy pack versioning.
 - CI-ready machine output with stable exit codes.

@@ -1,17 +1,23 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from .schema import (
+    validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
     validate_report,
     validate_report_comparison,
 )
+
+SIGNATURE_ALGORITHM = "hmac-sha256"
+DEFAULT_SIGNING_KEY_ENV = "OPENOPS_BUNDLE_SIGNING_KEY"
 
 
 def create_bundle_manifest(
@@ -32,6 +38,32 @@ def create_bundle_manifest(
             "artifact_count": len(artifacts),
         },
         "artifacts": artifacts,
+    }
+
+
+def create_bundle_signature(
+    manifest_path: str,
+    key: bytes,
+    key_id: str | None = None,
+) -> dict[str, Any]:
+    manifest = Path(manifest_path)
+    manifest_bytes = _read_bytes(manifest)
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "created_by": "openops-evidencekit",
+            "key_id": key_id or "default",
+        },
+        "manifest": {
+            "path": manifest.name,
+            "size_bytes": len(manifest_bytes),
+            "sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        },
+        "signature": {
+            "algorithm": SIGNATURE_ALGORITHM,
+            "value": _signature_value(manifest_bytes, key),
+        },
     }
 
 
@@ -57,6 +89,89 @@ def verify_bundle_manifest(manifest: dict[str, Any], base_dir: str | None = None
         },
         "results": results,
     }
+
+
+def verify_bundle_signature(
+    manifest_path: str,
+    signature_document: dict[str, Any],
+    key: bytes,
+) -> dict[str, Any]:
+    manifest = Path(manifest_path)
+    manifest_bytes = _read_bytes(manifest)
+    actual_size = len(manifest_bytes)
+    actual_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
+    metadata_record = _mapping_value(signature_document, "metadata")
+    manifest_record = _mapping_value(signature_document, "manifest")
+    signature_record = _mapping_value(signature_document, "signature")
+    expected_sha256 = manifest_record.get("sha256")
+    expected_size = manifest_record.get("size_bytes")
+    expected_signature = signature_record.get("value")
+    expected_algorithm = signature_record.get("algorithm")
+    signature_errors = validate_bundle_signature(signature_document)
+    manifest_status = (
+        "verified"
+        if expected_size == actual_size and expected_sha256 == actual_sha256
+        else "mismatch"
+    )
+    actual_signature = _signature_value(manifest_bytes, key)
+    signature_status = (
+        "verified"
+        if expected_algorithm == SIGNATURE_ALGORITHM
+        and isinstance(expected_signature, str)
+        and hmac.compare_digest(expected_signature, actual_signature)
+        else "mismatch"
+    )
+    status = "pass" if not signature_errors and manifest_status == "verified" and signature_status == "verified" else "fail"
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "manifest_path": manifest.name,
+            "key_id": metadata_record.get("key_id"),
+            "algorithm": expected_algorithm,
+        },
+        "summary": {
+            "status": status,
+            "manifest_hash_match": manifest_status == "verified",
+            "signature_match": signature_status == "verified",
+            "signature_document_valid": not signature_errors,
+        },
+        "results": [
+            {
+                "path": manifest.name,
+                "check": "manifest-sha256",
+                "expected_size_bytes": expected_size,
+                "actual_size_bytes": actual_size,
+                "expected_sha256": expected_sha256,
+                "actual_sha256": actual_sha256,
+                "status": manifest_status,
+            },
+            {
+                "path": manifest.name,
+                "check": SIGNATURE_ALGORITHM,
+                "expected_signature": expected_signature,
+                "actual_signature": actual_signature,
+                "status": signature_status,
+            },
+        ],
+        "errors": signature_errors,
+    }
+
+
+def load_signing_key(
+    *,
+    key_file: str | None = None,
+    key_env: str = DEFAULT_SIGNING_KEY_ENV,
+) -> bytes:
+    if key_file:
+        key = Path(key_file).read_bytes().rstrip(b"\r\n")
+        if key:
+            return key
+        raise ValueError(f"Signing key file is empty: {key_file}")
+    value = os.environ.get(key_env)
+    if value:
+        return value.encode("utf-8")
+    raise ValueError(f"Signing key not found. Set {key_env} or pass --key-file.")
 
 
 def _artifact_record(path: Path, base_dir: Path | None) -> dict[str, Any]:
@@ -86,6 +201,8 @@ def classify_artifact(path: Path) -> str:
             return "report"
         if _looks_like_bundle_manifest(document):
             return "bundle-manifest"
+        if validate_bundle_signature(document) == []:
+            return "bundle-signature"
         if validate_bundle_verification(document) == []:
             return "bundle-verification"
         if validate_report_comparison(document) == []:
@@ -157,6 +274,23 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _signature_value(content: bytes, key: bytes) -> str:
+    if not key:
+        raise ValueError("Signing key must not be empty")
+    return hmac.new(key, content, hashlib.sha256).hexdigest()
+
+
+def _mapping_value(document: dict[str, Any], key: str) -> dict[str, Any]:
+    value = document.get(key)
+    return value if isinstance(value, dict) else {}
+
+
+def _read_bytes(path: Path) -> bytes:
+    if not path.is_file():
+        raise ValueError(f"Manifest does not exist or is not a file: {path}")
+    return path.read_bytes()
 
 
 def _media_type(path: Path) -> str:

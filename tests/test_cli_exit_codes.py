@@ -53,6 +53,39 @@ class CliExitCodeTests(unittest.TestCase):
                     2,
                 )
 
+    def test_verify_signature_fail_on_invalid_returns_one(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            manifest = temp / "manifest.json"
+            signature = temp / "signature.json"
+            key = temp / "key.txt"
+            wrong_key = temp / "wrong-key.txt"
+            verification = temp / "signature-verification.json"
+            manifest.write_text('{"schema_version":"0.1"}\n', encoding="utf-8")
+            key.write_text("right-key", encoding="utf-8")
+            wrong_key.write_text("wrong-key", encoding="utf-8")
+            self.assertEqual(
+                main(["bundle", "sign", str(manifest), "--key-file", str(key), "-o", str(signature)]),
+                0,
+            )
+            with redirect_stdout(StringIO()):
+                self.assertEqual(
+                    main(
+                        [
+                            "bundle",
+                            "verify-signature",
+                            str(manifest),
+                            str(signature),
+                            "--key-file",
+                            str(wrong_key),
+                            "--fail-on-invalid",
+                            "-o",
+                            str(verification),
+                        ]
+                    ),
+                    1,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,6 +22,8 @@ class CliWorkflowTests(unittest.TestCase):
             bookstack = temp / "bookstack.md"
             manifest = temp / "manifest.json"
             verification = temp / "verification.json"
+            signature = temp / "manifest.signature.json"
+            signature_verification = temp / "signature-verification.json"
 
             self.assertEqual(
                 main(["collect", "fixture", str(ROOT / "examples" / "evidence.sample.json"), "-o", str(evidence)]),
@@ -79,13 +82,58 @@ class CliWorkflowTests(unittest.TestCase):
                 0,
             )
             self.assertEqual(main(["validate", "-i", str(verification), "-t", "bundle-verification"]), 0)
+            old_key = os.environ.get("OPENOPS_TEST_SIGNING_KEY")
+            os.environ["OPENOPS_TEST_SIGNING_KEY"] = "test-signing-key"
+            try:
+                self.assertEqual(
+                    main(
+                        [
+                            "bundle",
+                            "sign",
+                            str(manifest),
+                            "--key-env",
+                            "OPENOPS_TEST_SIGNING_KEY",
+                            "--key-id",
+                            "test-key",
+                            "-o",
+                            str(signature),
+                        ]
+                    ),
+                    0,
+                )
+                self.assertEqual(main(["validate", "-i", str(signature), "-t", "bundle-signature"]), 0)
+                self.assertEqual(
+                    main(
+                        [
+                            "bundle",
+                            "verify-signature",
+                            str(manifest),
+                            str(signature),
+                            "--key-env",
+                            "OPENOPS_TEST_SIGNING_KEY",
+                            "--fail-on-invalid",
+                            "-o",
+                            str(signature_verification),
+                        ]
+                    ),
+                    0,
+                )
+            finally:
+                if old_key is None:
+                    os.environ.pop("OPENOPS_TEST_SIGNING_KEY", None)
+                else:
+                    os.environ["OPENOPS_TEST_SIGNING_KEY"] = old_key
 
             report_data = json.loads(report.read_text(encoding="utf-8"))
             manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
             verification_data = json.loads(verification.read_text(encoding="utf-8"))
+            signature_data = json.loads(signature.read_text(encoding="utf-8"))
+            signature_verification_data = json.loads(signature_verification.read_text(encoding="utf-8"))
             self.assertEqual(report_data["summary"]["status"], "pass")
             self.assertEqual(manifest_data["metadata"]["artifact_count"], 3)
             self.assertEqual(verification_data["summary"]["status"], "pass")
+            self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
+            self.assertEqual(signature_verification_data["summary"]["status"], "pass")
             self.assertIn("# OpenOps Evidence Report", markdown.read_text(encoding="utf-8"))
             self.assertIn("# Infrastructure Readiness Evidence", bookstack.read_text(encoding="utf-8"))
 

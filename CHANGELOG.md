@@ -22,3 +22,4 @@
 - Add policy validation for custom policy authoring.
 - Add wiki seed pages for public project documentation.
 - Add end-to-end CLI workflow test and demo documentation.
+- Add detached HMAC-SHA256 signatures for evidence bundle manifests.

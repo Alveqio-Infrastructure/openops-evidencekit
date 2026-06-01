@@ -82,6 +82,36 @@ def validate_bundle_verification(document: Any) -> list[str]:
     return errors
 
 
+def validate_bundle_signature(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Bundle signature must be a JSON object."]
+    _require_string(document, "schema_version", errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "manifest", errors)
+    _require_mapping(document, "signature", errors)
+    manifest = document.get("manifest", {})
+    if isinstance(manifest, dict):
+        _require_string(manifest, "path", errors, prefix="manifest.")
+        sha256 = manifest.get("sha256")
+        _require_string(manifest, "sha256", errors, prefix="manifest.")
+        if isinstance(sha256, str) and sha256 and not _is_sha256_hex(sha256):
+            errors.append("manifest.sha256 must be a lowercase SHA-256 hex digest.")
+        if not isinstance(manifest.get("size_bytes"), int) or manifest.get("size_bytes", -1) < 0:
+            errors.append("manifest.size_bytes must be a non-negative integer.")
+    signature = document.get("signature", {})
+    if isinstance(signature, dict):
+        _require_string(signature, "algorithm", errors, prefix="signature.")
+        if signature.get("algorithm") != "hmac-sha256":
+            errors.append("signature.algorithm must be hmac-sha256.")
+        value = signature.get("value")
+        _require_string(signature, "value", errors, prefix="signature.")
+        if isinstance(value, str) and value and not _is_sha256_hex(value):
+            errors.append("signature.value must be a lowercase SHA-256 hex digest.")
+    return errors
+
+
 def validate_report_comparison(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

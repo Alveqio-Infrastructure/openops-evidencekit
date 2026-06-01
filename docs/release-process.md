@@ -37,6 +37,9 @@ python -m openops_evidence bundle manifest evidence.redacted.json report.local.j
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
+python -m openops_evidence bundle sign evidence-bundle.manifest.json --key-file .secrets/openops-bundle-signing.key --key-id release-check -o evidence-bundle.signature.json
+python -m openops_evidence validate -i evidence-bundle.signature.json -t bundle-signature
+python -m openops_evidence bundle verify-signature evidence-bundle.manifest.json evidence-bundle.signature.json --key-file .secrets/openops-bundle-signing.key --fail-on-invalid -o evidence-bundle.signature-verification.json
 ```
 
 Then inspect:
@@ -51,9 +54,9 @@ Then inspect:
 1. Update `CHANGELOG.md`.
 2. Confirm sample artifacts match the current schema.
 3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`,
-   `schemas/bundle-manifest.schema.json`, `schemas/bundle-verification.schema.json`,
-   and `schemas/report-comparison.schema.json` are still aligned with generated
-   output.
+   `schemas/bundle-manifest.schema.json`, `schemas/bundle-signature.schema.json`,
+   `schemas/bundle-verification.schema.json`, and
+   `schemas/report-comparison.schema.json` are still aligned with generated output.
 4. Run the pre-release checks.
 5. Create a signed git tag when signing is available.
 6. Publish release notes with a short migration note for any schema or policy
