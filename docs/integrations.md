@@ -23,6 +23,13 @@ Integrations should collect facts, not secrets.
 | Runtime | Docker | running containers, restart policies |
 | Documentation | local directory | required files, stale files, runbook and inventory timestamps |
 
+## CI Outputs
+
+| Output | Command | Use |
+| --- | --- | --- |
+| JUnit XML | `openops-evidence report -i report.json -f junit -o report.junit.xml` | Publish readiness checks as CI test results. |
+| Markdown tickets | `openops-evidence ticket export -i action-plan.json -o action-tickets` | Import remediation work into issue trackers or service desks. |
+
 ## Candidate Integrations
 
 | Area | Integration | Evidence examples |

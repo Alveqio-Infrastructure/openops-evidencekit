@@ -46,6 +46,7 @@ python -m openops_evidence plan -i report.local.json --waivers examples/waivers.
 python -m openops_evidence validate -i action-plan.waived.json -t action-plan
 python -m openops_evidence ticket export -i action-plan.json -o action-tickets
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
+python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.comparison.json report.local.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle

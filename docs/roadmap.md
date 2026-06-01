@@ -37,6 +37,7 @@ having to deploy a platform first.
 - JSON Schema distribution.
 - Policy pack versioning.
 - CI-ready machine output with stable exit codes.
+- JUnit report export for CI test-result publishing.
 - Report comparison and regression guardrails.
 - Action plan ticket export.
 - CLI version and exit-code documentation.

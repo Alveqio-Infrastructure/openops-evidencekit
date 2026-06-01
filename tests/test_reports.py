@@ -1,6 +1,7 @@
 import unittest
+import xml.etree.ElementTree as ET
 
-from openops_evidence.reports import render_bookstack_markdown, render_markdown
+from openops_evidence.reports import render_bookstack_markdown, render_junit, render_markdown
 
 
 class ReportTests(unittest.TestCase):
@@ -98,6 +99,64 @@ class ReportTests(unittest.TestCase):
         self.assertIn("&lt;script&gt;alert\\(1\\)&lt;/script&gt;", rendered)
         self.assertIn("\\[click\\]\\(javascript:alert\\(1\\)\\)", rendered)
         self.assertIn("``bad`id``", rendered)
+
+    def test_junit_report_maps_failures_and_warnings(self):
+        rendered = render_junit(
+            {
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "summary": {
+                    "status": "fail",
+                    "score": 40,
+                    "checks_passed": 1,
+                    "checks_failed": 1,
+                    "checks_warn": 1,
+                },
+                "results": [
+                    {
+                        "id": "backup_recent",
+                        "title": "Recent backup",
+                        "status": "fail",
+                        "severity": "critical",
+                        "required": True,
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                        "observed_count": 0,
+                        "remediation": "Fix backups.",
+                    },
+                    {
+                        "id": "dmarc",
+                        "title": "DMARC policy",
+                        "status": "warn",
+                        "severity": "low",
+                        "required": False,
+                        "path": "signals.mail.domains[*].dmarc",
+                        "operator": "one_of",
+                        "observed_count": 1,
+                    },
+                    {
+                        "id": "mfa",
+                        "title": "MFA enabled",
+                        "status": "pass",
+                        "severity": "high",
+                        "required": True,
+                        "path": "signals.access.mfa_required",
+                        "operator": "equals",
+                        "observed_count": 1,
+                    },
+                ],
+            }
+        )
+
+        root = ET.fromstring(rendered)
+        self.assertEqual(root.tag, "testsuite")
+        self.assertEqual(root.attrib["tests"], "3")
+        self.assertEqual(root.attrib["failures"], "1")
+        self.assertEqual(root.attrib["skipped"], "1")
+        failure = root.find("./testcase[@name='backup_recent']/failure")
+        skipped = root.find("./testcase[@name='dmarc']/skipped")
+        self.assertIsNotNone(failure)
+        self.assertIsNotNone(skipped)
+        self.assertIn("Fix backups.", failure.text or "")
 
 
 if __name__ == "__main__":

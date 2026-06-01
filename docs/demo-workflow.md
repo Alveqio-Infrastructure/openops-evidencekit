@@ -30,6 +30,7 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json
 python -m openops_evidence validate -i report.local.json -t report
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
+python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
 python -m openops_evidence compare --base report.local.json --current report.local.json -o report.comparison.json
 python -m openops_evidence compare --base report.local.json --current report.local.json -f markdown -o report.comparison.md

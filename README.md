@@ -37,6 +37,7 @@ python -m openops_evidence collect fixture examples/evidence.sample.json -o evid
 python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
+python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 ```
 
 See [docs/demo-workflow.md](docs/demo-workflow.md) for a complete synthetic

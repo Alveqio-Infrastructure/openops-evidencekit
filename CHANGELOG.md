@@ -35,3 +35,4 @@
 - Add owner-approved risk waivers for action plans.
 - Add Markdown ticket export for action plan items.
 - Add policy coverage matrix export.
+- Add JUnit XML report output for CI systems.

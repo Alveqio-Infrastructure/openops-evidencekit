@@ -42,7 +42,7 @@ from .policy import (
 )
 from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_pack
 from .redact import redact_document
-from .reports import render_bookstack_markdown, render_html, render_markdown
+from .reports import render_bookstack_markdown, render_html, render_junit, render_markdown
 from .schema import (
     validate_action_plan,
     validate_bundle_manifest,
@@ -244,7 +244,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     report = sub.add_parser("report", help="Render a check report")
     report.add_argument("-i", "--input", required=True)
-    report.add_argument("-f", "--format", choices=["markdown", "bookstack", "html"], default="markdown")
+    report.add_argument("-f", "--format", choices=["markdown", "bookstack", "html", "junit"], default="markdown")
     report.add_argument("-o", "--output", default="-")
     report.set_defaults(func=cmd_report)
 
@@ -546,6 +546,8 @@ def cmd_report(args: argparse.Namespace) -> int:
         raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
     if args.format == "html":
         rendered = render_html(report)
+    elif args.format == "junit":
+        rendered = render_junit(report)
     elif args.format == "bookstack":
         rendered = render_bookstack_markdown(report)
     else:

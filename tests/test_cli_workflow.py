@@ -20,6 +20,7 @@ class CliWorkflowTests(unittest.TestCase):
             report = temp / "report.json"
             markdown = temp / "report.md"
             bookstack = temp / "bookstack.md"
+            junit = temp / "report.junit.xml"
             manifest = temp / "manifest.json"
             verification = temp / "verification.json"
             signature = temp / "manifest.signature.json"
@@ -60,6 +61,7 @@ class CliWorkflowTests(unittest.TestCase):
             )
             self.assertEqual(main(["report", "-i", str(report), "-f", "markdown", "-o", str(markdown)]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "bookstack", "-o", str(bookstack)]), 0)
+            self.assertEqual(main(["report", "-i", str(report), "-f", "junit", "-o", str(junit)]), 0)
             self.assertEqual(main(["policy", "show", "baseline", "-o", str(temp / "policy.exported.toml")]), 0)
             self.assertEqual(
                 main(
@@ -142,6 +144,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(signature_verification_data["summary"]["status"], "pass")
             self.assertIn("# OpenOps Evidence Report", markdown.read_text(encoding="utf-8"))
             self.assertIn("# Infrastructure Readiness Evidence", bookstack.read_text(encoding="utf-8"))
+            self.assertIn("<testsuite", junit.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import re
+import xml.etree.ElementTree as ET
 from typing import Any
 
 
@@ -102,6 +103,77 @@ def render_bookstack_markdown(report: dict[str, Any]) -> str:
         ]
     )
     return "\n".join(lines).rstrip() + "\n"
+
+
+def render_junit(report: dict[str, Any]) -> str:
+    results = [item for item in report.get("results", []) if isinstance(item, dict)]
+    failures = [item for item in results if item.get("status") == "fail"]
+    warnings = [item for item in results if item.get("status") == "warn"]
+    summary = report.get("summary", {})
+    testsuite = ET.Element(
+        "testsuite",
+        {
+            "name": "openops-evidence",
+            "tests": str(len(results)),
+            "failures": str(len(failures)),
+            "errors": "0",
+            "skipped": str(len(warnings)),
+            "timestamp": str(report.get("generated_at", "")),
+        },
+    )
+    properties = ET.SubElement(testsuite, "properties")
+    for key in ("status", "score", "checks_passed", "checks_failed", "checks_warn"):
+        ET.SubElement(
+            properties,
+            "property",
+            {"name": str(key), "value": str(summary.get(key, ""))},
+        )
+    for item in results:
+        testcase = ET.SubElement(
+            testsuite,
+            "testcase",
+            {
+                "classname": "openops.evidence",
+                "name": str(item.get("id", "unknown")),
+                "time": "0",
+            },
+        )
+        if item.get("status") == "fail":
+            failure = ET.SubElement(
+                testcase,
+                "failure",
+                {
+                    "message": str(item.get("title") or item.get("id") or "OpenOps check failed"),
+                    "type": str(item.get("severity") or "unknown"),
+                },
+            )
+            failure.text = _junit_detail(item)
+        elif item.get("status") == "warn":
+            skipped = ET.SubElement(
+                testcase,
+                "skipped",
+                {"message": str(item.get("title") or item.get("id") or "OpenOps check warning")},
+            )
+            skipped.text = _junit_detail(item)
+    return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" + ET.tostring(testsuite, encoding="unicode") + "\n"
+
+
+def _junit_detail(item: dict[str, Any]) -> str:
+    lines = [
+        f"Check: {item.get('id', 'unknown')}",
+        f"Title: {item.get('title', '')}",
+        f"Status: {item.get('status', '')}",
+        f"Severity: {item.get('severity', '')}",
+        f"Required: {item.get('required', '')}",
+        f"Path: {item.get('path', '')}",
+        f"Operator: {item.get('operator', '')}",
+        f"Observed count: {item.get('observed_count', 0)}",
+    ]
+    if item.get("remediation"):
+        lines.append(f"Remediation: {item.get('remediation')}")
+    if item.get("error"):
+        lines.append(f"Error: {item.get('error')}")
+    return "\n".join(lines)
 
 
 def _bookstack_finding(item: dict[str, Any]) -> list[str]:

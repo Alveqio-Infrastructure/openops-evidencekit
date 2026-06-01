@@ -9,6 +9,7 @@ python -m openops_evidence policy list
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
+python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.md
 python -m openops_evidence plan -i report.local.json -o action-plan.json
 python -m openops_evidence waiver validate examples/waivers.sample.toml

@@ -64,10 +64,12 @@ python -m openops_evidence check -i evidence.redacted.json -p examples/policy.ba
 
 ```powershell
 python -m openops_evidence report -i report.json -f markdown -o report.md
+python -m openops_evidence report -i report.json -f junit -o report.junit.xml
 ```
 
 Store the report in your operations documentation system and track remediation
-work in your ticket system.
+work in your ticket system. Use JUnit output when a CI system should publish
+readiness checks as test results.
 
 For BookStack-style wiki pages:
 
