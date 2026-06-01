@@ -22,6 +22,7 @@ class CliWorkflowTests(unittest.TestCase):
             markdown = temp / "report.md"
             bookstack = temp / "bookstack.md"
             junit = temp / "report.junit.xml"
+            sarif = temp / "report.sarif.json"
             manifest = temp / "manifest.json"
             verification = temp / "verification.json"
             signature = temp / "manifest.signature.json"
@@ -81,6 +82,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(gate), "-t", "gate-result"]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "bookstack", "-o", str(bookstack)]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "junit", "-o", str(junit)]), 0)
+            self.assertEqual(main(["report", "-i", str(report), "-f", "sarif", "-o", str(sarif)]), 0)
             self.assertEqual(main(["policy", "show", "baseline", "-o", str(temp / "policy.exported.toml")]), 0)
             self.assertEqual(
                 main(
@@ -91,6 +93,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(report),
                         str(gate),
                         str(markdown),
+                        str(sarif),
                         "--base-dir",
                         str(temp),
                         "-o",
@@ -159,7 +162,7 @@ class CliWorkflowTests(unittest.TestCase):
             signature_verification_data = json.loads(signature_verification.read_text(encoding="utf-8"))
             self.assertEqual(report_data["summary"]["status"], "pass")
             self.assertEqual(gate_data["summary"]["status"], "pass")
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 4)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 5)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -167,6 +170,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("# OpenOps Evidence Report", markdown.read_text(encoding="utf-8"))
             self.assertIn("# Infrastructure Readiness Evidence", bookstack.read_text(encoding="utf-8"))
             self.assertIn("<testsuite", junit.read_text(encoding="utf-8"))
+            self.assertEqual(json.loads(sarif.read_text(encoding="utf-8"))["version"], "2.1.0")
 
 
 if __name__ == "__main__":

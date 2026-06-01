@@ -11,6 +11,7 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence gate report -i report.local.json --min-score 90 -o gate-result.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
+python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
 python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.md
 python -m openops_evidence plan -i report.local.json -o action-plan.json
 python -m openops_evidence waiver validate examples/waivers.sample.toml

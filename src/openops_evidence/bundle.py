@@ -237,6 +237,8 @@ def classify_artifact(path: Path) -> str:
             return "evidence"
         if validate_report(document) == []:
             return "report"
+        if _looks_like_sarif(document):
+            return "report-sarif"
         if validate_action_plan(document) == []:
             return "action-plan"
         if validate_gate_result(document) == []:
@@ -389,4 +391,12 @@ def _looks_like_bundle_manifest(document: Any) -> bool:
         isinstance(document, dict)
         and isinstance(document.get("artifacts"), list)
         and isinstance(document.get("metadata"), dict)
+    )
+
+
+def _looks_like_sarif(document: Any) -> bool:
+    return (
+        isinstance(document, dict)
+        and document.get("version") == "2.1.0"
+        and isinstance(document.get("runs"), list)
     )

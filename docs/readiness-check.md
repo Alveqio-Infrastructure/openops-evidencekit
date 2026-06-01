@@ -66,11 +66,13 @@ python -m openops_evidence gate report -i report.json --min-score 90 --max-warni
 ```powershell
 python -m openops_evidence report -i report.json -f markdown -o report.md
 python -m openops_evidence report -i report.json -f junit -o report.junit.xml
+python -m openops_evidence report -i report.json -f sarif -o report.sarif.json
 ```
 
 Store the report in your operations documentation system and track remediation
 work in your ticket system. Use JUnit output when a CI system should publish
-readiness checks as test results.
+readiness checks as test results, and SARIF output when review tooling should
+ingest fail/warn findings.
 
 For BookStack-style wiki pages:
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import json
 import re
 import xml.etree.ElementTree as ET
 from typing import Any
@@ -156,6 +157,98 @@ def render_junit(report: dict[str, Any]) -> str:
             )
             skipped.text = _junit_detail(item)
     return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" + ET.tostring(testsuite, encoding="unicode") + "\n"
+
+
+def render_sarif(report: dict[str, Any]) -> str:
+    findings = [
+        item
+        for item in report.get("results", [])
+        if isinstance(item, dict) and item.get("status") in {"fail", "warn"}
+    ]
+    rules = [_sarif_rule(item) for item in findings]
+    results = [_sarif_result(item) for item in findings]
+    sarif = {
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "OpenOps EvidenceKit",
+                        "informationUri": "https://github.com/Alveqio-Infrastructure/openops-evidencekit",
+                        "rules": rules,
+                    }
+                },
+                "invocations": [
+                    {
+                        "executionSuccessful": True,
+                        "properties": {
+                            "source_report_generated_at": report.get("generated_at"),
+                            "source_status": report.get("summary", {}).get("status"),
+                            "source_score": report.get("summary", {}).get("score"),
+                        },
+                    }
+                ],
+                "results": results,
+            }
+        ],
+    }
+    return json.dumps(sarif, indent=2, sort_keys=True) + "\n"
+
+
+def _sarif_rule(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": str(item.get("id", "unknown")),
+        "name": str(item.get("title") or item.get("id") or "OpenOps check"),
+        "shortDescription": {"text": str(item.get("title") or item.get("id") or "OpenOps check")},
+        "fullDescription": {"text": str(item.get("remediation") or "Review the finding and update evidence.")},
+        "defaultConfiguration": {"level": _sarif_level(item)},
+        "properties": {
+            "severity": item.get("severity"),
+            "required": item.get("required"),
+            "operator": item.get("operator"),
+            "path": item.get("path"),
+        },
+    }
+
+
+def _sarif_result(item: dict[str, Any]) -> dict[str, Any]:
+    message = str(item.get("title") or item.get("id") or "OpenOps finding")
+    remediation = item.get("remediation")
+    if remediation:
+        message = f"{message}: {remediation}"
+    return {
+        "ruleId": str(item.get("id", "unknown")),
+        "level": _sarif_level(item),
+        "message": {"text": message},
+        "locations": [
+            {
+                "logicalLocations": [
+                    {
+                        "name": str(item.get("path") or item.get("id") or "evidence"),
+                        "fullyQualifiedName": str(item.get("path") or item.get("id") or "evidence"),
+                        "kind": "object",
+                    }
+                ]
+            }
+        ],
+        "properties": {
+            "status": item.get("status"),
+            "severity": item.get("severity"),
+            "required": item.get("required"),
+            "observed_count": item.get("observed_count"),
+            "operator": item.get("operator"),
+            "evidence_path": item.get("path"),
+        },
+    }
+
+
+def _sarif_level(item: dict[str, Any]) -> str:
+    if item.get("status") == "fail":
+        return "error"
+    if item.get("status") == "warn":
+        return "warning"
+    return "note"
 
 
 def _junit_detail(item: dict[str, Any]) -> str:

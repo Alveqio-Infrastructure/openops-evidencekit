@@ -29,6 +29,7 @@ Integrations should collect facts, not secrets.
 | --- | --- | --- |
 | Gate JSON | `openops-evidence gate report -i report.json --min-score 90 -o gate-result.json` | Enforce readiness thresholds in CI. |
 | JUnit XML | `openops-evidence report -i report.json -f junit -o report.junit.xml` | Publish readiness checks as CI test results. |
+| SARIF JSON | `openops-evidence report -i report.json -f sarif -o report.sarif.json` | Import findings into SARIF-aware review tools. |
 | Markdown tickets | `openops-evidence ticket export -i action-plan.json -o action-tickets` | Import remediation work into issue trackers or service desks. |
 
 ## Candidate Integrations

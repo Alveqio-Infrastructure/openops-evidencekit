@@ -39,6 +39,7 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
+python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
 ```
 
 See [docs/demo-workflow.md](docs/demo-workflow.md) for a complete synthetic

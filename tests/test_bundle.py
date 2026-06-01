@@ -197,6 +197,7 @@ class BundleTests(unittest.TestCase):
             temp = Path(temp_dir)
             report = temp / "report.json"
             gate = temp / "gate.json"
+            sarif = temp / "report.sarif.json"
             comparison = temp / "comparison.json"
             signature = temp / "signature.json"
             report.write_text(
@@ -215,6 +216,10 @@ class BundleTests(unittest.TestCase):
                         "results": [],
                     }
                 ),
+                encoding="utf-8",
+            )
+            sarif.write_text(
+                json.dumps({"version": "2.1.0", "runs": []}),
                 encoding="utf-8",
             )
             gate.write_text(
@@ -287,6 +292,7 @@ class BundleTests(unittest.TestCase):
             )
             self.assertEqual(classify_artifact(report), "report")
             self.assertEqual(classify_artifact(gate), "gate-result")
+            self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
             self.assertEqual(classify_artifact(policy), "policy")

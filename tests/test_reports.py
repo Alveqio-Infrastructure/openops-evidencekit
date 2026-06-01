@@ -1,7 +1,8 @@
+import json
 import unittest
 import xml.etree.ElementTree as ET
 
-from openops_evidence.reports import render_bookstack_markdown, render_junit, render_markdown
+from openops_evidence.reports import render_bookstack_markdown, render_junit, render_markdown, render_sarif
 
 
 class ReportTests(unittest.TestCase):
@@ -157,6 +158,65 @@ class ReportTests(unittest.TestCase):
         self.assertIsNotNone(failure)
         self.assertIsNotNone(skipped)
         self.assertIn("Fix backups.", failure.text or "")
+
+    def test_sarif_report_exports_findings(self):
+        sarif = json.loads(
+            render_sarif(
+                {
+                    "generated_at": "2026-05-31T10:00:00+00:00",
+                    "summary": {
+                        "status": "fail",
+                        "score": 40,
+                        "checks_passed": 1,
+                        "checks_failed": 1,
+                        "checks_warn": 1,
+                    },
+                    "results": [
+                        {
+                            "id": "backup_recent",
+                            "title": "Recent backup",
+                            "status": "fail",
+                            "severity": "critical",
+                            "required": True,
+                            "path": "signals.backup.last_success_at",
+                            "operator": "within_days",
+                            "observed_count": 0,
+                            "remediation": "Fix backups.",
+                        },
+                        {
+                            "id": "dmarc",
+                            "title": "DMARC policy",
+                            "status": "warn",
+                            "severity": "low",
+                            "required": False,
+                            "path": "signals.mail.domains[*].dmarc",
+                            "operator": "one_of",
+                            "observed_count": 1,
+                        },
+                        {
+                            "id": "mfa",
+                            "title": "MFA enabled",
+                            "status": "pass",
+                            "severity": "high",
+                            "required": True,
+                            "path": "signals.access.mfa_required",
+                            "operator": "equals",
+                            "observed_count": 1,
+                        },
+                    ],
+                }
+            )
+        )
+
+        run = sarif["runs"][0]
+        self.assertEqual(sarif["version"], "2.1.0")
+        self.assertEqual([result["ruleId"] for result in run["results"]], ["backup_recent", "dmarc"])
+        self.assertEqual(run["results"][0]["level"], "error")
+        self.assertEqual(run["results"][1]["level"], "warning")
+        self.assertEqual(
+            run["results"][0]["locations"][0]["logicalLocations"][0]["name"],
+            "signals.backup.last_success_at",
+        )
 
 
 if __name__ == "__main__":

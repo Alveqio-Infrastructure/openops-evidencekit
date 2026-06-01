@@ -38,3 +38,4 @@
 - Add JUnit XML report output for CI systems.
 - Add privacy scanning for artifacts before sharing.
 - Add configurable report gates for CI thresholds.
+- Add SARIF report output for review tooling.
