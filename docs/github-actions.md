@@ -14,7 +14,7 @@ Generated files:
 - `.github/workflows/openops-evidence.yml`
 
 The workflow validates evidence, evaluates the baseline policy, creates Markdown,
-JUnit, SARIF, badge, history, and Prometheus artifacts, then enforces a
+JUnit, SARIF, badge, executive brief, history, and Prometheus artifacts, then enforces a
 configurable gate:
 
 ```yaml

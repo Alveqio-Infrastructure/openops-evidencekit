@@ -270,6 +270,53 @@ def validate_report_history(document: Any) -> list[str]:
     return errors
 
 
+def validate_executive_brief(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Executive brief must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "top_findings", errors)
+    _require_list(document, "next_steps", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "fail"}, errors, prefix="summary.")
+        _require_enum(summary, "health", {"on_track", "watch", "action_required"}, errors, prefix="summary.")
+        _require_string(summary, "message", errors, prefix="summary.")
+        _require_int_range(summary, "score", errors, minimum=0, maximum=100, prefix="summary.")
+        for key in (
+            "checks_total",
+            "checks_passed",
+            "checks_failed",
+            "checks_warn",
+            "top_findings_count",
+            "critical_count",
+            "high_count",
+            "medium_count",
+            "low_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, finding in enumerate(document.get("top_findings", [])):
+        if not isinstance(finding, dict):
+            errors.append(f"top_findings[{index}] must be an object.")
+            continue
+        prefix = f"top_findings[{index}]."
+        _require_string(finding, "id", errors, prefix=prefix)
+        _require_string(finding, "title", errors, prefix=prefix)
+        _require_enum(finding, "status", {"fail", "warn"}, errors, prefix=prefix)
+        _require_enum(finding, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        if not isinstance(finding.get("required"), bool):
+            errors.append(f"{prefix}required must be a boolean.")
+        _require_string_type(finding, "path", errors, prefix=prefix)
+        _require_string(finding, "remediation", errors, prefix=prefix)
+    for index, step in enumerate(document.get("next_steps", [])):
+        if not isinstance(step, str) or not step:
+            errors.append(f"next_steps[{index}] must be a non-empty string.")
+    return errors
+
+
 def validate_bundle_manifest(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

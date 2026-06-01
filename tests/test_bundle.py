@@ -198,6 +198,7 @@ class BundleTests(unittest.TestCase):
             report = temp / "report.json"
             gate = temp / "gate.json"
             badge = temp / "badge.json"
+            brief = temp / "executive-brief.json"
             sarif = temp / "report.sarif.json"
             prometheus = temp / "report.prom"
             comparison = temp / "comparison.json"
@@ -255,6 +256,33 @@ class BundleTests(unittest.TestCase):
                         "label": "openops",
                         "message": "pass 100",
                         "color": "brightgreen",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            brief.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "score": 100,
+                            "health": "on_track",
+                            "message": "Readiness is on track.",
+                            "checks_total": 10,
+                            "checks_passed": 10,
+                            "checks_failed": 0,
+                            "checks_warn": 0,
+                            "top_findings_count": 0,
+                            "critical_count": 0,
+                            "high_count": 0,
+                            "medium_count": 0,
+                            "low_count": 0,
+                        },
+                        "top_findings": [],
+                        "next_steps": ["Keep reviewing evidence."],
                     }
                 ),
                 encoding="utf-8",
@@ -348,6 +376,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(report), "report")
             self.assertEqual(classify_artifact(gate), "gate-result")
             self.assertEqual(classify_artifact(badge), "badge")
+            self.assertEqual(classify_artifact(brief), "executive-brief")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(comparison), "report-comparison")

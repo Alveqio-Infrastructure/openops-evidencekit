@@ -7,6 +7,7 @@ from openops_evidence.schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_executive_brief,
     validate_gate_result,
     validate_policy_matrix,
     validate_privacy_scan,
@@ -173,6 +174,88 @@ class SchemaTests(unittest.TestCase):
             }
         )
         self.assertEqual(errors, [])
+
+    def test_valid_executive_brief(self):
+        errors = validate_executive_brief(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "fail",
+                    "score": 70,
+                    "health": "action_required",
+                    "message": "Readiness needs attention.",
+                    "checks_total": 1,
+                    "checks_passed": 0,
+                    "checks_failed": 1,
+                    "checks_warn": 0,
+                    "top_findings_count": 1,
+                    "critical_count": 1,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "top_findings": [
+                    {
+                        "id": "backup_recent",
+                        "title": "Recent backup",
+                        "status": "fail",
+                        "severity": "critical",
+                        "required": True,
+                        "path": "signals.backup.last_success_at",
+                        "remediation": "Fix backups.",
+                    }
+                ],
+                "next_steps": ["Fix backups."],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_executive_brief_is_reported(self):
+        errors = validate_executive_brief(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "unknown",
+                    "score": 101,
+                    "health": "great",
+                    "message": "",
+                    "checks_total": -1,
+                    "checks_passed": 0,
+                    "checks_failed": 0,
+                    "checks_warn": 0,
+                    "top_findings_count": 1,
+                    "critical_count": 0,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "top_findings": [
+                    {
+                        "id": "",
+                        "title": "",
+                        "status": "pass",
+                        "severity": "urgent",
+                        "required": "yes",
+                        "path": 123,
+                        "remediation": "",
+                    }
+                ],
+                "next_steps": [""],
+            }
+        )
+        self.assertIn("summary.status must be one of: fail, pass.", errors)
+        self.assertIn("summary.health must be one of: action_required, on_track, watch.", errors)
+        self.assertIn("summary.score must be at most 100.", errors)
+        self.assertIn("summary.message must be a non-empty string.", errors)
+        self.assertIn("summary.checks_total must be at least 0.", errors)
+        self.assertIn("top_findings[0].id must be a non-empty string.", errors)
+        self.assertIn("top_findings[0].status must be one of: fail, warn.", errors)
+        self.assertIn("top_findings[0].required must be a boolean.", errors)
+        self.assertIn("next_steps[0] must be a non-empty string.", errors)
 
     def test_invalid_action_plan_is_reported(self):
         errors = validate_action_plan(

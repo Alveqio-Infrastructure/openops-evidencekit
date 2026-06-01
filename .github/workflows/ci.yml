@@ -58,6 +58,9 @@ jobs:
           PYTHONPATH=src python -m openops_evidence validate -i gate-result.json -t gate-result
           PYTHONPATH=src python -m openops_evidence badge report -i report.local.json -o readiness-badge.json
           PYTHONPATH=src python -m openops_evidence validate -i readiness-badge.json -t badge
+          PYTHONPATH=src python -m openops_evidence brief report -i report.local.json -f json -o executive-brief.json
+          PYTHONPATH=src python -m openops_evidence validate -i executive-brief.json -t executive-brief
+          PYTHONPATH=src python -m openops_evidence brief report -i report.local.json -o executive-brief.md
           PYTHONPATH=src python -m openops_evidence history append -i report.local.json --source ci -o readiness-history.json
           PYTHONPATH=src python -m openops_evidence validate -i readiness-history.json -t history
           PYTHONPATH=src python -m openops_evidence history render -i readiness-history.json -f markdown -o readiness-history.md
@@ -75,7 +78,7 @@ jobs:
           PYTHONPATH=src python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.waived.json
           PYTHONPATH=src python -m openops_evidence validate -i action-plan.waived.json -t action-plan
           PYTHONPATH=src python -m openops_evidence ticket export -i action-plan.json -o action-tickets
-          PYTHONPATH=src python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json readiness-badge.json readiness-history.json report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
+          PYTHONPATH=src python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json readiness-badge.json executive-brief.json readiness-history.json report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
           PYTHONPATH=src python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
           PYTHONPATH=src python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
           PYTHONPATH=src python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification

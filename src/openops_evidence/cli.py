@@ -9,6 +9,7 @@ from typing import Any
 from . import __version__
 from .actions import create_action_plan, render_action_plan_csv, render_action_plan_markdown
 from .badges import create_report_badge
+from .briefs import create_report_brief, render_brief_markdown
 from .bundle import (
     DEFAULT_SIGNING_KEY_ENV,
     create_bundle_manifest,
@@ -62,6 +63,7 @@ from .schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_executive_brief,
     validate_gate_result,
     validate_policy_matrix,
     validate_privacy_scan,
@@ -196,6 +198,15 @@ def build_parser() -> argparse.ArgumentParser:
     history_render.add_argument("-o", "--output", default="-")
     history_render.set_defaults(func=cmd_history_render)
 
+    brief = sub.add_parser("brief", help="Create stakeholder-friendly report briefs")
+    brief_sub = brief.add_subparsers(required=True)
+    brief_report = brief_sub.add_parser("report", help="Create an executive brief from a report JSON file")
+    brief_report.add_argument("-i", "--input", required=True)
+    brief_report.add_argument("-f", "--format", choices=["json", "markdown"], default="markdown")
+    brief_report.add_argument("--max-findings", type=int, default=5)
+    brief_report.add_argument("-o", "--output", default="-")
+    brief_report.set_defaults(func=cmd_brief_report)
+
     plan = sub.add_parser("plan", help="Create a prioritized remediation action plan from a report")
     plan.add_argument("-i", "--input", required=True)
     plan.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="json")
@@ -285,6 +296,7 @@ def build_parser() -> argparse.ArgumentParser:
             "evidence",
             "report",
             "action-plan",
+            "executive-brief",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -510,6 +522,22 @@ def cmd_history_render(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_brief_report(args: argparse.Namespace) -> int:
+    report = load_json(args.input)
+    errors = validate_report(report)
+    if errors:
+        raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
+    if args.max_findings < 0:
+        raise UserFacingError("--max-findings must be at least 0")
+    brief = create_report_brief(report, max_findings=args.max_findings)
+    if args.format == "json":
+        rendered = dump_json(brief)
+    else:
+        rendered = render_brief_markdown(brief)
+    write_text(args.output, rendered)
+    return 0
+
+
 def _load_existing_history(path: str | None, output: str | None) -> dict[str, Any] | None:
     history_path = Path(path) if path else None
     if history_path is None and output and output != "-":
@@ -677,6 +705,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_report(document)
     elif args.type == "action-plan":
         errors = validate_action_plan(document)
+    elif args.type == "executive-brief":
+        errors = validate_executive_brief(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

@@ -32,6 +32,7 @@ produces the common CI artifacts below.
 | --- | --- | --- |
 | Gate JSON | `openops-evidence gate report -i report.json --min-score 90 -o gate-result.json` | Enforce readiness thresholds in CI. |
 | Badge JSON | `openops-evidence badge report -i report.json -o readiness-badge.json` | Publish a compact Shields-compatible readiness status. |
+| Executive brief | `openops-evidence brief report -i report.json -o executive-brief.md` | Share a concise stakeholder summary. |
 | History JSON | `openops-evidence history append -i report.json -o readiness-history.json` | Track score and finding changes across recurring reviews. |
 | JUnit XML | `openops-evidence report -i report.json -f junit -o report.junit.xml` | Publish readiness checks as CI test results. |
 | SARIF JSON | `openops-evidence report -i report.json -f sarif -o report.sarif.json` | Import findings into SARIF-aware review tools. |

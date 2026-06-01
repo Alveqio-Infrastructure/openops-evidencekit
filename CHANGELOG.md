@@ -44,3 +44,4 @@
 - Add GitHub Actions starter workflow generation to `init`.
 - Add a visual report preview to the README.
 - Add report history tracking for recurring readiness reviews.
+- Add deterministic executive brief export for stakeholder handoff.

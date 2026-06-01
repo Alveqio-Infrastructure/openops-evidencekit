@@ -25,6 +25,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("openops-evidence check", workflow_text)
             self.assertIn("-p policy.baseline.toml", workflow_text)
             self.assertIn("openops-evidence badge report", workflow_text)
+            self.assertIn("openops-evidence brief report", workflow_text)
             self.assertIn("openops-evidence history append", workflow_text)
             self.assertIn("-f prometheus", workflow_text)
 
@@ -45,6 +46,8 @@ class CliWorkflowTests(unittest.TestCase):
             report = temp / "report.json"
             gate = temp / "gate-result.json"
             badge = temp / "readiness-badge.json"
+            brief = temp / "executive-brief.json"
+            brief_markdown = temp / "executive-brief.md"
             history = temp / "readiness-history.json"
             history_markdown = temp / "readiness-history.md"
             markdown = temp / "report.md"
@@ -111,6 +114,9 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(gate), "-t", "gate-result"]), 0)
             self.assertEqual(main(["badge", "report", "-i", str(report), "-o", str(badge)]), 0)
             self.assertEqual(main(["validate", "-i", str(badge), "-t", "badge"]), 0)
+            self.assertEqual(main(["brief", "report", "-i", str(report), "-f", "json", "-o", str(brief)]), 0)
+            self.assertEqual(main(["validate", "-i", str(brief), "-t", "executive-brief"]), 0)
+            self.assertEqual(main(["brief", "report", "-i", str(report), "-o", str(brief_markdown)]), 0)
             self.assertEqual(
                 main(["history", "append", "-i", str(report), "--source", "workflow-test", "-o", str(history)]),
                 0,
@@ -134,6 +140,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(report),
                         str(gate),
                         str(badge),
+                        str(brief),
                         str(history),
                         str(markdown),
                         str(sarif),
@@ -201,6 +208,7 @@ class CliWorkflowTests(unittest.TestCase):
             report_data = json.loads(report.read_text(encoding="utf-8"))
             gate_data = json.loads(gate.read_text(encoding="utf-8"))
             badge_data = json.loads(badge.read_text(encoding="utf-8"))
+            brief_data = json.loads(brief.read_text(encoding="utf-8"))
             history_data = json.loads(history.read_text(encoding="utf-8"))
             manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
             verification_data = json.loads(verification.read_text(encoding="utf-8"))
@@ -209,8 +217,9 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(report_data["summary"]["status"], "pass")
             self.assertEqual(gate_data["summary"]["status"], "pass")
             self.assertEqual(badge_data["message"], "pass 100")
+            self.assertEqual(brief_data["summary"]["health"], "on_track")
             self.assertEqual(history_data["summary"]["latest_score"], 100)
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 8)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 9)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -220,6 +229,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("<testsuite", junit.read_text(encoding="utf-8"))
             self.assertEqual(json.loads(sarif.read_text(encoding="utf-8"))["version"], "2.1.0")
             self.assertIn("openops_readiness_score 100", prometheus.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Executive Brief", brief_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Readiness History", history_markdown.read_text(encoding="utf-8"))
 
 

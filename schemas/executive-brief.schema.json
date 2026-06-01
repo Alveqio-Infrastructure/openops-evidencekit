@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/executive-brief.schema.json",
+  "title": "OpenOps Executive Brief",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "top_findings", "next_steps"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "score",
+        "health",
+        "message",
+        "checks_total",
+        "checks_passed",
+        "checks_failed",
+        "checks_warn",
+        "top_findings_count",
+        "critical_count",
+        "high_count",
+        "medium_count",
+        "low_count"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "fail"]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "health": {
+          "enum": ["on_track", "watch", "action_required"]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "top_findings_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "top_findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "status", "severity", "required", "path", "remediation"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["fail", "warn"]
+        },
+        "severity": {
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

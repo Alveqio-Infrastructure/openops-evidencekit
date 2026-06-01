@@ -28,8 +28,8 @@ Automation exit codes are documented in [docs/exit-codes.md](docs/exit-codes.md)
 
 The same report can be rendered for people, CI systems, dashboards, and
 handoff bundles: Markdown or BookStack pages, HTML, JUnit XML, SARIF JSON,
-Prometheus text metrics, a Shields-compatible badge, action plans, tickets, and
-signed evidence bundles.
+Prometheus text metrics, a Shields-compatible badge, executive briefs, action
+plans, tickets, and signed evidence bundles.
 
 ## Status
 
@@ -47,6 +47,7 @@ python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
 python -m openops_evidence badge report -i report.local.json -o readiness-badge.json
+python -m openops_evidence brief report -i report.local.json -o executive-brief.md
 python -m openops_evidence history append -i report.local.json --source local -o readiness-history.json
 python -m openops_evidence history render -i readiness-history.json -f markdown -o readiness-history.md
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
@@ -202,6 +203,7 @@ Bundled policies are described in [docs/policy-packs.md](docs/policy-packs.md).
 Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest.md).
 Report comparisons are described in [docs/report-comparison.md](docs/report-comparison.md).
 Report history tracking is described in [docs/report-history.md](docs/report-history.md).
+Executive briefs are described in [docs/executive-brief.md](docs/executive-brief.md).
 Action plans are described in [docs/action-plan.md](docs/action-plan.md).
 CI gates are described in [docs/gates.md](docs/gates.md).
 Status badges are emitted as Shields-compatible endpoint JSON and can be used

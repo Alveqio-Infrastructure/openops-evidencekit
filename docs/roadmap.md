@@ -46,6 +46,7 @@ having to deploy a platform first.
 - Report gates for score and finding thresholds.
 - Report comparison and regression guardrails.
 - Report history timeline for recurring readiness reviews.
+- Executive brief export for stakeholder handoff.
 - Action plan ticket export.
 - CLI version and exit-code documentation.
 - Bundled policy pack discovery and export.
