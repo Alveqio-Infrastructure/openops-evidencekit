@@ -50,6 +50,7 @@ from .policy import (
 from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_pack
 from .privacy import render_privacy_scan_markdown, scan_privacy
 from .redact import redact_document
+from .questionnaire import create_policy_questionnaire, render_questionnaire_csv, render_questionnaire_markdown
 from .reports import (
     render_bookstack_markdown,
     render_html,
@@ -72,6 +73,7 @@ from .schema import (
     validate_policy_matrix,
     validate_privacy_scan,
     validate_policy_coverage,
+    validate_questionnaire,
     validate_report,
     validate_report_comparison,
     validate_report_history,
@@ -184,6 +186,14 @@ def build_parser() -> argparse.ArgumentParser:
     coverage_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
     coverage_report.add_argument("-o", "--output", default="-")
     coverage_report.set_defaults(func=cmd_coverage_report)
+
+    questionnaire = sub.add_parser("questionnaire", help="Create evidence request questionnaires from policies")
+    questionnaire_sub = questionnaire.add_subparsers(required=True)
+    questionnaire_policy = questionnaire_sub.add_parser("policy", help="Render questions from a policy file")
+    questionnaire_policy.add_argument("path")
+    questionnaire_policy.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    questionnaire_policy.add_argument("-o", "--output", default="-")
+    questionnaire_policy.set_defaults(func=cmd_questionnaire_policy)
 
     waiver = sub.add_parser("waiver", help="Inspect risk acceptance waivers")
     waiver_sub = waiver.add_subparsers(required=True)
@@ -351,6 +361,7 @@ def build_parser() -> argparse.ArgumentParser:
             "badge",
             "policy-matrix",
             "policy-coverage",
+            "questionnaire",
             "inventory",
             "privacy-scan",
             "history",
@@ -526,6 +537,22 @@ def cmd_coverage_report(args: argparse.Namespace) -> int:
         rendered = render_coverage_csv(coverage)
     else:
         rendered = render_coverage_markdown(coverage)
+    write_text(args.output, rendered)
+    return 0
+
+
+def cmd_questionnaire_policy(args: argparse.Namespace) -> int:
+    policy_raw = load_structured(args.path)
+    policy_errors = validate_policy_document(policy_raw)
+    if policy_errors:
+        raise UserFacingError("Policy validation failed:\n- " + "\n- ".join(policy_errors))
+    questionnaire = create_policy_questionnaire(parse_policy(policy_raw))
+    if args.format == "json":
+        rendered = dump_json(questionnaire)
+    elif args.format == "csv":
+        rendered = render_questionnaire_csv(questionnaire)
+    else:
+        rendered = render_questionnaire_markdown(questionnaire)
     write_text(args.output, rendered)
     return 0
 
@@ -863,6 +890,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_policy_matrix(document)
     elif args.type == "policy-coverage":
         errors = validate_policy_coverage(document)
+    elif args.type == "questionnaire":
+        errors = validate_questionnaire(document)
     elif args.type == "inventory":
         errors = validate_inventory(document)
     elif args.type == "privacy-scan":

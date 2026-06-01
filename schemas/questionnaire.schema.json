@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/questionnaire.schema.json",
+  "title": "OpenOps Evidence Questionnaire",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "questions"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "questions_total",
+        "domain_count",
+        "required_count",
+        "optional_count",
+        "critical_count",
+        "high_count",
+        "medium_count",
+        "low_count"
+      ],
+      "properties": {
+        "questions_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domain_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "optional_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/question"
+      }
+    }
+  },
+  "$defs": {
+    "question": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "domain", "title", "required", "severity", "path", "operator", "request"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "severity": {
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "path": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "request": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

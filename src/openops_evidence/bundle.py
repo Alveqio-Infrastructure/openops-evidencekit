@@ -20,6 +20,7 @@ from .schema import (
     validate_gate_result,
     validate_inventory,
     validate_policy_coverage,
+    validate_questionnaire,
     validate_report,
     validate_report_comparison,
     validate_report_history,
@@ -269,6 +270,8 @@ def classify_artifact(path: Path) -> str:
             return "executive-brief"
         if validate_scorecard(document) == []:
             return "scorecard"
+        if validate_questionnaire(document) == []:
+            return "questionnaire"
         if validate_waiver_document(document) == []:
             return "waivers"
         return "json"

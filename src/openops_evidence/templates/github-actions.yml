@@ -25,6 +25,7 @@ jobs:
         run: python -m pip install git+https://github.com/Alveqio-Infrastructure/openops-evidencekit.git
       - name: Evaluate evidence
         run: |
+          openops-evidence questionnaire policy __OPENOPS_POLICY_FILE__ -o evidence-questionnaire.md
           openops-evidence validate -i evidence.sample.json
           openops-evidence inventory evidence -i evidence.sample.json -o inventory.md
           openops-evidence coverage report -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o policy-coverage.md
@@ -48,6 +49,7 @@ jobs:
         with:
           name: openops-evidence
           path: |
+            evidence-questionnaire.md
             report.openops.json
             inventory.md
             policy-coverage.md

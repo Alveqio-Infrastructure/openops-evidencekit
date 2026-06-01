@@ -50,3 +50,4 @@
 - Add domain scorecard export for report summaries by evidence area.
 - Add self-contained HTML dashboard output for domain scorecards.
 - Add policy coverage reports for evidence-domain gap analysis.
+- Add policy questionnaire export for evidence request workflows.

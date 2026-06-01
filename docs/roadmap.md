@@ -55,6 +55,7 @@ having to deploy a platform first.
 - Bundled policy pack discovery and export.
 - Policy coverage matrix export.
 - Policy coverage gap reports for evidence-domain review.
+- Policy questionnaire export for pre-assessment evidence requests.
 - Bundle manifest verification.
 - Policy validation and authoring guardrails.
 

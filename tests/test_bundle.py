@@ -206,6 +206,7 @@ class BundleTests(unittest.TestCase):
             prometheus = temp / "report.prom"
             comparison = temp / "comparison.json"
             history = temp / "history.json"
+            questionnaire = temp / "questionnaire.json"
             signature = temp / "signature.json"
             report.write_text(
                 json.dumps(
@@ -459,6 +460,38 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            questionnaire.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "questions_total": 1,
+                            "domain_count": 1,
+                            "required_count": 1,
+                            "optional_count": 0,
+                            "critical_count": 1,
+                            "high_count": 0,
+                            "medium_count": 0,
+                            "low_count": 0,
+                        },
+                        "questions": [
+                            {
+                                "id": "backup_recent",
+                                "domain": "backup",
+                                "title": "Recent backup",
+                                "required": True,
+                                "severity": "critical",
+                                "path": "signals.backup.last_success_at",
+                                "operator": "within_days",
+                                "request": "Provide a recent backup timestamp.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             signature.write_text(
                 json.dumps(
                     {
@@ -504,6 +537,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(history), "report-history")
+            self.assertEqual(classify_artifact(questionnaire), "questionnaire")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
             self.assertEqual(classify_artifact(policy), "policy")
             self.assertEqual(classify_artifact(waivers), "waivers")

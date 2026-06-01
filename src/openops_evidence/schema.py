@@ -235,6 +235,45 @@ def validate_policy_coverage(document: Any) -> list[str]:
     return errors
 
 
+def validate_questionnaire(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Questionnaire must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "questions", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        for key in (
+            "questions_total",
+            "domain_count",
+            "required_count",
+            "optional_count",
+            "critical_count",
+            "high_count",
+            "medium_count",
+            "low_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, question in enumerate(document.get("questions", [])):
+        if not isinstance(question, dict):
+            errors.append(f"questions[{index}] must be an object.")
+            continue
+        prefix = f"questions[{index}]."
+        _require_string(question, "id", errors, prefix=prefix)
+        _require_string(question, "domain", errors, prefix=prefix)
+        _require_string(question, "title", errors, prefix=prefix)
+        if not isinstance(question.get("required"), bool):
+            errors.append(f"{prefix}required must be a boolean.")
+        _require_enum(question, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        _require_string_type(question, "path", errors, prefix=prefix)
+        _require_string_type(question, "operator", errors, prefix=prefix)
+        _require_string(question, "request", errors, prefix=prefix)
+    return errors
+
+
 def validate_privacy_scan(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

@@ -13,6 +13,7 @@ from openops_evidence.schema import (
     validate_policy_coverage,
     validate_policy_matrix,
     validate_privacy_scan,
+    validate_questionnaire,
     validate_report,
     validate_report_comparison,
     validate_report_history,
@@ -368,6 +369,39 @@ class SchemaTests(unittest.TestCase):
                         "optional_count": 0,
                         "check_ids": ["backup_recent"],
                         "paths": ["signals.backup.last_success_at"],
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_questionnaire(self):
+        errors = validate_questionnaire(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "questions_total": 1,
+                    "domain_count": 1,
+                    "required_count": 1,
+                    "optional_count": 0,
+                    "critical_count": 1,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "questions": [
+                    {
+                        "id": "backup_recent",
+                        "domain": "backup",
+                        "title": "Recent backup",
+                        "required": True,
+                        "severity": "critical",
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                        "expected": 2,
+                        "request": "Provide a recent backup timestamp.",
                     }
                 ],
             }

@@ -30,6 +30,7 @@ produces the common CI artifacts below.
 
 | Output | Command | Use |
 | --- | --- | --- |
+| Evidence questionnaire | `openops-evidence questionnaire policy policy.toml -o evidence-questionnaire.md` | Send a concrete evidence request list before a readiness review starts. |
 | Inventory JSON | `openops-evidence inventory evidence -i evidence.json -f json -o inventory.json` | Publish asset and signal-domain inventory from evidence. |
 | Policy coverage | `openops-evidence coverage report -i evidence.json -p policy.toml -o policy-coverage.md` | Find evidence domains that are not covered by policy checks and policy domains that are missing evidence. |
 | Gate JSON | `openops-evidence gate report -i report.json --min-score 90 -o gate-result.json` | Enforce readiness thresholds in CI. |

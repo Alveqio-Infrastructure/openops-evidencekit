@@ -124,6 +124,7 @@ EvidenceKit infers a simple role for each artifact:
 - `report-history` for valid report history JSON
 - `executive-brief` for valid executive brief JSON
 - `scorecard` for valid domain scorecard JSON
+- `questionnaire` for valid evidence questionnaire JSON
 - `report-sarif` for SARIF report JSON
 - `gate-result` for valid gate result JSON
 - `badge` for Shields-compatible status badge JSON
