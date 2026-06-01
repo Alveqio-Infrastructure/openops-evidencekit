@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/scope-report.schema.json",
+  "title": "OpenOps Scope Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "assets", "domains"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "assets_declared",
+        "evidence_assets",
+        "in_scope_assets",
+        "out_of_scope_assets",
+        "missing_in_scope_assets",
+        "unclassified_evidence_assets",
+        "out_of_scope_evidence_assets",
+        "domains_declared",
+        "evidence_domains",
+        "in_scope_domains",
+        "out_of_scope_domains",
+        "missing_required_domains",
+        "unclassified_evidence_domains",
+        "out_of_scope_evidence_domains"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn"]
+        },
+        "assets_declared": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "in_scope_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "out_of_scope_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_in_scope_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unclassified_evidence_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "out_of_scope_evidence_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domains_declared": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_domains": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "in_scope_domains": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "out_of_scope_domains": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_required_domains": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unclassified_evidence_domains": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "out_of_scope_evidence_domains": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/domain"
+      }
+    }
+  },
+  "$defs": {
+    "asset_record_status": {
+      "enum": [
+        "present_in_scope",
+        "present_out_of_scope",
+        "missing_in_scope",
+        "out_of_scope_not_seen",
+        "unclassified_evidence"
+      ]
+    },
+    "domain_record_status": {
+      "enum": [
+        "present_in_scope",
+        "present_out_of_scope",
+        "missing_in_scope",
+        "missing_optional",
+        "out_of_scope_not_seen",
+        "unclassified_evidence"
+      ]
+    },
+    "scope_status": {
+      "enum": ["in_scope", "out_of_scope", "unclassified"]
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "scope_status",
+        "status",
+        "present",
+        "declared",
+        "type",
+        "hostname",
+        "owner",
+        "reason"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_status": {
+          "$ref": "#/$defs/scope_status"
+        },
+        "status": {
+          "$ref": "#/$defs/asset_record_status"
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "declared": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "domain": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "scope_status",
+        "status",
+        "present",
+        "declared",
+        "required",
+        "kind",
+        "item_count",
+        "fields",
+        "owner",
+        "reason"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_status": {
+          "$ref": "#/$defs/scope_status"
+        },
+        "status": {
+          "$ref": "#/$defs/domain_record_status"
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "declared": {
+          "type": "boolean"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "item_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "owner": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

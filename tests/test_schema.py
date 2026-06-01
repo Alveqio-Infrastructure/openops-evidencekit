@@ -18,6 +18,7 @@ from openops_evidence.schema import (
     validate_report_comparison,
     validate_report_history,
     validate_scorecard,
+    validate_scope_report,
 )
 
 
@@ -592,6 +593,61 @@ class SchemaTests(unittest.TestCase):
                                 "path": "signals.backup.last_success_at",
                             }
                         ],
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_scope_report(self):
+        errors = validate_scope_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "assets_declared": 1,
+                    "evidence_assets": 1,
+                    "in_scope_assets": 1,
+                    "out_of_scope_assets": 0,
+                    "missing_in_scope_assets": 0,
+                    "unclassified_evidence_assets": 0,
+                    "out_of_scope_evidence_assets": 0,
+                    "domains_declared": 1,
+                    "evidence_domains": 1,
+                    "in_scope_domains": 0,
+                    "out_of_scope_domains": 1,
+                    "missing_required_domains": 0,
+                    "unclassified_evidence_domains": 0,
+                    "out_of_scope_evidence_domains": 1,
+                },
+                "assets": [
+                    {
+                        "id": "web-01",
+                        "scope_status": "in_scope",
+                        "status": "present_in_scope",
+                        "present": True,
+                        "declared": True,
+                        "type": "host",
+                        "hostname": "web-01.example.invalid",
+                        "owner": "platform",
+                        "reason": "Production web service.",
+                    }
+                ],
+                "domains": [
+                    {
+                        "name": "mail",
+                        "scope_status": "out_of_scope",
+                        "status": "present_out_of_scope",
+                        "present": True,
+                        "declared": True,
+                        "required": False,
+                        "kind": "object",
+                        "item_count": 1,
+                        "fields": ["domains"],
+                        "owner": "customer",
+                        "reason": "Reviewed separately.",
                     }
                 ],
             }

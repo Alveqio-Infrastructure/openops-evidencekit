@@ -46,6 +46,7 @@
 - Add report history tracking for recurring readiness reviews.
 - Add deterministic executive brief export for stakeholder handoff.
 - Add evidence inventory export for assets and signal domains.
+- Add scope report export for explicit assessment boundaries.
 - Add complete review-pack generation for shareable readiness handoffs.
 - Add domain scorecard export for report summaries by evidence area.
 - Add self-contained HTML dashboard output for domain scorecards.

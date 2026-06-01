@@ -189,6 +189,93 @@ def validate_inventory(document: Any) -> list[str]:
     return errors
 
 
+def validate_scope_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Scope report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "assets", errors)
+    _require_list(document, "domains", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn"}, errors, prefix="summary.")
+        for key in (
+            "assets_declared",
+            "evidence_assets",
+            "in_scope_assets",
+            "out_of_scope_assets",
+            "missing_in_scope_assets",
+            "unclassified_evidence_assets",
+            "out_of_scope_evidence_assets",
+            "domains_declared",
+            "evidence_domains",
+            "in_scope_domains",
+            "out_of_scope_domains",
+            "missing_required_domains",
+            "unclassified_evidence_domains",
+            "out_of_scope_evidence_domains",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, asset in enumerate(document.get("assets", [])):
+        if not isinstance(asset, dict):
+            errors.append(f"assets[{index}] must be an object.")
+            continue
+        prefix = f"assets[{index}]."
+        _require_string(asset, "id", errors, prefix=prefix)
+        _require_enum(asset, "scope_status", {"in_scope", "out_of_scope", "unclassified"}, errors, prefix=prefix)
+        _require_enum(
+            asset,
+            "status",
+            {
+                "present_in_scope",
+                "present_out_of_scope",
+                "missing_in_scope",
+                "out_of_scope_not_seen",
+                "unclassified_evidence",
+            },
+            errors,
+            prefix=prefix,
+        )
+        for key in ("present", "declared"):
+            if not isinstance(asset.get(key), bool):
+                errors.append(f"{prefix}{key} must be a boolean.")
+        for key in ("type", "hostname", "owner", "reason"):
+            _require_string_type(asset, key, errors, prefix=prefix)
+    for index, domain in enumerate(document.get("domains", [])):
+        if not isinstance(domain, dict):
+            errors.append(f"domains[{index}] must be an object.")
+            continue
+        prefix = f"domains[{index}]."
+        _require_string(domain, "name", errors, prefix=prefix)
+        _require_enum(domain, "scope_status", {"in_scope", "out_of_scope", "unclassified"}, errors, prefix=prefix)
+        _require_enum(
+            domain,
+            "status",
+            {
+                "present_in_scope",
+                "present_out_of_scope",
+                "missing_in_scope",
+                "missing_optional",
+                "out_of_scope_not_seen",
+                "unclassified_evidence",
+            },
+            errors,
+            prefix=prefix,
+        )
+        for key in ("present", "declared", "required"):
+            if not isinstance(domain.get(key), bool):
+                errors.append(f"{prefix}{key} must be a boolean.")
+        _require_string_type(domain, "kind", errors, prefix=prefix)
+        _require_int_range(domain, "item_count", errors, minimum=0, prefix=prefix)
+        _require_list(domain, "fields", errors, prefix=prefix)
+        for key in ("owner", "reason"):
+            _require_string_type(domain, key, errors, prefix=prefix)
+    return errors
+
+
 def validate_policy_coverage(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

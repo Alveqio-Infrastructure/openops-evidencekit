@@ -25,6 +25,7 @@ from .schema import (
     validate_report_comparison,
     validate_report_history,
     validate_scorecard,
+    validate_scope_report,
 )
 from .waivers import validate_waiver_document
 
@@ -270,6 +271,8 @@ def classify_artifact(path: Path) -> str:
             return "executive-brief"
         if validate_scorecard(document) == []:
             return "scorecard"
+        if validate_scope_report(document) == []:
+            return "scope-report"
         if validate_questionnaire(document) == []:
             return "questionnaire"
         if validate_waiver_document(document) == []:

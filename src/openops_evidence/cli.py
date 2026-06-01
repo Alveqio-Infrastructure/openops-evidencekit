@@ -79,8 +79,10 @@ from .schema import (
     validate_report_comparison,
     validate_report_history,
     validate_scorecard,
+    validate_scope_report,
 )
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
+from .scope import create_scope_report, render_scope_csv, render_scope_markdown, validate_scope_document
 from .tickets import export_action_plan_tickets
 from .waivers import validate_waiver_document
 
@@ -219,6 +221,19 @@ def build_parser() -> argparse.ArgumentParser:
     inventory_evidence.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
     inventory_evidence.add_argument("-o", "--output", default="-")
     inventory_evidence.set_defaults(func=cmd_inventory_evidence)
+
+    scope = sub.add_parser("scope", help="Check review scope against evidence")
+    scope_sub = scope.add_subparsers(required=True)
+    scope_validate = scope_sub.add_parser("validate", help="Validate a scope TOML or JSON file")
+    scope_validate.add_argument("path")
+    scope_validate.set_defaults(func=cmd_scope_validate)
+    scope_report = scope_sub.add_parser("report", help="Render scope coverage from evidence and scope")
+    scope_report.add_argument("-i", "--input", required=True)
+    scope_report.add_argument("-s", "--scope", required=True)
+    scope_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    scope_report.add_argument("--fail-on-warn", action="store_true")
+    scope_report.add_argument("-o", "--output", default="-")
+    scope_report.set_defaults(func=cmd_scope_report)
 
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
@@ -378,6 +393,7 @@ def build_parser() -> argparse.ArgumentParser:
             "privacy-scan",
             "history",
             "scorecard",
+            "scope-report",
             "bundle",
             "bundle-verification",
             "bundle-signature",
@@ -610,6 +626,40 @@ def cmd_inventory_evidence(args: argparse.Namespace) -> int:
     else:
         rendered = render_inventory_markdown(inventory)
     write_text(args.output, rendered)
+    return 0
+
+
+def cmd_scope_validate(args: argparse.Namespace) -> int:
+    scope_raw = load_structured(args.path)
+    errors = validate_scope_document(scope_raw)
+    if errors:
+        print("invalid")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+    print("valid")
+    return 0
+
+
+def cmd_scope_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    scope_raw = load_structured(args.scope)
+    scope_errors = validate_scope_document(scope_raw)
+    if scope_errors:
+        raise UserFacingError("Scope validation failed:\n- " + "\n- ".join(scope_errors))
+    report = create_scope_report(evidence, scope_raw)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_scope_csv(report)
+    else:
+        rendered = render_scope_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] == "warn":
+        return 1
     return 0
 
 
@@ -941,6 +991,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_report_history(document)
     elif args.type == "scorecard":
         errors = validate_scorecard(document)
+    elif args.type == "scope-report":
+        errors = validate_scope_report(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":

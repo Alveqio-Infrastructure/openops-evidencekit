@@ -1,0 +1,66 @@
+[metadata]
+name = "Example production readiness scope"
+owner = "Example Operations Team"
+environment = "production"
+
+[[assets]]
+id = "web-01"
+status = "in_scope"
+owner = "platform"
+reason = "Customer-facing production web service."
+
+[[assets]]
+id = "backup-repo-01"
+status = "in_scope"
+owner = "backup"
+reason = "Backup repository for the production environment."
+
+[[assets]]
+id = "db-01"
+status = "in_scope"
+type = "host"
+hostname = "db-01.example.invalid"
+owner = "platform"
+reason = "Expected database host that is not present in the sample evidence."
+
+[[domains]]
+name = "backup"
+status = "in_scope"
+required = true
+owner = "backup"
+reason = "Backup and restore proof is part of the readiness review."
+
+[[domains]]
+name = "monitoring"
+status = "in_scope"
+required = true
+owner = "platform"
+reason = "Monitoring evidence is required for operational readiness."
+
+[[domains]]
+name = "access"
+status = "in_scope"
+required = true
+owner = "security"
+reason = "Administrative access controls are in review scope."
+
+[[domains]]
+name = "tls"
+status = "in_scope"
+required = true
+owner = "platform"
+reason = "Certificate expiry evidence is in review scope."
+
+[[domains]]
+name = "docs"
+status = "in_scope"
+required = true
+owner = "operations"
+reason = "Inventory and runbook freshness are in review scope."
+
+[[domains]]
+name = "mail"
+status = "out_of_scope"
+required = false
+owner = "customer"
+reason = "Mail domain posture is reviewed separately by the customer."

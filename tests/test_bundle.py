@@ -202,6 +202,7 @@ class BundleTests(unittest.TestCase):
             badge = temp / "badge.json"
             brief = temp / "executive-brief.json"
             scorecard = temp / "scorecard.json"
+            scope_report = temp / "scope-report.json"
             sarif = temp / "report.sarif.json"
             prometheus = temp / "report.prom"
             svg = temp / "history.svg"
@@ -410,6 +411,61 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            scope_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "assets_declared": 1,
+                            "evidence_assets": 1,
+                            "in_scope_assets": 1,
+                            "out_of_scope_assets": 0,
+                            "missing_in_scope_assets": 0,
+                            "unclassified_evidence_assets": 0,
+                            "out_of_scope_evidence_assets": 0,
+                            "domains_declared": 1,
+                            "evidence_domains": 1,
+                            "in_scope_domains": 1,
+                            "out_of_scope_domains": 0,
+                            "missing_required_domains": 0,
+                            "unclassified_evidence_domains": 0,
+                            "out_of_scope_evidence_domains": 0,
+                        },
+                        "assets": [
+                            {
+                                "id": "web-01",
+                                "scope_status": "in_scope",
+                                "status": "present_in_scope",
+                                "present": True,
+                                "declared": True,
+                                "type": "host",
+                                "hostname": "web-01.example.invalid",
+                                "owner": "platform",
+                                "reason": "Production web service.",
+                            }
+                        ],
+                        "domains": [
+                            {
+                                "name": "backup",
+                                "scope_status": "in_scope",
+                                "status": "present_in_scope",
+                                "present": True,
+                                "declared": True,
+                                "required": True,
+                                "kind": "object",
+                                "item_count": 1,
+                                "fields": ["last_success_at"],
+                                "owner": "backup",
+                                "reason": "Backup evidence is required.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             comparison.write_text(
                 json.dumps(
                     {
@@ -535,6 +591,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(brief), "executive-brief")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
+            self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(svg), "visual")

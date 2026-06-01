@@ -16,6 +16,8 @@ documentation, demos, and issue reproduction.
   administrative access signals.
 - `policy.documentation.toml` checks the documentation collector output for
   required and stale files.
+- `scope.sample.toml` declares a sample readiness review scope for assets and
+  evidence domains.
 
 The same policies are also bundled as package policy packs. Use
 `openops-evidence policy list` and `openops-evidence policy show <name>` after
@@ -49,8 +51,9 @@ is available.
 
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
-evidence scaffolds, executive briefs, scorecards, history timelines,
-comparisons, action plans, ticket drafts, review packs, and bundle manifests.
+evidence scaffolds, scope reports, executive briefs, scorecards, history
+timelines, comparisons, action plans, ticket drafts, review packs, and bundle
+manifests.
 Reports can also be rendered as JUnit XML for CI systems. Generated files are
 ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis
