@@ -119,6 +119,7 @@ EvidenceKit infers a simple role for each artifact:
 
 - `evidence` for valid evidence JSON
 - `report` for valid report JSON
+- `report-history` for valid report history JSON
 - `report-sarif` for SARIF report JSON
 - `gate-result` for valid gate result JSON
 - `badge` for Shields-compatible status badge JSON

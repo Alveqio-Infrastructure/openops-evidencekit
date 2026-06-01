@@ -43,3 +43,4 @@
 - Add Prometheus text report output for monitoring pipelines.
 - Add GitHub Actions starter workflow generation to `init`.
 - Add a visual report preview to the README.
+- Add report history tracking for recurring readiness reviews.

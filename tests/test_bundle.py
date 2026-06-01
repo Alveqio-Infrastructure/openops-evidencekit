@@ -201,6 +201,7 @@ class BundleTests(unittest.TestCase):
             sarif = temp / "report.sarif.json"
             prometheus = temp / "report.prom"
             comparison = temp / "comparison.json"
+            history = temp / "history.json"
             signature = temp / "signature.json"
             report.write_text(
                 json.dumps(
@@ -273,6 +274,43 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            history.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "entries_total": 1,
+                            "latest_status": "pass",
+                            "latest_score": 100,
+                            "previous_score": 100,
+                            "score_change": 0,
+                            "best_score": 100,
+                            "worst_score": 100,
+                            "latest_failed": 0,
+                            "latest_warnings": 0,
+                            "failed_delta": 0,
+                            "warnings_delta": 0,
+                        },
+                        "entries": [
+                            {
+                                "recorded_at": "2026-06-01T10:00:00+00:00",
+                                "report_generated_at": "2026-06-01T09:00:00+00:00",
+                                "source": "ci",
+                                "note": "",
+                                "status": "pass",
+                                "score": 100,
+                                "checks_total": 10,
+                                "checks_passed": 10,
+                                "checks_failed": 0,
+                                "checks_warn": 0,
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             signature.write_text(
                 json.dumps(
                     {
@@ -313,6 +351,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(comparison), "report-comparison")
+            self.assertEqual(classify_artifact(history), "report-history")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
             self.assertEqual(classify_artifact(policy), "policy")
             self.assertEqual(classify_artifact(waivers), "waivers")

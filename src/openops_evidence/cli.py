@@ -4,6 +4,7 @@ import argparse
 import sys
 from importlib import resources
 from pathlib import Path
+from typing import Any
 
 from . import __version__
 from .actions import create_action_plan, render_action_plan_csv, render_action_plan_markdown
@@ -31,6 +32,7 @@ from .collectors import (
     collect_uptime_kuma_export,
 )
 from .gates import evaluate_report_gate, render_gate_markdown
+from .history import append_report_history, render_history_csv, render_history_markdown
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
 from .policy import (
@@ -65,6 +67,7 @@ from .schema import (
     validate_privacy_scan,
     validate_report,
     validate_report_comparison,
+    validate_report_history,
 )
 from .tickets import export_action_plan_tickets
 from .waivers import validate_waiver_document
@@ -178,6 +181,21 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("-o", "--output", default="-")
     compare.set_defaults(func=cmd_compare)
 
+    history = sub.add_parser("history", help="Track readiness report history over time")
+    history_sub = history.add_subparsers(required=True)
+    history_append = history_sub.add_parser("append", help="Append a report summary to a history JSON file")
+    history_append.add_argument("-i", "--input", required=True)
+    history_append.add_argument("--history", help="Existing history JSON; defaults to --output when it already exists")
+    history_append.add_argument("--source", default="")
+    history_append.add_argument("--note", default="")
+    history_append.add_argument("-o", "--output", default="-")
+    history_append.set_defaults(func=cmd_history_append)
+    history_render = history_sub.add_parser("render", help="Render a report history")
+    history_render.add_argument("-i", "--input", required=True)
+    history_render.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    history_render.add_argument("-o", "--output", default="-")
+    history_render.set_defaults(func=cmd_history_render)
+
     plan = sub.add_parser("plan", help="Create a prioritized remediation action plan from a report")
     plan.add_argument("-i", "--input", required=True)
     plan.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="json")
@@ -271,6 +289,7 @@ def build_parser() -> argparse.ArgumentParser:
             "badge",
             "policy-matrix",
             "privacy-scan",
+            "history",
             "bundle",
             "bundle-verification",
             "bundle-signature",
@@ -461,6 +480,47 @@ def cmd_compare(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_history_append(args: argparse.Namespace) -> int:
+    report = load_json(args.input)
+    errors = validate_report(report)
+    if errors:
+        raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
+    existing = _load_existing_history(args.history, args.output)
+    if existing is not None:
+        history_errors = validate_report_history(existing)
+        if history_errors:
+            raise UserFacingError("Report history validation failed:\n- " + "\n- ".join(history_errors))
+    history = append_report_history(existing, report, source=args.source, note=args.note)
+    write_text(args.output, dump_json(history))
+    return 0
+
+
+def cmd_history_render(args: argparse.Namespace) -> int:
+    history = load_json(args.input)
+    errors = validate_report_history(history)
+    if errors:
+        raise UserFacingError("Report history validation failed:\n- " + "\n- ".join(errors))
+    if args.format == "json":
+        rendered = dump_json(history)
+    elif args.format == "csv":
+        rendered = render_history_csv(history)
+    else:
+        rendered = render_history_markdown(history)
+    write_text(args.output, rendered)
+    return 0
+
+
+def _load_existing_history(path: str | None, output: str | None) -> dict[str, Any] | None:
+    history_path = Path(path) if path else None
+    if history_path is None and output and output != "-":
+        candidate = Path(output)
+        if candidate.is_file():
+            history_path = candidate
+    if history_path is None:
+        return None
+    return load_json(history_path)
+
+
 def cmd_plan(args: argparse.Namespace) -> int:
     report = load_json(args.input)
     errors = validate_report(report)
@@ -625,6 +685,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_policy_matrix(document)
     elif args.type == "privacy-scan":
         errors = validate_privacy_scan(document)
+    elif args.type == "history":
+        errors = validate_report_history(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":

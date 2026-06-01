@@ -42,6 +42,9 @@ python -m openops_evidence gate report -i report.local.json --min-score 100 --ma
 python -m openops_evidence validate -i gate-result.json -t gate-result
 python -m openops_evidence badge report -i report.local.json -o readiness-badge.json
 python -m openops_evidence validate -i readiness-badge.json -t badge
+python -m openops_evidence history append -i report.local.json --source release-check -o readiness-history.json
+python -m openops_evidence validate -i readiness-history.json -t history
+python -m openops_evidence history render -i readiness-history.json -f markdown -o readiness-history.md
 python -m openops_evidence compare --base report.local.json --current report.local.json -o report.comparison.json
 python -m openops_evidence validate -i report.comparison.json -t comparison
 python -m openops_evidence plan -i report.local.json -o action-plan.json
@@ -57,7 +60,7 @@ python -m openops_evidence report -i report.local.json -f prometheus -o report.l
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
 python -m openops_evidence privacy scan evidence.redacted.json report.local.md -o privacy-scan.json
 python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
-python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json readiness-badge.json report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json readiness-badge.json readiness-history.json report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
@@ -79,6 +82,7 @@ Then inspect:
 1. Update `CHANGELOG.md`.
 2. Confirm sample artifacts match the current schema.
 3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`,
+   `schemas/report-history.schema.json`,
    `schemas/action-plan.schema.json`, `schemas/gate-result.schema.json`,
    `schemas/badge.schema.json`, `schemas/policy-matrix.schema.json`,
    `schemas/privacy-scan.schema.json`, `schemas/waivers.schema.json`,

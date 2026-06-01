@@ -14,7 +14,8 @@ Generated files:
 - `.github/workflows/openops-evidence.yml`
 
 The workflow validates evidence, evaluates the baseline policy, creates Markdown,
-JUnit, SARIF, badge, and Prometheus artifacts, then enforces a configurable gate:
+JUnit, SARIF, badge, history, and Prometheus artifacts, then enforces a
+configurable gate:
 
 ```yaml
 openops-evidence gate report -i report.openops.json --min-score 90 --max-warnings 0 -o gate-result.json

@@ -19,6 +19,7 @@ from .schema import (
     validate_gate_result,
     validate_report,
     validate_report_comparison,
+    validate_report_history,
 )
 from .waivers import validate_waiver_document
 
@@ -254,6 +255,8 @@ def classify_artifact(path: Path) -> str:
             return "bundle-verification"
         if validate_report_comparison(document) == []:
             return "report-comparison"
+        if validate_report_history(document) == []:
+            return "report-history"
         if validate_waiver_document(document) == []:
             return "waivers"
         return "json"

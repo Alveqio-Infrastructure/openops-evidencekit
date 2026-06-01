@@ -18,6 +18,9 @@ privacy-scan.md
 gate-result.json
 gate-result.md
 readiness-badge.json
+readiness-history.json
+readiness-history.md
+readiness-history.csv
 evidence-bundle.manifest.json
 evidence-bundle.verification.json
 evidence-bundle.zip

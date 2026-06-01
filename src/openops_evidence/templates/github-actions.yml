@@ -29,6 +29,8 @@ jobs:
           openops-evidence check -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o report.openops.json || true
           openops-evidence validate -i report.openops.json -t report
           openops-evidence badge report -i report.openops.json -o readiness-badge.json
+          openops-evidence history append -i report.openops.json --source github-actions -o readiness-history.json
+          openops-evidence history render -i readiness-history.json -f markdown -o readiness-history.md
           openops-evidence report -i report.openops.json -f markdown -o report.openops.md
           openops-evidence report -i report.openops.json -f junit -o report.openops.junit.xml
           openops-evidence report -i report.openops.json -f sarif -o report.openops.sarif.json
@@ -46,4 +48,6 @@ jobs:
             report.openops.sarif.json
             report.openops.prom
             readiness-badge.json
+            readiness-history.json
+            readiness-history.md
             gate-result.json

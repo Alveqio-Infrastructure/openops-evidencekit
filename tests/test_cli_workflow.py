@@ -25,6 +25,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("openops-evidence check", workflow_text)
             self.assertIn("-p policy.baseline.toml", workflow_text)
             self.assertIn("openops-evidence badge report", workflow_text)
+            self.assertIn("openops-evidence history append", workflow_text)
             self.assertIn("-f prometheus", workflow_text)
 
             custom = temp / "custom"
@@ -44,6 +45,8 @@ class CliWorkflowTests(unittest.TestCase):
             report = temp / "report.json"
             gate = temp / "gate-result.json"
             badge = temp / "readiness-badge.json"
+            history = temp / "readiness-history.json"
+            history_markdown = temp / "readiness-history.md"
             markdown = temp / "report.md"
             bookstack = temp / "bookstack.md"
             junit = temp / "report.junit.xml"
@@ -108,6 +111,15 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(gate), "-t", "gate-result"]), 0)
             self.assertEqual(main(["badge", "report", "-i", str(report), "-o", str(badge)]), 0)
             self.assertEqual(main(["validate", "-i", str(badge), "-t", "badge"]), 0)
+            self.assertEqual(
+                main(["history", "append", "-i", str(report), "--source", "workflow-test", "-o", str(history)]),
+                0,
+            )
+            self.assertEqual(main(["validate", "-i", str(history), "-t", "history"]), 0)
+            self.assertEqual(
+                main(["history", "render", "-i", str(history), "-f", "markdown", "-o", str(history_markdown)]),
+                0,
+            )
             self.assertEqual(main(["report", "-i", str(report), "-f", "bookstack", "-o", str(bookstack)]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "junit", "-o", str(junit)]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "sarif", "-o", str(sarif)]), 0)
@@ -122,6 +134,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(report),
                         str(gate),
                         str(badge),
+                        str(history),
                         str(markdown),
                         str(sarif),
                         str(prometheus),
@@ -188,6 +201,7 @@ class CliWorkflowTests(unittest.TestCase):
             report_data = json.loads(report.read_text(encoding="utf-8"))
             gate_data = json.loads(gate.read_text(encoding="utf-8"))
             badge_data = json.loads(badge.read_text(encoding="utf-8"))
+            history_data = json.loads(history.read_text(encoding="utf-8"))
             manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
             verification_data = json.loads(verification.read_text(encoding="utf-8"))
             signature_data = json.loads(signature.read_text(encoding="utf-8"))
@@ -195,7 +209,8 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(report_data["summary"]["status"], "pass")
             self.assertEqual(gate_data["summary"]["status"], "pass")
             self.assertEqual(badge_data["message"], "pass 100")
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 7)
+            self.assertEqual(history_data["summary"]["latest_score"], 100)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 8)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -205,6 +220,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("<testsuite", junit.read_text(encoding="utf-8"))
             self.assertEqual(json.loads(sarif.read_text(encoding="utf-8"))["version"], "2.1.0")
             self.assertIn("openops_readiness_score 100", prometheus.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Readiness History", history_markdown.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

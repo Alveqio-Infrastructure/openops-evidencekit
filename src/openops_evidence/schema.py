@@ -227,6 +227,49 @@ def validate_badge(document: Any) -> list[str]:
     return errors
 
 
+def validate_report_history(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Report history must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "entries", errors)
+    entries = document.get("entries")
+    if isinstance(entries, list) and not entries:
+        errors.append("entries must contain at least one item.")
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_int_range(summary, "entries_total", errors, minimum=1, prefix="summary.")
+        _require_enum(summary, "latest_status", {"pass", "fail"}, errors, prefix="summary.")
+        for key in (
+            "latest_score",
+            "previous_score",
+            "best_score",
+            "worst_score",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, maximum=100, prefix="summary.")
+        for key in ("latest_failed", "latest_warnings"):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+        for key in ("score_change", "failed_delta", "warnings_delta"):
+            _require_int(summary, key, errors, prefix="summary.")
+    for index, entry in enumerate(document.get("entries", [])):
+        if not isinstance(entry, dict):
+            errors.append(f"entries[{index}] must be an object.")
+            continue
+        prefix = f"entries[{index}]."
+        _require_datetime(entry, "recorded_at", errors, prefix=prefix)
+        _require_datetime(entry, "report_generated_at", errors, prefix=prefix)
+        _require_string_type(entry, "source", errors, prefix=prefix)
+        _require_string_type(entry, "note", errors, prefix=prefix)
+        _require_enum(entry, "status", {"pass", "fail"}, errors, prefix=prefix)
+        _require_int_range(entry, "score", errors, minimum=0, maximum=100, prefix=prefix)
+        for key in ("checks_total", "checks_passed", "checks_failed", "checks_warn"):
+            _require_int_range(entry, key, errors, minimum=0, prefix=prefix)
+    return errors
+
+
 def validate_bundle_manifest(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
@@ -376,6 +419,12 @@ def _require_int_range(
         errors.append(f"{prefix}{key} must be at least {minimum}.")
     if maximum is not None and value > maximum:
         errors.append(f"{prefix}{key} must be at most {maximum}.")
+
+
+def _require_int(document: dict[str, Any], key: str, errors: list[str], prefix: str = "") -> None:
+    value = document.get(key)
+    if not isinstance(value, int) or isinstance(value, bool):
+        errors.append(f"{prefix}{key} must be an integer.")
 
 
 def _require_string_type(document: dict[str, Any], key: str, errors: list[str], prefix: str = "") -> None:

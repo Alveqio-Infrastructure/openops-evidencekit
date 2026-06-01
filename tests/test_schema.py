@@ -12,6 +12,7 @@ from openops_evidence.schema import (
     validate_privacy_scan,
     validate_report,
     validate_report_comparison,
+    validate_report_history,
 )
 
 
@@ -437,6 +438,72 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("label must be a non-empty string.", errors)
         self.assertIn("message must be a non-empty string.", errors)
         self.assertIn("color must be a non-empty string.", errors)
+
+    def test_valid_report_history(self):
+        errors = validate_report_history(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "entries_total": 1,
+                    "latest_status": "pass",
+                    "latest_score": 100,
+                    "previous_score": 100,
+                    "score_change": 0,
+                    "best_score": 100,
+                    "worst_score": 100,
+                    "latest_failed": 0,
+                    "latest_warnings": 0,
+                    "failed_delta": 0,
+                    "warnings_delta": 0,
+                },
+                "entries": [
+                    {
+                        "recorded_at": "2026-06-01T10:00:00+00:00",
+                        "report_generated_at": "2026-06-01T09:00:00+00:00",
+                        "source": "ci",
+                        "note": "Release check",
+                        "status": "pass",
+                        "score": 100,
+                        "checks_total": 10,
+                        "checks_passed": 10,
+                        "checks_failed": 0,
+                        "checks_warn": 0,
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_report_history_is_reported(self):
+        errors = validate_report_history(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "entries_total": 0,
+                    "latest_status": "unknown",
+                    "latest_score": 101,
+                    "previous_score": 100,
+                    "score_change": "better",
+                    "best_score": 100,
+                    "worst_score": 0,
+                    "latest_failed": -1,
+                    "latest_warnings": 0,
+                    "failed_delta": 0,
+                    "warnings_delta": 0,
+                },
+                "entries": [],
+            }
+        )
+        self.assertIn("entries must contain at least one item.", errors)
+        self.assertIn("summary.entries_total must be at least 1.", errors)
+        self.assertIn("summary.latest_status must be one of: fail, pass.", errors)
+        self.assertIn("summary.latest_score must be at most 100.", errors)
+        self.assertIn("summary.score_change must be an integer.", errors)
+        self.assertIn("summary.latest_failed must be at least 0.", errors)
 
     def test_valid_bundle_manifest(self):
         errors = validate_bundle_manifest(

@@ -45,6 +45,7 @@ having to deploy a platform first.
 - GitHub Actions starter workflow generation.
 - Report gates for score and finding thresholds.
 - Report comparison and regression guardrails.
+- Report history timeline for recurring readiness reviews.
 - Action plan ticket export.
 - CLI version and exit-code documentation.
 - Bundled policy pack discovery and export.
