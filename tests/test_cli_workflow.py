@@ -29,6 +29,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("openops-evidence brief report", workflow_text)
             self.assertIn("openops-evidence history append", workflow_text)
             self.assertIn("-f prometheus", workflow_text)
+            self.assertIn("openops-evidence review create", workflow_text)
 
             custom = temp / "custom"
             self.assertEqual(

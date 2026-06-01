@@ -46,9 +46,9 @@ with these sample shapes and a CI workflow for recurring checks.
 
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, inventories, reports, executive briefs, history timelines,
-comparisons, action plans, ticket drafts, and bundle manifests. Reports can also
-be rendered as JUnit XML for CI systems. Generated files are ignored by git so
-they can be reviewed without polluting commits.
+comparisons, action plans, ticket drafts, review packs, and bundle manifests.
+Reports can also be rendered as JUnit XML for CI systems. Generated files are
+ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis
 result uploads. Badge JSON is available for README, portal, or dashboard status
 widgets that understand Shields-compatible endpoint output. Prometheus text

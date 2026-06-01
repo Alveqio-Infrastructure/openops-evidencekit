@@ -1,4 +1,7 @@
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -6,6 +9,9 @@ from io import StringIO
 from pathlib import Path
 
 from openops_evidence.cli import main
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class CliExitCodeTests(unittest.TestCase):
@@ -20,6 +26,22 @@ class CliExitCodeTests(unittest.TestCase):
             path.write_text(json.dumps({"schema_version": "0.1"}), encoding="utf-8")
             with redirect_stdout(StringIO()):
                 self.assertEqual(main(["validate", "-i", str(path)]), 1)
+
+    def test_python_module_entrypoint_propagates_exit_code(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "invalid.json"
+            path.write_text(json.dumps({"schema_version": "0.1"}), encoding="utf-8")
+            env = dict(os.environ)
+            env["PYTHONPATH"] = str(ROOT / "src")
+            result = subprocess.run(
+                [sys.executable, "-m", "openops_evidence", "validate", "-i", str(path)],
+                cwd=str(ROOT),
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 1)
 
     def test_user_facing_error_returns_two(self):
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -57,6 +57,7 @@ from .reports import (
     render_prometheus,
     render_sarif,
 )
+from .review import create_review_pack
 from .schema import (
     validate_action_plan,
     validate_badge,
@@ -239,6 +240,24 @@ def build_parser() -> argparse.ArgumentParser:
     gate_report.add_argument("--ignore-report-status", action="store_true")
     gate_report.add_argument("-o", "--output", default="-")
     gate_report.set_defaults(func=cmd_gate_report)
+
+    review = sub.add_parser("review", help="Create complete readiness review packs")
+    review_sub = review.add_subparsers(required=True)
+    review_create = review_sub.add_parser("create", help="Create a review folder from evidence and policy")
+    review_create.add_argument("-i", "--input", required=True)
+    review_create.add_argument("-p", "--policy", required=True)
+    review_create.add_argument("-o", "--output-dir", required=True)
+    review_create.add_argument("--name", default="openops-review-pack")
+    review_create.add_argument("--waivers", help="TOML or JSON file with accepted risk waivers")
+    review_create.add_argument("--max-findings", type=int, default=5)
+    review_create.add_argument("--min-score", type=int)
+    review_create.add_argument("--max-failed", type=int)
+    review_create.add_argument("--max-warnings", type=int)
+    review_create.add_argument("--max-critical", type=int)
+    review_create.add_argument("--max-high", type=int)
+    review_create.add_argument("--ignore-report-status", action="store_true")
+    review_create.add_argument("--fail-on-gate", action="store_true")
+    review_create.set_defaults(func=cmd_review_create)
 
     badge = sub.add_parser("badge", help="Create status badge artifacts")
     badge_sub = badge.add_subparsers(required=True)
@@ -622,6 +641,47 @@ def cmd_gate_report(args: argparse.Namespace) -> int:
     else:
         write_text(args.output, dump_json(gate))
     return 1 if gate["summary"]["status"] == "fail" else 0
+
+
+def cmd_review_create(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    policy_raw = load_structured(args.policy)
+    policy_errors = validate_policy_document(policy_raw)
+    if policy_errors:
+        raise UserFacingError("Policy validation failed:\n- " + "\n- ".join(policy_errors))
+    waiver_document = None
+    if args.waivers:
+        waiver_document = load_structured(args.waivers)
+        waiver_errors = validate_waiver_document(waiver_document)
+        if waiver_errors:
+            raise UserFacingError("Waiver validation failed:\n- " + "\n- ".join(waiver_errors))
+    if args.max_findings < 0:
+        raise UserFacingError("--max-findings must be at least 0")
+    _validate_gate_args(args)
+    pack = create_review_pack(
+        evidence,
+        policy_raw,
+        args.output_dir,
+        waiver_document=waiver_document,
+        name=args.name,
+        max_findings=args.max_findings,
+        min_score=args.min_score,
+        max_failed=args.max_failed,
+        max_warnings=args.max_warnings,
+        max_critical=args.max_critical,
+        max_high=args.max_high,
+        ignore_report_status=args.ignore_report_status,
+    )
+    print(
+        f"created review pack in {pack['output_dir']} "
+        f"with {pack['artifact_count']} artifact(s)"
+    )
+    if args.fail_on_gate and pack["gate"]["summary"]["status"] == "fail":
+        return 1
+    return 0
 
 
 def cmd_badge_report(args: argparse.Namespace) -> int:

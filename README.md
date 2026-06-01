@@ -55,6 +55,7 @@ python -m openops_evidence report -i report.local.json -f markdown -o report.loc
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
 python -m openops_evidence report -i report.local.json -f prometheus -o report.local.prom
+python -m openops_evidence review create -i evidence.local.json -p examples/policy.baseline.toml -o review-pack --min-score 90 --max-warnings 0
 ```
 
 See [docs/demo-workflow.md](docs/demo-workflow.md) for a complete synthetic
@@ -208,6 +209,7 @@ Report comparisons are described in [docs/report-comparison.md](docs/report-comp
 Report history tracking is described in [docs/report-history.md](docs/report-history.md).
 Executive briefs are described in [docs/executive-brief.md](docs/executive-brief.md).
 Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence-inventory.md).
+Review packs are described in [docs/review-pack.md](docs/review-pack.md).
 Action plans are described in [docs/action-plan.md](docs/action-plan.md).
 CI gates are described in [docs/gates.md](docs/gates.md).
 Status badges are emitted as Shields-compatible endpoint JSON and can be used

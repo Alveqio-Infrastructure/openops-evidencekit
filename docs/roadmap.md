@@ -48,6 +48,7 @@ having to deploy a platform first.
 - Report comparison and regression guardrails.
 - Report history timeline for recurring readiness reviews.
 - Executive brief export for stakeholder handoff.
+- Review-pack generation for complete readiness handoff folders.
 - Action plan ticket export.
 - CLI version and exit-code documentation.
 - Bundled policy pack discovery and export.
