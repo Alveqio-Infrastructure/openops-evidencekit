@@ -44,6 +44,7 @@ from .schema import (
     validate_report,
     validate_report_comparison,
 )
+from .waivers import validate_waiver_document
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -135,6 +136,12 @@ def build_parser() -> argparse.ArgumentParser:
     policy_validate.add_argument("path")
     policy_validate.set_defaults(func=cmd_policy_validate)
 
+    waiver = sub.add_parser("waiver", help="Inspect risk acceptance waivers")
+    waiver_sub = waiver.add_subparsers(required=True)
+    waiver_validate = waiver_sub.add_parser("validate", help="Validate a waiver TOML or JSON file")
+    waiver_validate.add_argument("path")
+    waiver_validate.set_defaults(func=cmd_waiver_validate)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -148,6 +155,7 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="json")
     plan.add_argument("--fail-only", action="store_true")
     plan.add_argument("--include-pass", action="store_true")
+    plan.add_argument("--waivers", help="TOML or JSON file with accepted risk waivers")
     plan.add_argument("-o", "--output", default="-")
     plan.set_defaults(func=cmd_plan)
 
@@ -322,6 +330,18 @@ def cmd_policy_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_waiver_validate(args: argparse.Namespace) -> int:
+    waiver_raw = load_structured(args.path)
+    errors = validate_waiver_document(waiver_raw)
+    if errors:
+        print("invalid")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+    print("valid")
+    return 0
+
+
 def cmd_compare(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -350,14 +370,25 @@ def cmd_plan(args: argparse.Namespace) -> int:
     errors = validate_report(report)
     if errors:
         raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
-    plan = create_action_plan(report, fail_only=args.fail_only, include_pass=args.include_pass)
+    waiver_document = None
+    if args.waivers:
+        waiver_document = load_structured(args.waivers)
+        waiver_errors = validate_waiver_document(waiver_document)
+        if waiver_errors:
+            raise UserFacingError("Waiver validation failed:\n- " + "\n- ".join(waiver_errors))
+    plan = create_action_plan(
+        report,
+        fail_only=args.fail_only,
+        include_pass=args.include_pass,
+        waiver_document=waiver_document,
+    )
     if args.format == "markdown":
         write_text(args.output, render_action_plan_markdown(plan))
     elif args.format == "csv":
         write_text(args.output, render_action_plan_csv(plan))
     else:
         write_text(args.output, dump_json(plan))
-    return 0 if plan["summary"]["status"] == "pass" else 1
+    return 1 if plan["summary"]["action_required_count"] > 0 else 0
 
 
 def cmd_merge(args: argparse.Namespace) -> int:

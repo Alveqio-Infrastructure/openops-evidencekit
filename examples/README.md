@@ -21,6 +21,11 @@ The same policies are also bundled as package policy packs. Use
 `openops-evidence policy list` and `openops-evidence policy show <name>` after
 installation.
 
+## Waiver Samples
+
+- `waivers.sample.toml` shows the accepted-risk file shape used by action plans
+  for temporary, owner-approved exceptions.
+
 ## Collector Input Samples
 
 - `restic.snapshots.sample.json` mirrors the shape of `restic snapshots --json`.

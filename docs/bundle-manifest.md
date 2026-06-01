@@ -1,8 +1,8 @@
 # Bundle Manifest
 
 An evidence bundle is a reviewed set of files that belong together: redacted
-evidence, policy, machine report, human report, and optionally a wiki-ready
-export. The bundle manifest records those files without embedding their
+evidence, policy, machine report, human report, accepted-risk waivers, and
+optionally a wiki-ready export. The bundle manifest records those files without embedding their
 contents.
 
 The manifest helps with:
@@ -120,7 +120,8 @@ EvidenceKit infers a simple role for each artifact:
 - `evidence` for valid evidence JSON
 - `report` for valid report JSON
 - `bundle-manifest` for manifest JSON
-- `policy` for TOML files
+- `waivers` for valid waiver JSON or TOML files
+- `policy` for other TOML files
 - `report-markdown` for Markdown files
 - `report-html` for HTML files
 - `json` or `artifact` as fallback

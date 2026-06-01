@@ -6,6 +6,7 @@ machine-readable artifacts:
 - `schemas/evidence.schema.json`
 - `schemas/report.schema.json`
 - `schemas/action-plan.schema.json`
+- `schemas/waivers.schema.json`
 - `schemas/bundle-manifest.schema.json`
 - `schemas/bundle-signature.schema.json`
 - `schemas/bundle-verification.schema.json`
@@ -64,7 +65,19 @@ Action plans contain:
 
 They are generated from report JSON and sort failed or warning checks into a
 deterministic remediation queue. Each item includes a priority, check identity,
-status, severity, source path, operator, observed count, and recommended action.
+status, severity, source path, operator, observed count, waiver metadata, and
+recommended action.
+
+## Waivers
+
+Waiver files contain:
+
+- `waivers`
+
+Each waiver records a `check_id`, `owner`, `reason`, and `expires_at` timestamp.
+They can be authored as TOML or JSON. `schemas/waivers.schema.json` describes
+the JSON shape, while `openops-evidence waiver validate` validates either TOML
+or JSON inputs.
 
 ## Bundle Manifests
 

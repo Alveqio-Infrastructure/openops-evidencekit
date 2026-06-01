@@ -59,6 +59,8 @@ Turn findings into a prioritized action plan:
 ```powershell
 python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.md
 python -m openops_evidence plan -i report.local.json -f csv -o action-plan.csv
+python -m openops_evidence waiver validate examples/waivers.sample.toml
+python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
 ```
 
 Create a hash manifest for the files you plan to share:
@@ -166,6 +168,10 @@ EvidenceKit uses three files:
 
 Use `merge` when evidence comes from multiple collectors or manually reviewed
 sources.
+
+Action plans can also consume risk waiver TOML/JSON. Waivers require an owner,
+reason, check ID, and expiry date, so accepted risks stay explicit and expire
+back into the remediation queue.
 
 JSON Schemas for generated artifacts live in [schemas/](schemas/).
 Example inputs and generated artifact shapes are described in

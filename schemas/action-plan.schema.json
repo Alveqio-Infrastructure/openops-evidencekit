@@ -24,6 +24,9 @@
       "required": [
         "status",
         "items_total",
+        "action_required_count",
+        "waived_count",
+        "expired_waiver_count",
         "fail_count",
         "warn_count",
         "pass_count",
@@ -37,6 +40,18 @@
           "enum": ["pass", "action_required"]
         },
         "items_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "action_required_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "waived_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expired_waiver_count": {
           "type": "integer",
           "minimum": 0
         },
@@ -123,6 +138,13 @@
         "observed_count": {
           "type": "integer",
           "minimum": 0
+        },
+        "waived": {
+          "type": "boolean"
+        },
+        "waiver": {
+          "type": "object",
+          "additionalProperties": true
         },
         "recommended_action": {
           "type": "string",

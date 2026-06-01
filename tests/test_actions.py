@@ -57,8 +57,50 @@ class ActionPlanTests(unittest.TestCase):
         self.assertEqual(validate_action_plan(plan), [])
         self.assertEqual(plan["summary"]["status"], "action_required")
         self.assertEqual(plan["summary"]["items_total"], 2)
+        self.assertEqual(plan["summary"]["action_required_count"], 2)
         self.assertEqual([item["id"] for item in plan["items"]], ["critical_fail", "low_warn"])
         self.assertEqual(plan["items"][0]["priority"], "P0")
+
+    def test_create_action_plan_marks_active_waivers(self):
+        plan = create_action_plan(
+            _report(_result("critical_fail", "fail", "critical")),
+            waiver_document={
+                "waivers": [
+                    {
+                        "check_id": "critical_fail",
+                        "owner": "ops@example.invalid",
+                        "reason": "Accepted during migration.",
+                        "expires_at": "2099-12-31T00:00:00+00:00",
+                    }
+                ]
+            },
+        )
+
+        self.assertEqual(validate_action_plan(plan), [])
+        self.assertEqual(plan["summary"]["status"], "pass")
+        self.assertEqual(plan["summary"]["action_required_count"], 0)
+        self.assertEqual(plan["summary"]["waived_count"], 1)
+        self.assertTrue(plan["items"][0]["waived"])
+        self.assertEqual(plan["items"][0]["waiver"]["owner"], "ops@example.invalid")
+
+    def test_create_action_plan_expired_waivers_still_require_action(self):
+        plan = create_action_plan(
+            _report(_result("critical_fail", "fail", "critical")),
+            waiver_document={
+                "waivers": [
+                    {
+                        "check_id": "critical_fail",
+                        "owner": "ops@example.invalid",
+                        "reason": "Old exception.",
+                        "expires_at": "2000-01-01T00:00:00+00:00",
+                    }
+                ]
+            },
+        )
+
+        self.assertEqual(plan["summary"]["status"], "action_required")
+        self.assertEqual(plan["summary"]["expired_waiver_count"], 1)
+        self.assertFalse(plan["items"][0]["waived"])
 
     def test_action_plan_can_include_passed_results(self):
         plan = create_action_plan(
@@ -89,6 +131,7 @@ class ActionPlanTests(unittest.TestCase):
         rows = list(csv.DictReader(io.StringIO(render_action_plan_csv(plan))))
         self.assertEqual(rows[0]["priority"], "P0")
         self.assertEqual(rows[0]["id"], "backup_recent")
+        self.assertEqual(rows[0]["waived"], "False")
 
     def test_cli_plan_writes_json_and_returns_one_for_actions(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -118,6 +161,35 @@ class ActionPlanTests(unittest.TestCase):
 
             self.assertEqual(exit_code, 0)
             self.assertIn("No action items.", output.read_text(encoding="utf-8"))
+
+    def test_cli_plan_accepts_waiver_file(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            report = temp / "report.json"
+            waivers = temp / "waivers.toml"
+            output = temp / "action-plan.json"
+            report.write_text(
+                json.dumps(_report(_result("backup_recent", "fail", "critical"))),
+                encoding="utf-8",
+            )
+            waivers.write_text(
+                "\n".join(
+                    [
+                        "[[waivers]]",
+                        'check_id = "backup_recent"',
+                        'owner = "ops@example.invalid"',
+                        'reason = "Accepted during migration."',
+                        'expires_at = "2099-12-31T00:00:00+00:00"',
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            exit_code = main(["plan", "-i", str(report), "--waivers", str(waivers), "-o", str(output)])
+
+            self.assertEqual(exit_code, 0)
+            plan = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(plan["summary"]["waived_count"], 1)
 
 
 if __name__ == "__main__":

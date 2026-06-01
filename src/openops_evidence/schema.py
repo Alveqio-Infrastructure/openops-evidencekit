@@ -73,6 +73,9 @@ def validate_action_plan(document: Any) -> list[str]:
         _require_enum(summary, "status", {"pass", "action_required"}, errors, prefix="summary.")
         for key in (
             "items_total",
+            "action_required_count",
+            "waived_count",
+            "expired_waiver_count",
             "fail_count",
             "warn_count",
             "pass_count",
@@ -97,6 +100,10 @@ def validate_action_plan(document: Any) -> list[str]:
         _require_string_type(item, "path", errors, prefix=prefix)
         _require_string_type(item, "operator", errors, prefix=prefix)
         _require_int_range(item, "observed_count", errors, minimum=0, prefix=prefix)
+        if "waived" in item and not isinstance(item["waived"], bool):
+            errors.append(f"{prefix}waived must be a boolean when present.")
+        if "waiver" in item and item["waiver"] is not None:
+            _require_mapping(item, "waiver", errors, prefix=prefix)
         _require_string(item, "recommended_action", errors, prefix=prefix)
     return errors
 

@@ -252,10 +252,24 @@ class BundleTests(unittest.TestCase):
             )
             policy = temp / "policy.toml"
             policy.write_text("[[checks]]\nid = \"x\"\n", encoding="utf-8")
+            waivers = temp / "waivers.toml"
+            waivers.write_text(
+                "\n".join(
+                    [
+                        "[[waivers]]",
+                        'check_id = "mail_dmarc_policy"',
+                        'owner = "ops@example.invalid"',
+                        'reason = "Synthetic accepted risk."',
+                        'expires_at = "2099-12-31T00:00:00+00:00"',
+                    ]
+                ),
+                encoding="utf-8",
+            )
             self.assertEqual(classify_artifact(report), "report")
             self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
             self.assertEqual(classify_artifact(policy), "policy")
+            self.assertEqual(classify_artifact(waivers), "waivers")
 
 
 if __name__ == "__main__":

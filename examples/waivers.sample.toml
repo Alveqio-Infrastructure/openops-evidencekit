@@ -1,0 +1,8 @@
+[metadata]
+name = "Synthetic accepted risk examples"
+
+[[waivers]]
+check_id = "mail_dmarc_policy"
+owner = "ops@example.invalid"
+reason = "Synthetic example: domain is in a staged DMARC monitoring rollout."
+expires_at = "2099-12-31T00:00:00+00:00"

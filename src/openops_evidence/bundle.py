@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import os
+import tomllib
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -17,6 +18,7 @@ from .schema import (
     validate_report,
     validate_report_comparison,
 )
+from .waivers import validate_waiver_document
 
 SIGNATURE_ALGORITHM = "hmac-sha256"
 DEFAULT_SIGNING_KEY_ENV = "OPENOPS_BUNDLE_SIGNING_KEY"
@@ -244,8 +246,16 @@ def classify_artifact(path: Path) -> str:
             return "bundle-verification"
         if validate_report_comparison(document) == []:
             return "report-comparison"
+        if validate_waiver_document(document) == []:
+            return "waivers"
         return "json"
     if suffix == ".toml":
+        try:
+            document = tomllib.loads(path.read_text(encoding="utf-8"))
+        except (OSError, tomllib.TOMLDecodeError, UnicodeDecodeError):
+            return "policy"
+        if validate_waiver_document(document) == []:
+            return "waivers"
         return "policy"
     if suffix in {".md", ".markdown"}:
         return "report-markdown"

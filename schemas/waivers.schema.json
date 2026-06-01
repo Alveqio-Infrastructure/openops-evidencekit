@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/waivers.schema.json",
+  "title": "OpenOps Risk Waivers",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["waivers"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "waivers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/waiver"
+      }
+    }
+  },
+  "$defs": {
+    "waiver": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["check_id", "owner", "reason", "expires_at"],
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

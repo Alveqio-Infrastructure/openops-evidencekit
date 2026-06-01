@@ -138,6 +138,9 @@ class SchemaTests(unittest.TestCase):
                 "summary": {
                     "status": "action_required",
                     "items_total": 1,
+                    "action_required_count": 1,
+                    "waived_count": 0,
+                    "expired_waiver_count": 0,
                     "fail_count": 1,
                     "warn_count": 0,
                     "pass_count": 0,
@@ -157,6 +160,8 @@ class SchemaTests(unittest.TestCase):
                         "path": "signals.backup.last_success_at",
                         "operator": "within_days",
                         "observed_count": 0,
+                        "waived": False,
+                        "waiver": {},
                         "recommended_action": "Configure backups.",
                     }
                 ],
@@ -173,6 +178,9 @@ class SchemaTests(unittest.TestCase):
                 "summary": {
                     "status": "unknown",
                     "items_total": -1,
+                    "action_required_count": -1,
+                    "waived_count": -1,
+                    "expired_waiver_count": -1,
                     "fail_count": 0,
                     "warn_count": 0,
                     "pass_count": 0,
@@ -192,6 +200,7 @@ class SchemaTests(unittest.TestCase):
                         "path": 123,
                         "operator": None,
                         "observed_count": -1,
+                        "waived": "no",
                         "recommended_action": "",
                     }
                 ],
@@ -199,9 +208,13 @@ class SchemaTests(unittest.TestCase):
         )
         self.assertIn("summary.status must be one of: action_required, pass.", errors)
         self.assertIn("summary.items_total must be at least 0.", errors)
+        self.assertIn("summary.action_required_count must be at least 0.", errors)
+        self.assertIn("summary.waived_count must be at least 0.", errors)
+        self.assertIn("summary.expired_waiver_count must be at least 0.", errors)
         self.assertIn("items[0].priority must be one of: P0, P1, P2, P3.", errors)
         self.assertIn("items[0].id must be a non-empty string.", errors)
         self.assertIn("items[0].required must be a boolean.", errors)
+        self.assertIn("items[0].waived must be a boolean when present.", errors)
         self.assertIn("items[0].observed_count must be at least 0.", errors)
 
     def test_valid_bundle_manifest(self):
