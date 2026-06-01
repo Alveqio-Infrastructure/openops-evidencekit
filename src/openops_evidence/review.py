@@ -10,6 +10,7 @@ from .badges import create_report_badge
 from .briefs import create_report_brief, render_brief_markdown
 from .bundle import create_bundle_manifest
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
+from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import dump_json, write_text
@@ -40,6 +41,7 @@ def create_review_pack(
     *,
     waiver_document: dict[str, Any] | None = None,
     scope_document: dict[str, Any] | None = None,
+    base_evidence: dict[str, Any] | None = None,
     name: str = "openops-review-pack",
     max_findings: int = 5,
     min_score: int | None = None,
@@ -54,6 +56,7 @@ def create_review_pack(
     checks = parse_policy(policy_document)
     report = evaluate_policy(evidence, checks)
     inventory = create_evidence_inventory(evidence)
+    evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
     policy_matrix = create_policy_matrix(checks)
     coverage = create_coverage_report(evidence, checks)
@@ -88,6 +91,10 @@ def create_review_pack(
     add_artifact("inventory.json", dump_json(inventory), "Evidence inventory", "Machine-readable asset and signal inventory.")
     add_artifact("inventory.md", render_inventory_markdown(inventory), "Evidence inventory", "Wiki-friendly asset and signal inventory.")
     add_artifact("inventory.csv", render_inventory_csv(inventory), "Evidence inventory", "Spreadsheet-friendly inventory export.")
+    if evidence_drift is not None:
+        add_artifact("evidence-drift.json", dump_json(evidence_drift), "Evidence drift", "Machine-readable evidence drift report.")
+        add_artifact("evidence-drift.md", render_evidence_diff_markdown(evidence_drift), "Evidence drift", "Human-readable evidence drift report.")
+        add_artifact("evidence-drift.csv", render_evidence_diff_csv(evidence_drift), "Evidence drift", "Spreadsheet-friendly evidence drift report.")
     if scope_report is not None:
         add_artifact("scope-report.json", dump_json(scope_report), "Scope report", "Machine-readable scope boundary report.")
         add_artifact("scope-report.md", render_scope_markdown(scope_report), "Scope report", "Human-readable scope boundary report.")
@@ -148,6 +155,7 @@ def create_review_pack(
         "artifact_count": len(artifacts) + 1,
         "report": report,
         "gate": gate,
+        "evidence_drift": evidence_drift,
         "scope_report": scope_report,
         "privacy_scan": privacy_scan,
         "manifest": manifest,
@@ -170,6 +178,8 @@ def render_review_pack_readme(
     ]
     if any(artifact.get("filename") == "scope-report.md" for artifact in artifacts):
         suggested_steps.append("Check `scope-report.md` for in-scope, out-of-scope, and unclassified evidence.")
+    if any(artifact.get("filename") == "evidence-drift.md" for artifact in artifacts):
+        suggested_steps.append("Review `evidence-drift.md` for asset and signal-domain changes since the base evidence.")
     suggested_steps.extend(
         [
             "Open `report.md` and `gate-result.md` for the technical decision.",
@@ -384,6 +394,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("executive-brief.md", "Executive Brief"),
         ("scorecard.html", "Scorecard"),
         ("scope-report.md", "Scope Report"),
+        ("evidence-drift.md", "Evidence Drift"),
         ("report.md", "Report"),
         ("action-plan.md", "Action Plan"),
         ("privacy-scan.md", "Privacy Scan"),

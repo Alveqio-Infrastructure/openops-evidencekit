@@ -151,6 +151,64 @@ class ReviewPackTests(unittest.TestCase):
             )
             self.assertTrue((fail_pack / "manifest.json").is_file())
 
+    def test_review_create_can_include_evidence_drift_report(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            pack = temp / "review-pack"
+            fail_pack = temp / "review-pack-fail"
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "--base-evidence",
+                        str(ROOT / "examples" / "evidence.previous.json"),
+                        "-o",
+                        str(pack),
+                    ]
+                ),
+                0,
+            )
+
+            self.assertTrue((pack / "evidence-drift.json").is_file())
+            self.assertTrue((pack / "evidence-drift.md").is_file())
+            self.assertTrue((pack / "evidence-drift.csv").is_file())
+            self.assertEqual(main(["validate", "-i", str(pack / "evidence-drift.json"), "-t", "evidence-drift"]), 0)
+
+            manifest = json.loads((pack / "manifest.json").read_text(encoding="utf-8"))
+            readme = (pack / "README.md").read_text(encoding="utf-8")
+            index = (pack / "index.html").read_text(encoding="utf-8")
+            drift = json.loads((pack / "evidence-drift.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["metadata"]["artifact_count"], 33)
+            self.assertEqual(drift["summary"]["status"], "warn")
+            self.assertIn("evidence-drift.md", readme)
+            self.assertIn("Evidence Drift", index)
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "--base-evidence",
+                        str(ROOT / "examples" / "evidence.previous.json"),
+                        "--fail-on-drift",
+                        "-o",
+                        str(fail_pack),
+                    ]
+                ),
+                1,
+            )
+            self.assertTrue((fail_pack / "manifest.json").is_file())
+
     def test_review_create_can_fail_on_gate_after_writing_pack(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)

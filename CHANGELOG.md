@@ -58,3 +58,4 @@
 - Add SVG trend rendering for readiness report history.
 - Add optional ZIP archive creation to review pack generation.
 - Add browser-friendly HTML index pages to review packs.
+- Add optional evidence drift reports to generated review packs.

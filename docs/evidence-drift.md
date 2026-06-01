@@ -32,3 +32,10 @@ Typical review questions:
 Evidence drift complements report comparison. `compare` shows whether policy
 results changed. `evidence diff` shows whether the underlying collected evidence
 changed.
+
+Review packs can include the same drift artifacts when a previous evidence file
+is available:
+
+```powershell
+python -m openops_evidence review create -i evidence.local.json -p policy.baseline.toml --base-evidence previous-evidence.json -o review-pack
+```
