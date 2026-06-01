@@ -13,6 +13,7 @@ reports/
 evidence.local.json
 evidence.merged.json
 evidence.redacted.json
+/evidence.scaffold.json
 privacy-scan.json
 privacy-scan.md
 gate-result.json

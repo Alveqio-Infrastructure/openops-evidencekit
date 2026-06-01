@@ -51,6 +51,7 @@
 - Add self-contained HTML dashboard output for domain scorecards.
 - Add policy coverage reports for evidence-domain gap analysis.
 - Add policy questionnaire export for evidence request workflows.
+- Add evidence scaffold generation from policy signal paths.
 - Add SVG trend rendering for readiness report history.
 - Add optional ZIP archive creation to review pack generation.
 - Add browser-friendly HTML index pages to review packs.

@@ -60,6 +60,7 @@ from .reports import (
     render_sarif,
 )
 from .review import create_review_pack
+from .scaffold import create_evidence_scaffold
 from .schema import (
     validate_action_plan,
     validate_badge,
@@ -194,6 +195,16 @@ def build_parser() -> argparse.ArgumentParser:
     questionnaire_policy.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
     questionnaire_policy.add_argument("-o", "--output", default="-")
     questionnaire_policy.set_defaults(func=cmd_questionnaire_policy)
+
+    scaffold = sub.add_parser("scaffold", help="Create editable starter artifacts")
+    scaffold_sub = scaffold.add_subparsers(required=True)
+    scaffold_evidence = scaffold_sub.add_parser("evidence", help="Create evidence JSON placeholders from a policy")
+    scaffold_evidence.add_argument("policy")
+    scaffold_evidence.add_argument("--organization", default="")
+    scaffold_evidence.add_argument("--environment", default="")
+    scaffold_evidence.add_argument("--source", default="policy-scaffold")
+    scaffold_evidence.add_argument("-o", "--output", default="-")
+    scaffold_evidence.set_defaults(func=cmd_scaffold_evidence)
 
     waiver = sub.add_parser("waiver", help="Inspect risk acceptance waivers")
     waiver_sub = waiver.add_subparsers(required=True)
@@ -555,6 +566,22 @@ def cmd_questionnaire_policy(args: argparse.Namespace) -> int:
     else:
         rendered = render_questionnaire_markdown(questionnaire)
     write_text(args.output, rendered)
+    return 0
+
+
+def cmd_scaffold_evidence(args: argparse.Namespace) -> int:
+    policy_raw = load_structured(args.policy)
+    policy_errors = validate_policy_document(policy_raw)
+    if policy_errors:
+        raise UserFacingError("Policy validation failed:\n- " + "\n- ".join(policy_errors))
+    evidence = create_evidence_scaffold(
+        parse_policy(policy_raw),
+        source=args.source,
+        organization=args.organization,
+        environment=args.environment,
+        policy_metadata=policy_raw.get("metadata") if isinstance(policy_raw.get("metadata"), dict) else None,
+    )
+    write_text(args.output, dump_json(evidence))
     return 0
 
 

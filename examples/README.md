@@ -23,6 +23,9 @@ installation.
 
 `openops-evidence init --github-actions` can create a starter repository layout
 with these sample shapes and a CI workflow for recurring checks.
+`openops-evidence scaffold evidence examples/policy.baseline.toml` can create a
+schema-valid Evidence JSON starter from policy paths before real collector data
+is available.
 
 ## Waiver Samples
 
@@ -46,8 +49,8 @@ with these sample shapes and a CI workflow for recurring checks.
 
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
-executive briefs, scorecards, history timelines, comparisons, action plans,
-ticket drafts, review packs, and bundle manifests.
+evidence scaffolds, executive briefs, scorecards, history timelines,
+comparisons, action plans, ticket drafts, review packs, and bundle manifests.
 Reports can also be rendered as JUnit XML for CI systems. Generated files are
 ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis

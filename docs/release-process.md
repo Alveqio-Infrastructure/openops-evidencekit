@@ -36,6 +36,8 @@ python -m openops_evidence validate -i policy.matrix.json -t policy-matrix
 python -m openops_evidence questionnaire policy policy.exported.toml -f json -o questionnaire.json
 python -m openops_evidence validate -i questionnaire.json -t questionnaire
 python -m openops_evidence questionnaire policy policy.exported.toml -o questionnaire.md
+python -m openops_evidence scaffold evidence policy.exported.toml --organization "Example Operations Team" --environment production -o evidence.scaffold.json
+python -m openops_evidence validate -i evidence.scaffold.json
 python -m openops_evidence init init-demo --github-actions
 python -m openops_evidence validate -i examples/evidence.sample.json
 python -m openops_evidence collect docs examples/docs-sample --required inventory.md --required runbooks/backup-restore.md --max-age-days 365 -o docs.evidence.json
@@ -79,7 +81,7 @@ python -m openops_evidence privacy scan evidence.redacted.json report.local.md -
 python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
 python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
-python -m openops_evidence bundle manifest evidence.redacted.json questionnaire.json inventory.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json questionnaire.json inventory.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification

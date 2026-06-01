@@ -42,6 +42,7 @@ Run from a checkout:
 
 ```powershell
 python -m openops_evidence --version
+python -m openops_evidence scaffold evidence examples/policy.baseline.toml --organization "Example Operations Team" --environment production -o evidence.scaffold.json
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence questionnaire policy examples/policy.baseline.toml -o questionnaire.md
@@ -195,6 +196,8 @@ EvidenceKit uses three files:
 
 Use `merge` when evidence comes from multiple collectors or manually reviewed
 sources.
+Use `scaffold evidence` when a policy should become a schema-valid starter
+Evidence JSON file with placeholders for every supported `signals.*` path.
 Use `inventory evidence` when raw evidence should become a Wiki- or
 spreadsheet-friendly asset and signal-domain inventory.
 
@@ -213,6 +216,7 @@ Report comparisons are described in [docs/report-comparison.md](docs/report-comp
 Report history tracking is described in [docs/report-history.md](docs/report-history.md).
 Executive briefs are described in [docs/executive-brief.md](docs/executive-brief.md).
 Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence-inventory.md).
+Evidence scaffolds are described in [docs/evidence-scaffold.md](docs/evidence-scaffold.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
 Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).
 Policy coverage reports are described in [docs/policy-coverage.md](docs/policy-coverage.md).
