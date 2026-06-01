@@ -44,6 +44,7 @@ class ReviewPackTests(unittest.TestCase):
                 "executive-brief.md",
                 "gate-result.json",
                 "gate-result.md",
+                "index.html",
                 "inventory.csv",
                 "inventory.json",
                 "inventory.md",
@@ -84,10 +85,13 @@ class ReviewPackTests(unittest.TestCase):
 
             manifest = json.loads((pack / "manifest.json").read_text(encoding="utf-8"))
             readme = (pack / "README.md").read_text(encoding="utf-8")
+            index = (pack / "index.html").read_text(encoding="utf-8")
             self.assertEqual(manifest["metadata"]["artifact_count"], len(expected) - 1)
             self.assertIn("does not include raw evidence by default", readme)
             self.assertIn("executive-brief.md", readme)
             self.assertIn("privacy-scan.md", readme)
+            self.assertIn("<title>OpenOps Review Pack</title>", index)
+            self.assertIn("scorecard.html", index)
 
     def test_review_create_can_fail_on_gate_after_writing_pack(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -157,6 +161,7 @@ remediation = "Add the missing operational signal to evidence."
             with zipfile.ZipFile(archive) as zip_file:
                 names = set(zip_file.namelist())
             self.assertIn("manifest.json", names)
+            self.assertIn("index.html", names)
             self.assertIn("README.md", names)
             self.assertIn("report.json", names)
             self.assertIn("scorecard.html", names)

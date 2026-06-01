@@ -53,3 +53,4 @@
 - Add policy questionnaire export for evidence request workflows.
 - Add SVG trend rendering for readiness report history.
 - Add optional ZIP archive creation to review pack generation.
+- Add browser-friendly HTML index pages to review packs.

@@ -12,6 +12,7 @@ audiences need:
 
 | Artifact | Use |
 | --- | --- |
+| `index.html` | Browser-friendly review dashboard and artifact index. |
 | `README.md` | Entry point and suggested review order. |
 | `report.json` / `report.md` | Canonical check results and a human-readable report. |
 | `executive-brief.json` / `executive-brief.md` | Stakeholder summary with top findings and next steps. |

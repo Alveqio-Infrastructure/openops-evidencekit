@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -112,6 +113,13 @@ def create_review_pack(
     _relativize_privacy_paths(privacy_scan, output)
     add_artifact("privacy-scan.json", dump_json(privacy_scan), "Privacy scan", "Machine-readable scan of generated artifacts.")
     add_artifact("privacy-scan.md", render_privacy_scan_markdown(privacy_scan), "Privacy scan", "Human-readable scan of generated artifacts.")
+    index_html = render_review_pack_html(
+        report=report,
+        gate=gate,
+        privacy_scan=privacy_scan,
+        artifacts=artifacts,
+    )
+    add_artifact("index.html", index_html, "Review dashboard", "Browser-friendly entry point for the generated review pack.")
 
     readme = render_review_pack_readme(
         report=report,
@@ -189,6 +197,149 @@ def render_review_pack_readme(
     return "\n".join(lines).rstrip() + "\n"
 
 
+def render_review_pack_html(
+    *,
+    report: dict[str, Any],
+    gate: dict[str, Any],
+    privacy_scan: dict[str, Any],
+    artifacts: list[dict[str, Any]],
+) -> str:
+    summary = report.get("summary", {})
+    gate_summary = gate.get("summary", {})
+    privacy_summary = privacy_scan.get("summary", {})
+    artifact_rows = "\n".join(_artifact_row_html(item) for item in artifacts)
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>OpenOps Review Pack</title>
+  <style>
+    :root {{
+      color-scheme: light;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #17202a;
+      --muted: #566573;
+      --line: #d5dde5;
+      --accent: #2874a6;
+      --pass: #1e8449;
+      --fail: #b03a2e;
+    }}
+    body {{
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }}
+    main {{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }}
+    h1 {{
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.15;
+    }}
+    h2 {{
+      margin: 32px 0 12px;
+      font-size: 20px;
+    }}
+    .subtle {{
+      color: var(--muted);
+      margin: 0 0 24px;
+    }}
+    .metrics {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin: 0 0 20px;
+    }}
+    .metric {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }}
+    .metric span {{
+      color: var(--muted);
+      display: block;
+      font-size: 13px;
+    }}
+    .metric strong {{
+      display: block;
+      font-size: 24px;
+      margin-top: 4px;
+    }}
+    .status-pass {{ color: var(--pass); }}
+    .status-fail {{ color: var(--fail); }}
+    .quick {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 28px;
+    }}
+    .quick a {{
+      background: var(--accent);
+      border-radius: 6px;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 10px 12px;
+      text-decoration: none;
+    }}
+    table {{
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }}
+    th, td {{
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }}
+    th {{
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }}
+    a {{
+      color: #1f618d;
+    }}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>OpenOps Review Pack</h1>
+    <p class="subtle">Generated {_escape(datetime.now(UTC).isoformat())}. Raw evidence is not included by default.</p>
+    <section class="metrics">
+      <div class="metric"><span>Report status</span><strong class="{_status_class(summary.get('status'))}">{_escape(str(summary.get('status', 'unknown')).upper())}</strong></div>
+      <div class="metric"><span>Readiness score</span><strong>{_escape(summary.get('score', 'n/a'))}</strong></div>
+      <div class="metric"><span>Gate status</span><strong class="{_status_class(gate_summary.get('status'))}">{_escape(str(gate_summary.get('status', 'unknown')).upper())}</strong></div>
+      <div class="metric"><span>Privacy findings</span><strong>{_escape(privacy_summary.get('findings_count', 0))}</strong></div>
+    </section>
+    <nav class="quick" aria-label="Review shortcuts">
+      <a href="executive-brief.md">Executive Brief</a>
+      <a href="scorecard.html">Scorecard</a>
+      <a href="report.md">Report</a>
+      <a href="action-plan.md">Action Plan</a>
+      <a href="privacy-scan.md">Privacy Scan</a>
+      <a href="manifest.json">Manifest</a>
+    </nav>
+    <h2>Artifacts</h2>
+    <table>
+      <thead><tr><th>Artifact</th><th>Purpose</th></tr></thead>
+      <tbody>
+{artifact_rows}
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>
+"""
+
+
 def _relativize_privacy_paths(scan: dict[str, Any], base_dir: Path) -> None:
     base = base_dir.resolve()
     for finding in scan.get("findings", []):
@@ -200,3 +351,22 @@ def _relativize_privacy_paths(scan: dict[str, Any], base_dir: Path) -> None:
             finding["path"] = path.resolve().relative_to(base).as_posix()
         except ValueError:
             continue
+
+
+def _artifact_row_html(artifact: dict[str, Any]) -> str:
+    filename = str(artifact.get("filename") or "")
+    description = str(artifact.get("description") or "")
+    return (
+        "        <tr>"
+        f"<td><a href=\"{_escape(filename)}\">{_escape(filename)}</a></td>"
+        f"<td>{_escape(description)}</td>"
+        "</tr>"
+    )
+
+
+def _status_class(value: Any) -> str:
+    return "status-pass" if str(value) == "pass" else "status-fail"
+
+
+def _escape(value: Any) -> str:
+    return html.escape(str(value), quote=True)
