@@ -11,6 +11,30 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class CliWorkflowTests(unittest.TestCase):
+    def test_init_can_create_github_actions_workflow(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+
+            self.assertEqual(main(["init", str(temp), "--github-actions"]), 0)
+
+            workflow = temp / ".github" / "workflows" / "openops-evidence.yml"
+            self.assertTrue((temp / "evidence.sample.json").is_file())
+            self.assertTrue((temp / "policy.baseline.toml").is_file())
+            self.assertTrue(workflow.is_file())
+            workflow_text = workflow.read_text(encoding="utf-8")
+            self.assertIn("openops-evidence check", workflow_text)
+            self.assertIn("-p policy.baseline.toml", workflow_text)
+            self.assertIn("openops-evidence badge report", workflow_text)
+            self.assertIn("-f prometheus", workflow_text)
+
+            custom = temp / "custom"
+            self.assertEqual(
+                main(["init", str(custom), "--policy-pack", "security-minimum", "--github-actions"]),
+                0,
+            )
+            custom_workflow = custom / ".github" / "workflows" / "openops-evidence.yml"
+            self.assertIn("-p policy.security-minimum.toml", custom_workflow.read_text(encoding="utf-8"))
+
     def test_end_to_end_readiness_workflow(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)

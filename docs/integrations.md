@@ -25,6 +25,9 @@ Integrations should collect facts, not secrets.
 
 ## CI Outputs
 
+Run `openops-evidence init --github-actions` to generate a starter workflow that
+produces the common CI artifacts below.
+
 | Output | Command | Use |
 | --- | --- | --- |
 | Gate JSON | `openops-evidence gate report -i report.json --min-score 90 -o gate-result.json` | Enforce readiness thresholds in CI. |

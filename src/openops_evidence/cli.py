@@ -309,6 +309,11 @@ def build_parser() -> argparse.ArgumentParser:
     init = sub.add_parser("init", help="Create starter policy and evidence files")
     init.add_argument("directory", nargs="?", default=".")
     init.add_argument("--policy-pack", default="baseline")
+    init.add_argument(
+        "--github-actions",
+        action="store_true",
+        help="Also create a GitHub Actions readiness workflow",
+    )
     init.set_defaults(func=cmd_init)
     return parser
 
@@ -684,8 +689,19 @@ def cmd_init(args: argparse.Namespace) -> int:
     package = "openops_evidence.templates"
     pack = get_policy_pack(args.policy_pack)
     policy = read_policy_pack(args.policy_pack)
+    policy_filename = f"policy.{pack['name']}.toml"
     evidence = resources.files(package).joinpath("evidence.sample.json").read_text(encoding="utf-8")
-    (target / f"policy.{pack['name']}.toml").write_text(policy, encoding="utf-8")
+    (target / policy_filename).write_text(policy, encoding="utf-8")
     (target / "evidence.sample.json").write_text(evidence, encoding="utf-8")
+    if args.github_actions:
+        workflow = (
+            resources.files(package)
+            .joinpath("github-actions.yml")
+            .read_text(encoding="utf-8")
+            .replace("__OPENOPS_POLICY_FILE__", policy_filename)
+        )
+        workflow_path = target / ".github" / "workflows" / "openops-evidence.yml"
+        workflow_path.parent.mkdir(parents=True, exist_ok=True)
+        workflow_path.write_text(workflow, encoding="utf-8")
     print(f"Created starter files in {target}")
     return 0

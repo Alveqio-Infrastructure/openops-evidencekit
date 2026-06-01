@@ -35,6 +35,7 @@ jobs:
           PYTHONPATH=src python -m openops_evidence policy matrix policy.exported.toml -f markdown -o policy.matrix.md
           PYTHONPATH=src python -m openops_evidence policy matrix policy.exported.toml -f json -o policy.matrix.json
           PYTHONPATH=src python -m openops_evidence validate -i policy.matrix.json -t policy-matrix
+          PYTHONPATH=src python -m openops_evidence init init-demo --github-actions
           PYTHONPATH=src python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
           PYTHONPATH=src python -m openops_evidence collect restic-snapshots examples/restic.snapshots.sample.json -o restic.evidence.json
           PYTHONPATH=src python -m openops_evidence collect borg-archives examples/borg.archives.sample.json -o borg.evidence.json

@@ -12,6 +12,7 @@ python -m openops_evidence policy validate policy.exported.toml
 python -m openops_evidence policy matrix policy.exported.toml -f markdown -o policy.matrix.md
 python -m openops_evidence policy matrix policy.exported.toml -f json -o policy.matrix.json
 python -m openops_evidence validate -i policy.matrix.json -t policy-matrix
+python -m openops_evidence init init-demo --github-actions
 
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence collect restic-snapshots examples/restic.snapshots.sample.json -o restic.evidence.json

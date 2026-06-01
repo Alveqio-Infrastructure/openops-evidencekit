@@ -42,6 +42,7 @@ having to deploy a platform first.
 - SARIF report export for review tooling.
 - Shields-compatible readiness badge export.
 - Prometheus text export for monitoring pipelines.
+- GitHub Actions starter workflow generation.
 - Report gates for score and finding thresholds.
 - Report comparison and regression guardrails.
 - Action plan ticket export.

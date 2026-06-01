@@ -21,6 +21,9 @@ The same policies are also bundled as package policy packs. Use
 `openops-evidence policy list` and `openops-evidence policy show <name>` after
 installation.
 
+`openops-evidence init --github-actions` can create a starter repository layout
+with these sample shapes and a CI workflow for recurring checks.
+
 ## Waiver Samples
 
 - `waivers.sample.toml` shows the accepted-risk file shape used by action plans

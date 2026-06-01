@@ -33,6 +33,7 @@ python -m openops_evidence policy validate policy.exported.toml
 python -m openops_evidence policy matrix policy.exported.toml -f markdown -o policy.matrix.md
 python -m openops_evidence policy matrix policy.exported.toml -f json -o policy.matrix.json
 python -m openops_evidence validate -i policy.matrix.json -t policy-matrix
+python -m openops_evidence init init-demo --github-actions
 python -m openops_evidence validate -i examples/evidence.sample.json
 python -m openops_evidence collect docs examples/docs-sample --required inventory.md --required runbooks/backup-restore.md --max-age-days 365 -o docs.evidence.json
 python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json

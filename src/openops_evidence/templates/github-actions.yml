@@ -1,0 +1,49 @@
+name: OpenOps Evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    name: Readiness evidence
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install OpenOps EvidenceKit
+        run: python -m pip install git+https://github.com/Alveqio-Infrastructure/openops-evidencekit.git
+      - name: Evaluate evidence
+        run: |
+          openops-evidence validate -i evidence.sample.json
+          openops-evidence check -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o report.openops.json || true
+          openops-evidence validate -i report.openops.json -t report
+          openops-evidence badge report -i report.openops.json -o readiness-badge.json
+          openops-evidence report -i report.openops.json -f markdown -o report.openops.md
+          openops-evidence report -i report.openops.json -f junit -o report.openops.junit.xml
+          openops-evidence report -i report.openops.json -f sarif -o report.openops.sarif.json
+          openops-evidence report -i report.openops.json -f prometheus -o report.openops.prom
+          openops-evidence gate report -i report.openops.json --min-score 90 --max-warnings 0 -o gate-result.json
+      - name: Upload evidence artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openops-evidence
+          path: |
+            report.openops.json
+            report.openops.md
+            report.openops.junit.xml
+            report.openops.sarif.json
+            report.openops.prom
+            readiness-badge.json
+            gate-result.json

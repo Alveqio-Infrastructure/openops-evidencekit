@@ -153,6 +153,7 @@ Create starter files for a new assessment:
 
 ```powershell
 python -m openops_evidence init ./my-readiness-check
+python -m openops_evidence init ./my-readiness-check --github-actions
 ```
 
 List and export bundled policy packs:
@@ -196,6 +197,8 @@ in README files, internal portals, or wiki dashboards. See
 [docs/status-badges.md](docs/status-badges.md).
 Prometheus text output is described in
 [docs/prometheus-output.md](docs/prometheus-output.md).
+The generated GitHub Actions starter is described in
+[docs/github-actions.md](docs/github-actions.md).
 
 Policy checks are intentionally small:
 
