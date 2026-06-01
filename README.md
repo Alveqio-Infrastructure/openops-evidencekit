@@ -139,6 +139,7 @@ Use redaction before sharing evidence outside your organization:
 
 ```powershell
 python -m openops_evidence redact -i evidence.local.json --redact-hostnames -o evidence.redacted.json
+python -m openops_evidence privacy scan evidence.redacted.json report.local.md -f markdown -o privacy-scan.md
 ```
 
 Read [docs/privacy-model.md](docs/privacy-model.md) before publishing or

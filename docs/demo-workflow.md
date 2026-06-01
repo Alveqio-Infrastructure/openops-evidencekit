@@ -25,6 +25,8 @@ python -m openops_evidence collect docs examples/docs-sample --required inventor
 python -m openops_evidence merge evidence.local.json restic.evidence.json borg.evidence.json uptime-kuma.evidence.json prometheus.evidence.json systemd.evidence.json docker.evidence.json docs.evidence.json -o evidence.merged.json
 python -m openops_evidence redact -i evidence.merged.json --redact-hostnames -o evidence.redacted.json
 python -m openops_evidence validate -i evidence.redacted.json
+python -m openops_evidence privacy scan evidence.redacted.json -o privacy-scan.json
+python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
 
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json

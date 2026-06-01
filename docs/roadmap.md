@@ -27,6 +27,7 @@ having to deploy a platform first.
 - Runbook freshness checks.
 - Inventory completeness checks.
 - Evidence bundle manifest.
+- Privacy scan for reviewed sharing artifacts.
 - Bundle manifest validation.
 - Local documentation directory collector.
 - Wiki seed pages for public project documentation.

@@ -6,6 +6,8 @@ Before sharing:
 
 ```powershell
 python -m openops_evidence redact -i evidence.merged.json --redact-hostnames -o evidence.redacted.json
+python -m openops_evidence privacy scan evidence.redacted.json report.local.md -o privacy-scan.json
+python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.local.md -o evidence-bundle.manifest.json
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 ```

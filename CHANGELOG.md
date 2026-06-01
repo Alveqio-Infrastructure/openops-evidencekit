@@ -36,3 +36,4 @@
 - Add Markdown ticket export for action plan items.
 - Add policy coverage matrix export.
 - Add JUnit XML report output for CI systems.
+- Add privacy scanning for artifacts before sharing.

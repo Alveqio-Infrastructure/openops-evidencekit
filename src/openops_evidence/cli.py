@@ -41,6 +41,7 @@ from .policy import (
     validate_policy_document,
 )
 from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_pack
+from .privacy import render_privacy_scan_markdown, scan_privacy
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_junit, render_markdown
 from .schema import (
@@ -50,6 +51,7 @@ from .schema import (
     validate_bundle_verification,
     validate_evidence,
     validate_policy_matrix,
+    validate_privacy_scan,
     validate_report,
     validate_report_comparison,
 )
@@ -233,6 +235,7 @@ def build_parser() -> argparse.ArgumentParser:
             "report",
             "action-plan",
             "policy-matrix",
+            "privacy-scan",
             "bundle",
             "bundle-verification",
             "bundle-signature",
@@ -241,6 +244,15 @@ def build_parser() -> argparse.ArgumentParser:
         default="evidence",
     )
     validate.set_defaults(func=cmd_validate)
+
+    privacy = sub.add_parser("privacy", help="Scan artifacts for likely sensitive data")
+    privacy_sub = privacy.add_subparsers(required=True)
+    privacy_scan = privacy_sub.add_parser("scan", help="Scan files or directories before sharing")
+    privacy_scan.add_argument("paths", nargs="+")
+    privacy_scan.add_argument("-f", "--format", choices=["json", "markdown"], default="json")
+    privacy_scan.add_argument("--fail-on-findings", action="store_true")
+    privacy_scan.add_argument("-o", "--output", default="-")
+    privacy_scan.set_defaults(func=cmd_privacy_scan)
 
     report = sub.add_parser("report", help="Render a check report")
     report.add_argument("-i", "--input", required=True)
@@ -520,6 +532,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_action_plan(document)
     elif args.type == "policy-matrix":
         errors = validate_policy_matrix(document)
+    elif args.type == "privacy-scan":
+        errors = validate_privacy_scan(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":
@@ -536,6 +550,17 @@ def cmd_validate(args: argparse.Namespace) -> int:
             print(f"- {error}")
         return 1
     print("valid")
+    return 0
+
+
+def cmd_privacy_scan(args: argparse.Namespace) -> int:
+    scan = scan_privacy(args.paths)
+    if args.format == "markdown":
+        write_text(args.output, render_privacy_scan_markdown(scan))
+    else:
+        write_text(args.output, dump_json(scan))
+    if args.fail_on_findings and scan["summary"]["findings_count"] > 0:
+        return 1
     return 0
 
 

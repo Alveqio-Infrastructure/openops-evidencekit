@@ -16,6 +16,7 @@ and automation wrappers.
 - `validate` returns `1` when the selected artifact is invalid.
 - `policy validate` returns `1` when the selected policy is invalid.
 - `waiver validate` returns `1` when the selected waiver file is invalid.
+- `privacy scan --fail-on-findings` returns `1` when likely sensitive data is found.
 - `compare --fail-on-regression` returns `1` when an existing check regresses.
 - `bundle verify --fail-on-mismatch` returns `1` when an artifact is missing or changed.
 - `bundle verify-signature --fail-on-invalid` returns `1` when the manifest signature does not match.

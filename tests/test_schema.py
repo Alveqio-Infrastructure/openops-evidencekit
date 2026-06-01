@@ -7,6 +7,7 @@ from openops_evidence.schema import (
     validate_bundle_verification,
     validate_evidence,
     validate_policy_matrix,
+    validate_privacy_scan,
     validate_report,
     validate_report_comparison,
 )
@@ -288,6 +289,66 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("checks[0].mode must be one of: all, any, none.", errors)
         self.assertIn("checks[0].required must be a boolean.", errors)
         self.assertIn("checks[0].remediation must be a string.", errors)
+
+    def test_valid_privacy_scan(self):
+        errors = validate_privacy_scan(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "summary": {
+                    "status": "fail",
+                    "files_scanned": 1,
+                    "files_skipped": 0,
+                    "findings_count": 1,
+                    "high_count": 1,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "findings": [
+                    {
+                        "path": "evidence.json",
+                        "line": 1,
+                        "kind": "token",
+                        "severity": "high",
+                        "excerpt": "token=<match>",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_privacy_scan_is_reported(self):
+        errors = validate_privacy_scan(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "summary": {
+                    "status": "unknown",
+                    "files_scanned": -1,
+                    "files_skipped": 0,
+                    "findings_count": 0,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "findings": [
+                    {
+                        "path": "",
+                        "line": 0,
+                        "kind": "",
+                        "severity": "urgent",
+                        "excerpt": "",
+                    }
+                ],
+            }
+        )
+        self.assertIn("summary.status must be one of: fail, pass.", errors)
+        self.assertIn("summary.files_scanned must be at least 0.", errors)
+        self.assertIn("findings[0].path must be a non-empty string.", errors)
+        self.assertIn("findings[0].line must be at least 1.", errors)
+        self.assertIn("findings[0].kind must be a non-empty string.", errors)
+        self.assertIn("findings[0].severity must be one of: high, low, medium.", errors)
+        self.assertIn("findings[0].excerpt must be a non-empty string.", errors)
 
     def test_valid_bundle_manifest(self):
         errors = validate_bundle_manifest(

@@ -45,3 +45,5 @@ Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, reports, comparisons, action plans, ticket drafts, and bundle
 manifests. Reports can also be rendered as JUnit XML for CI systems. Generated
 files are ignored by git so they can be reviewed without polluting commits.
+Run `privacy scan` on generated sharing artifacts before attaching them to
+issues, tickets, or public discussions.

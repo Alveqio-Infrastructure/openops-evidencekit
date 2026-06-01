@@ -13,6 +13,8 @@ reports/
 evidence.local.json
 evidence.merged.json
 evidence.redacted.json
+privacy-scan.json
+privacy-scan.md
 evidence-bundle.manifest.json
 evidence-bundle.verification.json
 evidence-bundle.zip

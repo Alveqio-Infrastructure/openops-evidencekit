@@ -48,6 +48,8 @@ jobs:
           PYTHONPATH=src python -m openops_evidence validate -i evidence.local.json
           PYTHONPATH=src python -m openops_evidence validate -i docs.evidence.json
           PYTHONPATH=src python -m openops_evidence validate -i evidence.redacted.json
+          PYTHONPATH=src python -m openops_evidence privacy scan evidence.redacted.json -o privacy-scan.json
+          PYTHONPATH=src python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
           PYTHONPATH=src python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
           PYTHONPATH=src python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json
           PYTHONPATH=src python -m openops_evidence validate -i report.local.json -t report

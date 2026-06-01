@@ -48,6 +48,8 @@ python -m openops_evidence ticket export -i action-plan.json -o action-tickets
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
+python -m openops_evidence privacy scan evidence.redacted.json report.local.md -o privacy-scan.json
+python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
 python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.comparison.json report.local.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
@@ -71,7 +73,8 @@ Then inspect:
 2. Confirm sample artifacts match the current schema.
 3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`,
    `schemas/action-plan.schema.json`, `schemas/policy-matrix.schema.json`,
-   `schemas/waivers.schema.json`, `schemas/bundle-manifest.schema.json`,
+   `schemas/privacy-scan.schema.json`, `schemas/waivers.schema.json`,
+   `schemas/bundle-manifest.schema.json`,
    `schemas/bundle-signature.schema.json`, `schemas/bundle-verification.schema.json`,
    and `schemas/report-comparison.schema.json` are still aligned with generated output.
 4. Run the pre-release checks.

@@ -32,6 +32,21 @@ prevention system. Before sharing a bundle externally, review the redacted file
 with a plain text search for organization names, domains, user names, IP
 addresses, customer identifiers, and credentials.
 
+## Privacy Scan
+
+Use `privacy scan` as a lightweight sharing gate after redaction and before
+publishing artifacts:
+
+```powershell
+python -m openops_evidence privacy scan evidence.redacted.json report.local.md -o privacy-scan.json
+python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
+python -m openops_evidence privacy scan evidence.redacted.json report.local.md --fail-on-findings
+```
+
+The scanner looks for private keys, common token shapes, secret assignments,
+email addresses, and IPv4 addresses. Findings mask the matched value in the
+excerpt so the scan report does not echo secrets into logs.
+
 ## AI-Assisted Review
 
 AI systems can help summarize findings, draft remediation text, or compare
@@ -52,8 +67,9 @@ wiki page:
 
 - run `openops-evidence redact`
 - validate the redacted artifact
-- search for secrets, domains, public IPs, private IPs, customer names, and
-  personal email addresses
+- run `openops-evidence privacy scan` and review any findings
+- search manually for organization domains, customer names, and context-specific
+  identifiers that generic scanners cannot know
 - remove generated reports that include operational details not needed by the
   recipient
 - prefer aggregate findings over raw source data when discussing public bugs

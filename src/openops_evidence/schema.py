@@ -146,6 +146,39 @@ def validate_policy_matrix(document: Any) -> list[str]:
     return errors
 
 
+def validate_privacy_scan(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Privacy scan must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "findings", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "fail"}, errors, prefix="summary.")
+        for key in (
+            "files_scanned",
+            "files_skipped",
+            "findings_count",
+            "high_count",
+            "medium_count",
+            "low_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, finding in enumerate(document.get("findings", [])):
+        if not isinstance(finding, dict):
+            errors.append(f"findings[{index}] must be an object.")
+            continue
+        prefix = f"findings[{index}]."
+        _require_string(finding, "path", errors, prefix=prefix)
+        _require_int_range(finding, "line", errors, minimum=1, prefix=prefix)
+        _require_string(finding, "kind", errors, prefix=prefix)
+        _require_enum(finding, "severity", {"high", "medium", "low"}, errors, prefix=prefix)
+        _require_string(finding, "excerpt", errors, prefix=prefix)
+    return errors
+
+
 def validate_bundle_manifest(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
