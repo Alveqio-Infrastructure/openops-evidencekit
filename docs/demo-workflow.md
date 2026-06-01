@@ -31,6 +31,8 @@ python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json
 python -m openops_evidence validate -i report.local.json -t report
+python -m openops_evidence gate report -i report.local.json --min-score 100 --max-warnings 0 -o gate-result.json
+python -m openops_evidence validate -i gate-result.json -t gate-result
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
@@ -41,7 +43,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
 python -m openops_evidence ticket export -i action-plan.json -o action-tickets
-python -m openops_evidence bundle manifest evidence.redacted.json report.local.json report.docs.json report.local.md readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json report.docs.json report.local.md readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification

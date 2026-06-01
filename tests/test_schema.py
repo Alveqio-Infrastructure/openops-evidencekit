@@ -6,6 +6,7 @@ from openops_evidence.schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_gate_result,
     validate_policy_matrix,
     validate_privacy_scan,
     validate_report,
@@ -349,6 +350,67 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("findings[0].kind must be a non-empty string.", errors)
         self.assertIn("findings[0].severity must be one of: high, low, medium.", errors)
         self.assertIn("findings[0].excerpt must be a non-empty string.", errors)
+
+    def test_valid_gate_result(self):
+        errors = validate_gate_result(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "conditions_total": 1,
+                    "conditions_failed": 0,
+                    "source_score": 100,
+                    "source_failed": 0,
+                    "source_warnings": 0,
+                },
+                "conditions": [
+                    {
+                        "id": "min_score",
+                        "title": "Readiness score is at least 90",
+                        "status": "pass",
+                        "observed": 100,
+                        "operator": "at_least",
+                        "expected": 90,
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_gate_result_is_reported(self):
+        errors = validate_gate_result(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "unknown",
+                    "conditions_total": -1,
+                    "conditions_failed": 0,
+                    "source_score": 0,
+                    "source_failed": 0,
+                    "source_warnings": 0,
+                },
+                "conditions": [
+                    {
+                        "id": "",
+                        "title": "",
+                        "status": "unknown",
+                        "operator": "",
+                    }
+                ],
+            }
+        )
+        self.assertIn("summary.status must be one of: fail, pass.", errors)
+        self.assertIn("summary.conditions_total must be at least 0.", errors)
+        self.assertIn("conditions[0].id must be a non-empty string.", errors)
+        self.assertIn("conditions[0].title must be a non-empty string.", errors)
+        self.assertIn("conditions[0].status must be one of: fail, pass.", errors)
+        self.assertIn("conditions[0].operator must be a non-empty string.", errors)
+        self.assertIn("conditions[0].observed is required.", errors)
+        self.assertIn("conditions[0].expected is required.", errors)
 
     def test_valid_bundle_manifest(self):
         errors = validate_bundle_manifest(

@@ -18,6 +18,7 @@ class CliWorkflowTests(unittest.TestCase):
             restic = temp / "restic.json"
             merged = temp / "merged.json"
             report = temp / "report.json"
+            gate = temp / "gate-result.json"
             markdown = temp / "report.md"
             bookstack = temp / "bookstack.md"
             junit = temp / "report.junit.xml"
@@ -60,6 +61,24 @@ class CliWorkflowTests(unittest.TestCase):
                 0,
             )
             self.assertEqual(main(["report", "-i", str(report), "-f", "markdown", "-o", str(markdown)]), 0)
+            self.assertEqual(
+                main(
+                    [
+                        "gate",
+                        "report",
+                        "-i",
+                        str(report),
+                        "--min-score",
+                        "100",
+                        "--max-warnings",
+                        "0",
+                        "-o",
+                        str(gate),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(main(["validate", "-i", str(gate), "-t", "gate-result"]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "bookstack", "-o", str(bookstack)]), 0)
             self.assertEqual(main(["report", "-i", str(report), "-f", "junit", "-o", str(junit)]), 0)
             self.assertEqual(main(["policy", "show", "baseline", "-o", str(temp / "policy.exported.toml")]), 0)
@@ -70,6 +89,7 @@ class CliWorkflowTests(unittest.TestCase):
                         "manifest",
                         str(merged),
                         str(report),
+                        str(gate),
                         str(markdown),
                         "--base-dir",
                         str(temp),
@@ -132,12 +152,14 @@ class CliWorkflowTests(unittest.TestCase):
                     os.environ["OPENOPS_TEST_SIGNING_KEY"] = old_key
 
             report_data = json.loads(report.read_text(encoding="utf-8"))
+            gate_data = json.loads(gate.read_text(encoding="utf-8"))
             manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
             verification_data = json.loads(verification.read_text(encoding="utf-8"))
             signature_data = json.loads(signature.read_text(encoding="utf-8"))
             signature_verification_data = json.loads(signature_verification.read_text(encoding="utf-8"))
             self.assertEqual(report_data["summary"]["status"], "pass")
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 3)
+            self.assertEqual(gate_data["summary"]["status"], "pass")
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 4)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")

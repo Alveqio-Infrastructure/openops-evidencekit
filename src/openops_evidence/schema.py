@@ -179,6 +179,42 @@ def validate_privacy_scan(document: Any) -> list[str]:
     return errors
 
 
+def validate_gate_result(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Gate result must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "conditions", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "fail"}, errors, prefix="summary.")
+        for key in (
+            "conditions_total",
+            "conditions_failed",
+            "source_score",
+            "source_failed",
+            "source_warnings",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, condition in enumerate(document.get("conditions", [])):
+        if not isinstance(condition, dict):
+            errors.append(f"conditions[{index}] must be an object.")
+            continue
+        prefix = f"conditions[{index}]."
+        _require_string(condition, "id", errors, prefix=prefix)
+        _require_string(condition, "title", errors, prefix=prefix)
+        _require_enum(condition, "status", {"pass", "fail"}, errors, prefix=prefix)
+        _require_string(condition, "operator", errors, prefix=prefix)
+        if "observed" not in condition:
+            errors.append(f"{prefix}observed is required.")
+        if "expected" not in condition:
+            errors.append(f"{prefix}expected is required.")
+    return errors
+
+
 def validate_bundle_manifest(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

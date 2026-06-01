@@ -29,6 +29,7 @@ from .collectors import (
     collect_tls,
     collect_uptime_kuma_export,
 )
+from .gates import evaluate_report_gate, render_gate_markdown
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
 from .policy import (
@@ -50,6 +51,7 @@ from .schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_gate_result,
     validate_policy_matrix,
     validate_privacy_scan,
     validate_report,
@@ -176,6 +178,20 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("-o", "--output", default="-")
     plan.set_defaults(func=cmd_plan)
 
+    gate = sub.add_parser("gate", help="Evaluate CI gate conditions against generated artifacts")
+    gate_sub = gate.add_subparsers(required=True)
+    gate_report = gate_sub.add_parser("report", help="Evaluate thresholds against a report JSON file")
+    gate_report.add_argument("-i", "--input", required=True)
+    gate_report.add_argument("-f", "--format", choices=["json", "markdown"], default="json")
+    gate_report.add_argument("--min-score", type=int)
+    gate_report.add_argument("--max-failed", type=int)
+    gate_report.add_argument("--max-warnings", type=int)
+    gate_report.add_argument("--max-critical", type=int)
+    gate_report.add_argument("--max-high", type=int)
+    gate_report.add_argument("--ignore-report-status", action="store_true")
+    gate_report.add_argument("-o", "--output", default="-")
+    gate_report.set_defaults(func=cmd_gate_report)
+
     ticket = sub.add_parser("ticket", help="Export action plans into ticket-friendly files")
     ticket_sub = ticket.add_subparsers(required=True)
     ticket_export = ticket_sub.add_parser("export", help="Export action plan items as Markdown ticket files")
@@ -234,6 +250,7 @@ def build_parser() -> argparse.ArgumentParser:
             "evidence",
             "report",
             "action-plan",
+            "gate-result",
             "policy-matrix",
             "privacy-scan",
             "bundle",
@@ -442,6 +459,38 @@ def cmd_plan(args: argparse.Namespace) -> int:
     return 1 if plan["summary"]["action_required_count"] > 0 else 0
 
 
+def cmd_gate_report(args: argparse.Namespace) -> int:
+    report = load_json(args.input)
+    errors = validate_report(report)
+    if errors:
+        raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
+    _validate_gate_args(args)
+    gate = evaluate_report_gate(
+        report,
+        min_score=args.min_score,
+        max_failed=args.max_failed,
+        max_warnings=args.max_warnings,
+        max_critical=args.max_critical,
+        max_high=args.max_high,
+        ignore_report_status=args.ignore_report_status,
+    )
+    if args.format == "markdown":
+        write_text(args.output, render_gate_markdown(gate))
+    else:
+        write_text(args.output, dump_json(gate))
+    return 1 if gate["summary"]["status"] == "fail" else 0
+
+
+def _validate_gate_args(args: argparse.Namespace) -> None:
+    if args.min_score is not None and not 0 <= args.min_score <= 100:
+        raise UserFacingError("--min-score must be between 0 and 100")
+    for name in ("max_failed", "max_warnings", "max_critical", "max_high"):
+        value = getattr(args, name)
+        if value is not None and value < 0:
+            option = name.replace("_", "-")
+            raise UserFacingError(f"--{option} must be at least 0")
+
+
 def cmd_ticket_export(args: argparse.Namespace) -> int:
     plan = load_json(args.input)
     errors = validate_action_plan(plan)
@@ -530,6 +579,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_report(document)
     elif args.type == "action-plan":
         errors = validate_action_plan(document)
+    elif args.type == "gate-result":
+        errors = validate_gate_result(document)
     elif args.type == "policy-matrix":
         errors = validate_policy_matrix(document)
     elif args.type == "privacy-scan":

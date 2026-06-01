@@ -20,6 +20,7 @@ sensitive data, and render reports that can be reviewed by humans.
 2. Merge evidence from multiple sources.
 3. Redact evidence before it leaves the owning team.
 4. Evaluate evidence with a deterministic policy.
-5. Render a report for review, tickets, or documentation.
-6. Compare reports over time.
-7. Create a bundle manifest for the shared artifacts.
+5. Apply CI gates for score or finding thresholds.
+6. Render a report for review, tickets, or documentation.
+7. Compare reports over time.
+8. Create a bundle manifest for the shared artifacts.

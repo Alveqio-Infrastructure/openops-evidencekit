@@ -39,6 +39,7 @@ having to deploy a platform first.
 - Policy pack versioning.
 - CI-ready machine output with stable exit codes.
 - JUnit report export for CI test-result publishing.
+- Report gates for score and finding thresholds.
 - Report comparison and regression guardrails.
 - Action plan ticket export.
 - CLI version and exit-code documentation.

@@ -37,3 +37,4 @@
 - Add policy coverage matrix export.
 - Add JUnit XML report output for CI systems.
 - Add privacy scanning for artifacts before sharing.
+- Add configurable report gates for CI thresholds.

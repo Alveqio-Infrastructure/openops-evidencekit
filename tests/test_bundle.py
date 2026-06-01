@@ -196,6 +196,7 @@ class BundleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)
             report = temp / "report.json"
+            gate = temp / "gate.json"
             comparison = temp / "comparison.json"
             signature = temp / "signature.json"
             report.write_text(
@@ -212,6 +213,25 @@ class BundleTests(unittest.TestCase):
                             "checks_warn": 0,
                         },
                         "results": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            gate.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "conditions_total": 0,
+                            "conditions_failed": 0,
+                            "source_score": 100,
+                            "source_failed": 0,
+                            "source_warnings": 0,
+                        },
+                        "conditions": [],
                     }
                 ),
                 encoding="utf-8",
@@ -266,6 +286,7 @@ class BundleTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertEqual(classify_artifact(report), "report")
+            self.assertEqual(classify_artifact(gate), "gate-result")
             self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
             self.assertEqual(classify_artifact(policy), "policy")

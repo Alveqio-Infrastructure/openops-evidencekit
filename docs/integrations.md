@@ -27,6 +27,7 @@ Integrations should collect facts, not secrets.
 
 | Output | Command | Use |
 | --- | --- | --- |
+| Gate JSON | `openops-evidence gate report -i report.json --min-score 90 -o gate-result.json` | Enforce readiness thresholds in CI. |
 | JUnit XML | `openops-evidence report -i report.json -f junit -o report.junit.xml` | Publish readiness checks as CI test results. |
 | Markdown tickets | `openops-evidence ticket export -i action-plan.json -o action-tickets` | Import remediation work into issue trackers or service desks. |
 

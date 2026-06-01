@@ -36,6 +36,7 @@ python -m openops_evidence --version
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
+python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 ```
@@ -68,7 +69,7 @@ python -m openops_evidence ticket export -i action-plan.json -o action-tickets
 Create a hash manifest for the files you plan to share:
 
 ```powershell
-python -m openops_evidence bundle manifest evidence.redacted.json report.local.json readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence bundle archive evidence-bundle.manifest.json --base-dir . -o evidence-bundle.zip
 ```
@@ -186,6 +187,7 @@ Bundled policies are described in [docs/policy-packs.md](docs/policy-packs.md).
 Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest.md).
 Report comparisons are described in [docs/report-comparison.md](docs/report-comparison.md).
 Action plans are described in [docs/action-plan.md](docs/action-plan.md).
+CI gates are described in [docs/gates.md](docs/gates.md).
 
 Policy checks are intentionally small:
 

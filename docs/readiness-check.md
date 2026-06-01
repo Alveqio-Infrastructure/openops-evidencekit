@@ -58,6 +58,7 @@ Review the redacted file manually before sending it to anyone else.
 
 ```powershell
 python -m openops_evidence check -i evidence.redacted.json -p examples/policy.baseline.toml -o report.json
+python -m openops_evidence gate report -i report.json --min-score 90 --max-warnings 0 -o gate-result.json
 ```
 
 ## 4. Render Report

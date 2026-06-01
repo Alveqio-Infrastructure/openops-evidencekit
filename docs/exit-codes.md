@@ -12,6 +12,7 @@ and automation wrappers.
 ## Commands That May Return 1
 
 - `check` returns `1` when required checks fail.
+- `gate report` returns `1` when one or more configured gate conditions fail.
 - `plan` returns `1` when the generated action plan has at least one non-waived action item.
 - `validate` returns `1` when the selected artifact is invalid.
 - `policy validate` returns `1` when the selected policy is invalid.

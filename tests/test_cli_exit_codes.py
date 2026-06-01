@@ -53,6 +53,30 @@ class CliExitCodeTests(unittest.TestCase):
                     2,
                 )
 
+    def test_gate_returns_two_for_invalid_threshold(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report = Path(temp_dir) / "report.json"
+            report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "summary": {
+                            "score": 100,
+                            "status": "pass",
+                            "checks_total": 0,
+                            "checks_passed": 0,
+                            "checks_failed": 0,
+                            "checks_warn": 0,
+                        },
+                        "results": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with redirect_stderr(StringIO()):
+                self.assertEqual(main(["gate", "report", "-i", str(report), "--min-score", "101"]), 2)
+
     def test_verify_signature_fail_on_invalid_returns_one(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)

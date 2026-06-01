@@ -15,6 +15,7 @@ from .schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_gate_result,
     validate_report,
     validate_report_comparison,
 )
@@ -238,6 +239,8 @@ def classify_artifact(path: Path) -> str:
             return "report"
         if validate_action_plan(document) == []:
             return "action-plan"
+        if validate_gate_result(document) == []:
+            return "gate-result"
         if _looks_like_bundle_manifest(document):
             return "bundle-manifest"
         if validate_bundle_signature(document) == []:

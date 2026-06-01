@@ -8,6 +8,7 @@ python -m openops_evidence --version
 python -m openops_evidence policy list
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
+python -m openops_evidence gate report -i report.local.json --min-score 90 -o gate-result.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.md

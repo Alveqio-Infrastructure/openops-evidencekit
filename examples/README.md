@@ -47,3 +47,5 @@ manifests. Reports can also be rendered as JUnit XML for CI systems. Generated
 files are ignored by git so they can be reviewed without polluting commits.
 Run `privacy scan` on generated sharing artifacts before attaching them to
 issues, tickets, or public discussions.
+Use `gate report` when CI should enforce score, warning, or severity thresholds
+that are stricter than the policy's required-failure status alone.

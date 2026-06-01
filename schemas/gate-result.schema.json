@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/gate-result.schema.json",
+  "title": "OpenOps Gate Result",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "conditions"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "conditions_total",
+        "conditions_failed",
+        "source_score",
+        "source_failed",
+        "source_warnings"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "fail"]
+        },
+        "conditions_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conditions_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_score": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_warnings": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/condition"
+      }
+    }
+  },
+  "$defs": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "status", "observed", "operator", "expected"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["pass", "fail"]
+        },
+        "observed": true,
+        "operator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected": true
+      }
+    }
+  }
+}

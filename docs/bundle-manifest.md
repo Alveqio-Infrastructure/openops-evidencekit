@@ -119,6 +119,7 @@ EvidenceKit infers a simple role for each artifact:
 
 - `evidence` for valid evidence JSON
 - `report` for valid report JSON
+- `gate-result` for valid gate result JSON
 - `bundle-manifest` for manifest JSON
 - `waivers` for valid waiver JSON or TOML files
 - `policy` for other TOML files
