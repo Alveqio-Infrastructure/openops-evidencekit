@@ -38,6 +38,7 @@ evidence-bundle.zip
 policy.exported.toml
 policy.*exported.toml
 policy.matrix.*
+/policy-coverage.*
 init-demo/
 borg.evidence.json
 docker.evidence.json

@@ -27,6 +27,7 @@ jobs:
         run: |
           openops-evidence validate -i evidence.sample.json
           openops-evidence inventory evidence -i evidence.sample.json -o inventory.md
+          openops-evidence coverage report -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o policy-coverage.md
           openops-evidence check -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o report.openops.json || true
           openops-evidence validate -i report.openops.json -t report
           openops-evidence badge report -i report.openops.json -o readiness-badge.json
@@ -49,6 +50,7 @@ jobs:
           path: |
             report.openops.json
             inventory.md
+            policy-coverage.md
             report.openops.md
             report.openops.junit.xml
             report.openops.sarif.json

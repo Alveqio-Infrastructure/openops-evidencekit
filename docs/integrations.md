@@ -31,6 +31,7 @@ produces the common CI artifacts below.
 | Output | Command | Use |
 | --- | --- | --- |
 | Inventory JSON | `openops-evidence inventory evidence -i evidence.json -f json -o inventory.json` | Publish asset and signal-domain inventory from evidence. |
+| Policy coverage | `openops-evidence coverage report -i evidence.json -p policy.toml -o policy-coverage.md` | Find evidence domains that are not covered by policy checks and policy domains that are missing evidence. |
 | Gate JSON | `openops-evidence gate report -i report.json --min-score 90 -o gate-result.json` | Enforce readiness thresholds in CI. |
 | Badge JSON | `openops-evidence badge report -i report.json -o readiness-badge.json` | Publish a compact Shields-compatible readiness status. |
 | Executive brief | `openops-evidence brief report -i report.json -o executive-brief.md` | Share a concise stakeholder summary. |

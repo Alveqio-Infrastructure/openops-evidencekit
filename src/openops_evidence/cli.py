@@ -32,6 +32,7 @@ from .collectors import (
     collect_tls,
     collect_uptime_kuma_export,
 )
+from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .history import append_report_history, render_history_csv, render_history_markdown
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
@@ -70,6 +71,7 @@ from .schema import (
     validate_inventory,
     validate_policy_matrix,
     validate_privacy_scan,
+    validate_policy_coverage,
     validate_report,
     validate_report_comparison,
     validate_report_history,
@@ -173,6 +175,15 @@ def build_parser() -> argparse.ArgumentParser:
     policy_matrix.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
     policy_matrix.add_argument("-o", "--output", default="-")
     policy_matrix.set_defaults(func=cmd_policy_matrix)
+
+    coverage = sub.add_parser("coverage", help="Inspect policy coverage over evidence domains")
+    coverage_sub = coverage.add_subparsers(required=True)
+    coverage_report = coverage_sub.add_parser("report", help="Compare evidence signal domains with policy checks")
+    coverage_report.add_argument("-i", "--input", required=True)
+    coverage_report.add_argument("-p", "--policy", required=True)
+    coverage_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    coverage_report.add_argument("-o", "--output", default="-")
+    coverage_report.set_defaults(func=cmd_coverage_report)
 
     waiver = sub.add_parser("waiver", help="Inspect risk acceptance waivers")
     waiver_sub = waiver.add_subparsers(required=True)
@@ -339,6 +350,7 @@ def build_parser() -> argparse.ArgumentParser:
             "gate-result",
             "badge",
             "policy-matrix",
+            "policy-coverage",
             "inventory",
             "privacy-scan",
             "history",
@@ -495,6 +507,26 @@ def cmd_policy_matrix(args: argparse.Namespace) -> int:
         write_text(args.output, render_policy_matrix_csv(matrix))
     else:
         write_text(args.output, render_policy_matrix_markdown(matrix))
+    return 0
+
+
+def cmd_coverage_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    policy_raw = load_structured(args.policy)
+    policy_errors = validate_policy_document(policy_raw)
+    if policy_errors:
+        raise UserFacingError("Policy validation failed:\n- " + "\n- ".join(policy_errors))
+    coverage = create_coverage_report(evidence, parse_policy(policy_raw))
+    if args.format == "json":
+        rendered = dump_json(coverage)
+    elif args.format == "csv":
+        rendered = render_coverage_csv(coverage)
+    else:
+        rendered = render_coverage_markdown(coverage)
+    write_text(args.output, rendered)
     return 0
 
 
@@ -829,6 +861,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_badge(document)
     elif args.type == "policy-matrix":
         errors = validate_policy_matrix(document)
+    elif args.type == "policy-coverage":
+        errors = validate_policy_coverage(document)
     elif args.type == "inventory":
         errors = validate_inventory(document)
     elif args.type == "privacy-scan":

@@ -50,6 +50,9 @@ class ReviewPackTests(unittest.TestCase):
                 "policy-matrix.csv",
                 "policy-matrix.json",
                 "policy-matrix.md",
+                "policy-coverage.csv",
+                "policy-coverage.json",
+                "policy-coverage.md",
                 "privacy-scan.json",
                 "privacy-scan.md",
                 "readiness-badge.json",
@@ -69,6 +72,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(pack / "report.json"), "-t", "report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "inventory.json"), "-t", "inventory"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "policy-matrix.json"), "-t", "policy-matrix"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "policy-coverage.json"), "-t", "policy-coverage"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "scorecard.json"), "-t", "scorecard"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "executive-brief.json"), "-t", "executive-brief"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "action-plan.json"), "-t", "action-plan"]), 0)

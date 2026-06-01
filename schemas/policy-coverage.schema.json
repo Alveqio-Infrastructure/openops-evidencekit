@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/policy-coverage.schema.json",
+  "title": "OpenOps Policy Coverage",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "domains"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "coverage_percent",
+        "evidence_domains_total",
+        "policy_domains_total",
+        "domains_total",
+        "covered_domains_count",
+        "unreviewed_evidence_domains_count",
+        "missing_evidence_domains_count",
+        "checks_total"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn"]
+        },
+        "coverage_percent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "evidence_domains_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policy_domains_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domains_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "covered_domains_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unreviewed_evidence_domains_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_evidence_domains_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/domain"
+      }
+    }
+  },
+  "$defs": {
+    "domain": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "domain",
+        "status",
+        "evidence_present",
+        "policy_present",
+        "check_count",
+        "required_count",
+        "optional_count",
+        "check_ids",
+        "paths"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["covered", "unreviewed_evidence", "missing_evidence"]
+        },
+        "evidence_present": {
+          "type": "boolean"
+        },
+        "policy_present": {
+          "type": "boolean"
+        },
+        "check_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "optional_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "check_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

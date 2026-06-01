@@ -45,6 +45,7 @@ python -m openops_evidence --version
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence inventory evidence -i evidence.local.json -o inventory.md
+python -m openops_evidence coverage report -i evidence.local.json -p examples/policy.baseline.toml -o policy-coverage.md
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
 python -m openops_evidence badge report -i report.local.json -o readiness-badge.json
@@ -212,6 +213,7 @@ Executive briefs are described in [docs/executive-brief.md](docs/executive-brief
 Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence-inventory.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
 Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).
+Policy coverage reports are described in [docs/policy-coverage.md](docs/policy-coverage.md).
 Action plans are described in [docs/action-plan.md](docs/action-plan.md).
 CI gates are described in [docs/gates.md](docs/gates.md).
 Status badges are emitted as Shields-compatible endpoint JSON and can be used

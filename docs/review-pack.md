@@ -18,6 +18,7 @@ audiences need:
 | `action-plan.json` / `action-plan.md` / `action-plan.csv` | Prioritized remediation queue. |
 | `inventory.json` / `inventory.md` / `inventory.csv` | Asset and signal-domain inventory from evidence. |
 | `policy-matrix.json` / `policy-matrix.md` / `policy-matrix.csv` | Coverage map for the policy that was evaluated. |
+| `policy-coverage.json` / `policy-coverage.md` / `policy-coverage.csv` | Evidence-domain coverage and gap analysis for the evaluated policy. |
 | `scorecard.json` / `scorecard.md` / `scorecard.csv` / `scorecard.html` | Readiness summary grouped by operational evidence area. |
 | `gate-result.json` / `gate-result.md` | CI decision and threshold details. |
 | `readiness-badge.json` | Shields-compatible status badge endpoint JSON. |

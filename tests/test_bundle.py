@@ -197,6 +197,7 @@ class BundleTests(unittest.TestCase):
             temp = Path(temp_dir)
             report = temp / "report.json"
             inventory = temp / "inventory.json"
+            coverage = temp / "policy-coverage.json"
             gate = temp / "gate.json"
             badge = temp / "badge.json"
             brief = temp / "executive-brief.json"
@@ -253,6 +254,40 @@ class BundleTests(unittest.TestCase):
                                 "kind": "object",
                                 "item_count": 1,
                                 "fields": ["tool"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            coverage.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "coverage_percent": 100,
+                            "evidence_domains_total": 1,
+                            "policy_domains_total": 1,
+                            "domains_total": 1,
+                            "covered_domains_count": 1,
+                            "unreviewed_evidence_domains_count": 0,
+                            "missing_evidence_domains_count": 0,
+                            "checks_total": 1,
+                        },
+                        "domains": [
+                            {
+                                "domain": "backup",
+                                "status": "covered",
+                                "evidence_present": True,
+                                "policy_present": True,
+                                "check_count": 1,
+                                "required_count": 1,
+                                "optional_count": 0,
+                                "check_ids": ["backup_recent"],
+                                "paths": ["signals.backup.last_success_at"],
                             }
                         ],
                     }
@@ -460,6 +495,7 @@ class BundleTests(unittest.TestCase):
             )
             self.assertEqual(classify_artifact(report), "report")
             self.assertEqual(classify_artifact(inventory), "inventory")
+            self.assertEqual(classify_artifact(coverage), "policy-coverage")
             self.assertEqual(classify_artifact(gate), "gate-result")
             self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(brief), "executive-brief")

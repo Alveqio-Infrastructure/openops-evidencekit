@@ -189,6 +189,52 @@ def validate_inventory(document: Any) -> list[str]:
     return errors
 
 
+def validate_policy_coverage(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Policy coverage must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "domains", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn"}, errors, prefix="summary.")
+        _require_int_range(summary, "coverage_percent", errors, minimum=0, maximum=100, prefix="summary.")
+        for key in (
+            "evidence_domains_total",
+            "policy_domains_total",
+            "domains_total",
+            "covered_domains_count",
+            "unreviewed_evidence_domains_count",
+            "missing_evidence_domains_count",
+            "checks_total",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, domain in enumerate(document.get("domains", [])):
+        if not isinstance(domain, dict):
+            errors.append(f"domains[{index}] must be an object.")
+            continue
+        prefix = f"domains[{index}]."
+        _require_string(domain, "domain", errors, prefix=prefix)
+        _require_enum(
+            domain,
+            "status",
+            {"covered", "unreviewed_evidence", "missing_evidence"},
+            errors,
+            prefix=prefix,
+        )
+        for key in ("evidence_present", "policy_present"):
+            if not isinstance(domain.get(key), bool):
+                errors.append(f"{prefix}{key} must be a boolean.")
+        for key in ("check_count", "required_count", "optional_count"):
+            _require_int_range(domain, key, errors, minimum=0, prefix=prefix)
+        _require_list(domain, "check_ids", errors, prefix=prefix)
+        _require_list(domain, "paths", errors, prefix=prefix)
+    return errors
+
+
 def validate_privacy_scan(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

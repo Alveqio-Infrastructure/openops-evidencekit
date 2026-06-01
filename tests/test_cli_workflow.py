@@ -23,6 +23,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertTrue(workflow.is_file())
             workflow_text = workflow.read_text(encoding="utf-8")
             self.assertIn("openops-evidence inventory evidence", workflow_text)
+            self.assertIn("openops-evidence coverage report", workflow_text)
             self.assertIn("openops-evidence check", workflow_text)
             self.assertIn("-p policy.baseline.toml", workflow_text)
             self.assertIn("openops-evidence badge report", workflow_text)
@@ -48,6 +49,8 @@ class CliWorkflowTests(unittest.TestCase):
             merged = temp / "merged.json"
             inventory = temp / "inventory.json"
             inventory_markdown = temp / "inventory.md"
+            coverage = temp / "policy-coverage.json"
+            coverage_markdown = temp / "policy-coverage.md"
             report = temp / "report.json"
             gate = temp / "gate-result.json"
             badge = temp / "readiness-badge.json"
@@ -92,6 +95,39 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(inventory), "-t", "inventory"]), 0)
             self.assertEqual(
                 main(["inventory", "evidence", "-i", str(merged), "-f", "markdown", "-o", str(inventory_markdown)]),
+                0,
+            )
+            self.assertEqual(
+                main(
+                    [
+                        "coverage",
+                        "report",
+                        "-i",
+                        str(evidence),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "-f",
+                        "json",
+                        "-o",
+                        str(coverage),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(main(["validate", "-i", str(coverage), "-t", "policy-coverage"]), 0)
+            self.assertEqual(
+                main(
+                    [
+                        "coverage",
+                        "report",
+                        "-i",
+                        str(evidence),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "-o",
+                        str(coverage_markdown),
+                    ]
+                ),
                 0,
             )
             self.assertEqual(
@@ -158,6 +194,7 @@ class CliWorkflowTests(unittest.TestCase):
                         "manifest",
                         str(merged),
                         str(inventory),
+                        str(coverage),
                         str(report),
                         str(gate),
                         str(badge),
@@ -229,6 +266,7 @@ class CliWorkflowTests(unittest.TestCase):
 
             report_data = json.loads(report.read_text(encoding="utf-8"))
             inventory_data = json.loads(inventory.read_text(encoding="utf-8"))
+            coverage_data = json.loads(coverage.read_text(encoding="utf-8"))
             gate_data = json.loads(gate.read_text(encoding="utf-8"))
             badge_data = json.loads(badge.read_text(encoding="utf-8"))
             brief_data = json.loads(brief.read_text(encoding="utf-8"))
@@ -240,17 +278,19 @@ class CliWorkflowTests(unittest.TestCase):
             signature_verification_data = json.loads(signature_verification.read_text(encoding="utf-8"))
             self.assertEqual(report_data["summary"]["status"], "pass")
             self.assertGreaterEqual(inventory_data["summary"]["assets_total"], 2)
+            self.assertEqual(coverage_data["summary"]["coverage_percent"], 100)
             self.assertEqual(gate_data["summary"]["status"], "pass")
             self.assertEqual(badge_data["message"], "pass 100")
             self.assertEqual(brief_data["summary"]["health"], "on_track")
             self.assertEqual(scorecard_data["summary"]["domains_total"], 6)
             self.assertEqual(history_data["summary"]["latest_score"], 100)
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 11)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 12)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
             self.assertEqual(signature_verification_data["summary"]["status"], "pass")
             self.assertIn("# OpenOps Evidence Report", markdown.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Policy Coverage", coverage_markdown.read_text(encoding="utf-8"))
             self.assertIn("# Infrastructure Readiness Evidence", bookstack.read_text(encoding="utf-8"))
             self.assertIn("<testsuite", junit.read_text(encoding="utf-8"))
             self.assertEqual(json.loads(sarif.read_text(encoding="utf-8"))["version"], "2.1.0")

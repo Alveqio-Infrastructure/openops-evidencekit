@@ -8,6 +8,7 @@ from .actions import create_action_plan, render_action_plan_csv, render_action_p
 from .badges import create_report_badge
 from .briefs import create_report_brief, render_brief_markdown
 from .bundle import create_bundle_manifest
+from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import dump_json, write_text
@@ -51,6 +52,7 @@ def create_review_pack(
     report = evaluate_policy(evidence, checks)
     inventory = create_evidence_inventory(evidence)
     policy_matrix = create_policy_matrix(checks)
+    coverage = create_coverage_report(evidence, checks)
     scorecard = create_report_scorecard(report)
     brief = create_report_brief(report, max_findings=max_findings)
     action_plan = create_action_plan(report, waiver_document=waiver_document)
@@ -85,6 +87,9 @@ def create_review_pack(
     add_artifact("policy-matrix.json", dump_json(policy_matrix), "Policy matrix", "Machine-readable policy coverage map.")
     add_artifact("policy-matrix.md", render_policy_matrix_markdown(policy_matrix), "Policy matrix", "Reviewable policy coverage table.")
     add_artifact("policy-matrix.csv", render_policy_matrix_csv(policy_matrix), "Policy matrix", "Spreadsheet-friendly policy coverage export.")
+    add_artifact("policy-coverage.json", dump_json(coverage), "Policy coverage", "Machine-readable evidence-domain coverage report.")
+    add_artifact("policy-coverage.md", render_coverage_markdown(coverage), "Policy coverage", "Human-readable evidence-domain coverage report.")
+    add_artifact("policy-coverage.csv", render_coverage_csv(coverage), "Policy coverage", "Spreadsheet-friendly coverage export.")
     add_artifact("scorecard.json", dump_json(scorecard), "Domain scorecard", "Machine-readable domain summary.")
     add_artifact("scorecard.md", render_scorecard_markdown(scorecard), "Domain scorecard", "Human-readable domain summary.")
     add_artifact("scorecard.csv", render_scorecard_csv(scorecard), "Domain scorecard", "Spreadsheet-friendly domain summary.")

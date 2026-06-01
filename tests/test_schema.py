@@ -10,6 +10,7 @@ from openops_evidence.schema import (
     validate_executive_brief,
     validate_gate_result,
     validate_inventory,
+    validate_policy_coverage,
     validate_policy_matrix,
     validate_privacy_scan,
     validate_report,
@@ -333,6 +334,40 @@ class SchemaTests(unittest.TestCase):
                         "mode": "any",
                         "required": True,
                         "remediation": "Configure backups.",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_policy_coverage(self):
+        errors = validate_policy_coverage(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "coverage_percent": 100,
+                    "evidence_domains_total": 1,
+                    "policy_domains_total": 1,
+                    "domains_total": 1,
+                    "covered_domains_count": 1,
+                    "unreviewed_evidence_domains_count": 0,
+                    "missing_evidence_domains_count": 0,
+                    "checks_total": 1,
+                },
+                "domains": [
+                    {
+                        "domain": "backup",
+                        "status": "covered",
+                        "evidence_present": True,
+                        "policy_present": True,
+                        "check_count": 1,
+                        "required_count": 1,
+                        "optional_count": 0,
+                        "check_ids": ["backup_recent"],
+                        "paths": ["signals.backup.last_success_at"],
                     }
                 ],
             }
