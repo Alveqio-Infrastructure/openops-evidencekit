@@ -60,3 +60,4 @@
 - Add browser-friendly HTML index pages to review packs.
 - Add optional evidence drift reports to generated review packs.
 - Add review attestation artifacts for manifest-bound sign-off records.
+- Add a README gallery image showing common generated report artifacts.

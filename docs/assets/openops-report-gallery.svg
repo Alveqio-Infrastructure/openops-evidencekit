@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">OpenOps EvidenceKit report examples</title>
+  <desc id="desc">A gallery of example OpenOps EvidenceKit report artifacts for readiness checks, executive handoff, scope boundaries, evidence drift, action plans, and review packs.</desc>
+  <defs>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .bg { fill: #f8fafc; }
+      .card { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; filter: url(#shadow); }
+      .rail { fill: #f1f5f9; stroke: #dbe4ee; stroke-width: 1; }
+      .title { font: 800 31px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 16px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+      .cardTitle { font: 750 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .label { font: 700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; letter-spacing: 0; }
+      .body { font: 560 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #334155; }
+      .small { font: 600 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; }
+      .mono { font: 650 12px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: #334155; }
+      .pass { fill: #0f766e; }
+      .warn { fill: #b45309; }
+      .fail { fill: #dc2626; }
+      .blue { fill: #2563eb; }
+      .line { stroke: #e2e8f0; stroke-width: 1.2; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="760" class="bg"/>
+  <text x="70" y="64" class="title">Generated Report Examples</text>
+  <text x="70" y="94" class="subtitle">Different artifacts for different readers: operators, customers, CI systems, dashboards, and reviewers.</text>
+
+  <rect x="70" y="130" width="340" height="235" rx="10" class="card"/>
+  <rect x="70" y="130" width="340" height="40" rx="10" fill="#0f766e"/>
+  <text x="92" y="156" style="font: 750 15px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #ffffff;">Readiness Report</text>
+  <text x="92" y="198" class="label">STATUS</text>
+  <text x="92" y="236" style="font: 850 36px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #0f766e;">PASS</text>
+  <text x="225" y="198" class="label">SCORE</text>
+  <text x="225" y="236" style="font: 850 36px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #2563eb;">100</text>
+  <line x1="92" y1="260" x2="388" y2="260" class="line"/>
+  <circle cx="102" cy="286" r="6" class="pass"/>
+  <text x="118" y="291" class="mono">backup_recent</text>
+  <text x="282" y="291" class="small">PASS</text>
+  <circle cx="102" cy="316" r="6" class="pass"/>
+  <text x="118" y="321" class="mono">restore_drill</text>
+  <text x="282" y="321" class="small">PASS</text>
+  <circle cx="102" cy="346" r="6" class="pass"/>
+  <text x="118" y="351" class="mono">admin_mfa</text>
+  <text x="282" y="351" class="small">PASS</text>
+
+  <rect x="430" y="130" width="340" height="235" rx="10" class="card"/>
+  <rect x="430" y="130" width="340" height="40" rx="10" fill="#2563eb"/>
+  <text x="452" y="156" style="font: 750 15px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #ffffff;">Executive Brief</text>
+  <text x="452" y="198" class="cardTitle">Customer-ready summary</text>
+  <rect x="452" y="216" width="92" height="62" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="469" y="240" class="label" fill="#2563eb">POSTURE</text>
+  <text x="469" y="265" class="body">ready</text>
+  <rect x="560" y="216" width="88" height="62" rx="8" fill="#ecfdf5" stroke="#99f6e4"/>
+  <text x="577" y="240" class="label" fill="#0f766e">BLOCKERS</text>
+  <text x="591" y="265" class="body">0</text>
+  <rect x="452" y="300" width="290" height="38" rx="8" class="rail"/>
+  <text x="470" y="324" class="body">Next review: monthly operations meeting</text>
+  <text x="452" y="352" class="small">Plain language output for leadership, audits, and handoff notes.</text>
+
+  <rect x="790" y="130" width="340" height="235" rx="10" class="card"/>
+  <rect x="790" y="130" width="340" height="40" rx="10" fill="#b45309"/>
+  <text x="812" y="156" style="font: 750 15px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #ffffff;">Scope Boundary Report</text>
+  <text x="812" y="198" class="label">BOUNDARIES</text>
+  <rect x="812" y="216" width="136" height="44" rx="8" fill="#ecfdf5" stroke="#99f6e4"/>
+  <text x="830" y="243" class="body">2 in scope</text>
+  <rect x="964" y="216" width="136" height="44" rx="8" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="982" y="243" class="body">1 warning</text>
+  <line x1="812" y1="282" x2="1100" y2="282" class="line"/>
+  <circle cx="822" cy="309" r="6" class="pass"/>
+  <text x="838" y="314" class="mono">web-01</text>
+  <text x="942" y="314" class="small">in scope</text>
+  <circle cx="822" cy="339" r="6" class="warn"/>
+  <text x="838" y="344" class="mono">db-01</text>
+  <text x="942" y="344" class="small">missing</text>
+
+  <rect x="70" y="400" width="340" height="235" rx="10" class="card"/>
+  <rect x="70" y="400" width="340" height="40" rx="10" fill="#475569"/>
+  <text x="92" y="426" style="font: 750 15px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #ffffff;">Evidence Drift</text>
+  <text x="92" y="468" class="cardTitle">What changed since last run</text>
+  <rect x="92" y="488" width="292" height="34" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="110" y="510" class="body">Added asset: backup-repo-01</text>
+  <rect x="92" y="532" width="292" height="34" rx="8" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="110" y="554" class="body">Changed domain: monitoring</text>
+  <rect x="92" y="576" width="292" height="34" rx="8" fill="#fef2f2" stroke="#fecaca"/>
+  <text x="110" y="598" class="body">Removed target: old-web-01</text>
+  <text x="92" y="624" class="small">Useful for recurring reviews and change-controlled handoffs.</text>
+
+  <rect x="430" y="400" width="340" height="235" rx="10" class="card"/>
+  <rect x="430" y="400" width="340" height="40" rx="10" fill="#7c2d12"/>
+  <text x="452" y="426" style="font: 750 15px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #ffffff;">Action Plan</text>
+  <text x="452" y="468" class="label">PRIORITIZED REMEDIATION</text>
+  <rect x="452" y="488" width="290" height="38" rx="8" class="rail"/>
+  <text x="470" y="512" class="body">P1 - prove restore drill</text>
+  <rect x="452" y="536" width="290" height="38" rx="8" class="rail"/>
+  <text x="470" y="560" class="body">P2 - document alert owner</text>
+  <rect x="452" y="584" width="132" height="28" rx="14" fill="#fef3c7" stroke="#fde68a"/>
+  <text x="472" y="603" class="small" fill="#92400e">owner: platform</text>
+  <rect x="600" y="584" width="142" height="28" rx="14" fill="#fee2e2" stroke="#fecaca"/>
+  <text x="621" y="603" class="small" fill="#991b1b">due: 7 days</text>
+  <text x="452" y="624" class="small">Exports Markdown, CSV, tickets, and waiver-aware JSON.</text>
+
+  <rect x="790" y="400" width="340" height="235" rx="10" class="card"/>
+  <rect x="790" y="400" width="340" height="40" rx="10" fill="#111827"/>
+  <text x="812" y="426" style="font: 750 15px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #ffffff;">Review Pack</text>
+  <text x="812" y="468" class="cardTitle">Shareable evidence bundle</text>
+  <rect x="812" y="488" width="286" height="34" rx="8" fill="#f8fafc" stroke="#dbe4ee"/>
+  <text x="830" y="510" class="mono">manifest.json</text>
+  <text x="1012" y="510" class="small">SHA-256</text>
+  <rect x="812" y="532" width="286" height="34" rx="8" fill="#f8fafc" stroke="#dbe4ee"/>
+  <text x="830" y="554" class="mono">index.html</text>
+  <text x="1012" y="554" class="small">browser</text>
+  <rect x="812" y="576" width="286" height="34" rx="8" fill="#f8fafc" stroke="#dbe4ee"/>
+  <text x="830" y="598" class="mono">attestation.json</text>
+  <text x="1004" y="598" class="small">sign-off</text>
+  <text x="812" y="624" class="small">Hashes, optional ZIP archive, and reviewer attestation.</text>
+
+  <rect x="70" y="674" width="1060" height="36" rx="18" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="92" y="697" class="body">Also emitted for automation: JUnit XML, SARIF JSON, Prometheus metrics, Shields badge JSON, policy coverage, scorecards, and schema-validated JSON.</text>
+</svg>

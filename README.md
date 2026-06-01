@@ -31,6 +31,14 @@ handoff bundles: Markdown or BookStack pages, HTML, JUnit XML, SARIF JSON,
 Prometheus text metrics, a Shields-compatible badge, executive briefs, action
 plans, domain scorecards, tickets, and signed evidence bundles.
 
+### Report Artifact Gallery
+
+![OpenOps EvidenceKit report examples](docs/assets/openops-report-gallery.svg)
+
+Typical generated report artifacts include readiness reports, executive briefs,
+scope boundary reports, evidence drift reports, prioritized action plans, and
+review packs with manifests and attestations.
+
 ## Status
 
 This project is in early alpha. The first release focuses on a stable evidence
