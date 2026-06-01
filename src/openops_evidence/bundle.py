@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import os
+import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -89,6 +90,39 @@ def verify_bundle_manifest(manifest: dict[str, Any], base_dir: str | None = None
             "mismatched_count": len(mismatched),
         },
         "results": results,
+    }
+
+
+def create_bundle_archive(
+    manifest: dict[str, Any],
+    manifest_path: str,
+    output_path: str,
+    base_dir: str | None = None,
+    *,
+    include_manifest: bool = True,
+) -> dict[str, Any]:
+    base = Path(base_dir).resolve() if base_dir else Path.cwd().resolve()
+    archive_path = Path(output_path)
+    archive_path.parent.mkdir(parents=True, exist_ok=True)
+    records = _archive_records(manifest, base)
+    seen_names: set[str] = set()
+    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        if include_manifest:
+            manifest_file = Path(manifest_path)
+            if not manifest_file.is_file():
+                raise ValueError(f"Manifest does not exist or is not a file: {manifest_path}")
+            _write_archive_file(archive, manifest_file, manifest_file.name, seen_names)
+        for source, archive_name in records:
+            _write_archive_file(archive, source, archive_name, seen_names)
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "archive_path": str(archive_path),
+            "manifest_included": include_manifest,
+            "file_count": len(seen_names),
+        },
+        "files": sorted(seen_names),
     }
 
 
@@ -260,6 +294,32 @@ def _resolve_manifest_path(path: str, base_dir: Path) -> Path | None:
     except ValueError:
         return None
     return resolved
+
+
+def _archive_records(manifest: dict[str, Any], base_dir: Path) -> list[tuple[Path, str]]:
+    records = []
+    for artifact in manifest.get("artifacts", []):
+        display_path = str(artifact.get("path") or "")
+        source = _resolve_manifest_path(display_path, base_dir)
+        if source is None or not source.is_file():
+            raise ValueError(f"Bundle artifact is missing or unsafe: {display_path}")
+        records.append((source, display_path))
+    return records
+
+
+def _write_archive_file(
+    archive: zipfile.ZipFile,
+    source: Path,
+    archive_name: str,
+    seen_names: set[str],
+) -> None:
+    normalized = Path(archive_name).as_posix()
+    if not normalized or normalized.startswith("../") or normalized.startswith("/"):
+        raise ValueError(f"Archive path is unsafe: {archive_name}")
+    if normalized in seen_names:
+        raise ValueError(f"Archive path is duplicated: {normalized}")
+    archive.write(source, normalized)
+    seen_names.add(normalized)
 
 
 def _display_path(path: Path, base_dir: Path | None) -> str:

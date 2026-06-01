@@ -44,6 +44,7 @@ python -m openops_evidence bundle manifest evidence.redacted.json report.local.j
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
+python -m openops_evidence bundle archive evidence-bundle.manifest.json --base-dir . -o evidence-bundle.zip
 python -m openops_evidence bundle sign evidence-bundle.manifest.json --key-file .secrets/openops-bundle-signing.key --key-id release-check -o evidence-bundle.signature.json
 python -m openops_evidence validate -i evidence-bundle.signature.json -t bundle-signature
 python -m openops_evidence bundle verify-signature evidence-bundle.manifest.json evidence-bundle.signature.json --key-file .secrets/openops-bundle-signing.key --fail-on-invalid -o evidence-bundle.signature-verification.json

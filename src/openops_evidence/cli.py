@@ -10,6 +10,7 @@ from .actions import create_action_plan, render_action_plan_csv, render_action_p
 from .bundle import (
     DEFAULT_SIGNING_KEY_ENV,
     create_bundle_manifest,
+    create_bundle_archive,
     create_bundle_signature,
     load_signing_key,
     verify_bundle_manifest,
@@ -169,6 +170,12 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--fail-on-mismatch", action="store_true")
     verify.add_argument("-o", "--output", default="-")
     verify.set_defaults(func=cmd_bundle_verify)
+    archive = bundle_sub.add_parser("archive", help="Create a ZIP archive from a verified bundle manifest")
+    archive.add_argument("manifest")
+    archive.add_argument("--base-dir")
+    archive.add_argument("--no-manifest", action="store_true")
+    archive.add_argument("-o", "--output", required=True)
+    archive.set_defaults(func=cmd_bundle_archive)
     sign = bundle_sub.add_parser("sign", help="Create a detached signature for a bundle manifest")
     sign.add_argument("manifest")
     sign.add_argument("--key-env", default=DEFAULT_SIGNING_KEY_ENV)
@@ -380,6 +387,24 @@ def cmd_bundle_verify(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(verification))
     if args.fail_on_mismatch and verification["summary"]["status"] == "fail":
         return 1
+    return 0
+
+
+def cmd_bundle_archive(args: argparse.Namespace) -> int:
+    manifest = load_json(args.manifest)
+    errors = validate_bundle_manifest(manifest)
+    if errors:
+        raise UserFacingError("Bundle manifest validation failed:\n- " + "\n- ".join(errors))
+    verification = verify_bundle_manifest(manifest, base_dir=args.base_dir)
+    if verification["summary"]["status"] == "fail":
+        raise UserFacingError("Bundle archive refused because manifest verification failed.")
+    create_bundle_archive(
+        manifest,
+        args.manifest,
+        args.output,
+        base_dir=args.base_dir,
+        include_manifest=not args.no_manifest,
+    )
     return 0
 
 

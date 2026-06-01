@@ -24,6 +24,7 @@ class CliWorkflowTests(unittest.TestCase):
             verification = temp / "verification.json"
             signature = temp / "manifest.signature.json"
             signature_verification = temp / "signature-verification.json"
+            archive = temp / "evidence-bundle.zip"
 
             self.assertEqual(
                 main(["collect", "fixture", str(ROOT / "examples" / "evidence.sample.json"), "-o", str(evidence)]),
@@ -82,6 +83,10 @@ class CliWorkflowTests(unittest.TestCase):
                 0,
             )
             self.assertEqual(main(["validate", "-i", str(verification), "-t", "bundle-verification"]), 0)
+            self.assertEqual(
+                main(["bundle", "archive", str(manifest), "--base-dir", str(temp), "-o", str(archive)]),
+                0,
+            )
             old_key = os.environ.get("OPENOPS_TEST_SIGNING_KEY")
             os.environ["OPENOPS_TEST_SIGNING_KEY"] = "test-signing-key"
             try:
@@ -132,6 +137,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(report_data["summary"]["status"], "pass")
             self.assertEqual(manifest_data["metadata"]["artifact_count"], 3)
             self.assertEqual(verification_data["summary"]["status"], "pass")
+            self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
             self.assertEqual(signature_verification_data["summary"]["status"], "pass")
             self.assertIn("# OpenOps Evidence Report", markdown.read_text(encoding="utf-8"))

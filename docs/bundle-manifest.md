@@ -47,6 +47,20 @@ python -m openops_evidence validate -i evidence-bundle.verification.json -t bund
 Use `--fail-on-mismatch` in CI when missing or changed bundle artifacts should
 fail the job.
 
+## Create A Bundle Archive
+
+After a manifest verifies, create a ZIP archive for ticket attachment, customer
+handoff, or internal review:
+
+```powershell
+python -m openops_evidence bundle archive evidence-bundle.manifest.json --base-dir . -o evidence-bundle.zip
+```
+
+The archive command verifies the manifest first and refuses to archive missing,
+changed, absolute, or path-traversing artifacts. By default, the manifest file is
+included in the ZIP next to the listed artifacts. Use `--no-manifest` only when
+your process stores the manifest separately.
+
 ## Sign A Manifest
 
 Use a detached signature when a reviewed manifest should carry stronger

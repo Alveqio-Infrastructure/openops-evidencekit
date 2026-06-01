@@ -36,6 +36,7 @@ python -m openops_evidence bundle manifest evidence.redacted.json report.local.j
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
+python -m openops_evidence bundle archive evidence-bundle.manifest.json --base-dir . -o evidence-bundle.zip
 ```
 
 Expected result for the baseline fixture:

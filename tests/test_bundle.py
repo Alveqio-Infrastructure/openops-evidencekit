@@ -2,10 +2,12 @@ import hashlib
 import json
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from openops_evidence.bundle import (
     classify_artifact,
+    create_bundle_archive,
     create_bundle_manifest,
     create_bundle_signature,
     verify_bundle_manifest,
@@ -100,6 +102,47 @@ class BundleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             verification = verify_bundle_manifest(manifest, base_dir=temp_dir)
         self.assertEqual(verification["results"][0]["status"], "missing")
+
+    def test_create_bundle_archive_from_verified_manifest(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            artifact = temp / "report.md"
+            artifact.write_text("# Report\n", encoding="utf-8", newline="\n")
+            manifest_path = temp / "manifest.json"
+            manifest = create_bundle_manifest([str(artifact)], base_dir=str(temp))
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            archive_path = temp / "bundle.zip"
+
+            summary = create_bundle_archive(
+                manifest,
+                str(manifest_path),
+                str(archive_path),
+                base_dir=str(temp),
+            )
+
+            self.assertTrue(archive_path.is_file())
+            self.assertEqual(summary["metadata"]["file_count"], 2)
+            with zipfile.ZipFile(archive_path) as archive:
+                self.assertEqual(sorted(archive.namelist()), ["manifest.json", "report.md"])
+                self.assertEqual(archive.read("report.md"), b"# Report\n")
+
+    def test_create_bundle_archive_rejects_missing_artifact(self):
+        manifest = {
+            "artifacts": [
+                {
+                    "path": "missing.md",
+                    "role": "report-markdown",
+                    "size_bytes": 1,
+                    "sha256": "a" * 64,
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            manifest_path = temp / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                create_bundle_archive(manifest, str(manifest_path), str(temp / "bundle.zip"), base_dir=str(temp))
 
     def test_create_and_verify_bundle_signature(self):
         with tempfile.TemporaryDirectory() as temp_dir:

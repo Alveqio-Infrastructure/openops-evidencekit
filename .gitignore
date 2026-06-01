@@ -15,6 +15,7 @@ evidence.merged.json
 evidence.redacted.json
 evidence-bundle.manifest.json
 evidence-bundle.verification.json
+evidence-bundle.zip
 /action-plan.json
 /action-plan.md
 /action-plan.csv
