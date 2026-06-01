@@ -29,6 +29,7 @@ jobs:
       - name: Run sample workflow
         run: |
           PYTHONPATH=src python -m openops_evidence policy list
+          PYTHONPATH=src python -m openops_evidence policy operators
           PYTHONPATH=src python -m openops_evidence policy show baseline -o policy.exported.toml
           PYTHONPATH=src python -m openops_evidence policy validate policy.exported.toml
           PYTHONPATH=src python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
@@ -56,3 +57,6 @@ jobs:
           PYTHONPATH=src python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
           PYTHONPATH=src python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
           PYTHONPATH=src python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
+          OPENOPS_BUNDLE_SIGNING_KEY=ci-test-key PYTHONPATH=src python -m openops_evidence bundle sign evidence-bundle.manifest.json --key-env OPENOPS_BUNDLE_SIGNING_KEY --key-id ci -o evidence-bundle.signature.json
+          PYTHONPATH=src python -m openops_evidence validate -i evidence-bundle.signature.json -t bundle-signature
+          OPENOPS_BUNDLE_SIGNING_KEY=ci-test-key PYTHONPATH=src python -m openops_evidence bundle verify-signature evidence-bundle.manifest.json evidence-bundle.signature.json --key-env OPENOPS_BUNDLE_SIGNING_KEY --fail-on-invalid -o evidence-bundle.signature-verification.json

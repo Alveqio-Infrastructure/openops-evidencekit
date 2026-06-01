@@ -28,3 +28,4 @@
 - Add a CLI-visible policy operator catalog with stable semantics.
 - Enforce the published report summary and result contract in built-in validation.
 - Add governance and maintainer policy documentation.
+- Cover policy operators and bundle signatures in CI sample workflow checks.
