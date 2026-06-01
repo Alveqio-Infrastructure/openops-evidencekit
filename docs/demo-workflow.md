@@ -67,7 +67,7 @@ python -m openops_evidence report -i report.local.json -f junit -o report.local.
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
 python -m openops_evidence report -i report.local.json -f prometheus -o report.local.prom
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
-python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
+python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
 python -m openops_evidence compare --base report.local.json --current report.local.json -o report.comparison.json
 python -m openops_evidence compare --base report.local.json --current report.local.json -f markdown -o report.comparison.md

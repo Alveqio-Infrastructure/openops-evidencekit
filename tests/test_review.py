@@ -93,6 +93,64 @@ class ReviewPackTests(unittest.TestCase):
             self.assertIn("<title>OpenOps Review Pack</title>", index)
             self.assertIn("scorecard.html", index)
 
+    def test_review_create_can_include_scope_report(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            pack = temp / "review-pack"
+            fail_pack = temp / "review-pack-fail"
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "--scope",
+                        str(ROOT / "examples" / "scope.sample.toml"),
+                        "-o",
+                        str(pack),
+                    ]
+                ),
+                0,
+            )
+
+            self.assertTrue((pack / "scope-report.json").is_file())
+            self.assertTrue((pack / "scope-report.md").is_file())
+            self.assertTrue((pack / "scope-report.csv").is_file())
+            self.assertEqual(main(["validate", "-i", str(pack / "scope-report.json"), "-t", "scope-report"]), 0)
+
+            manifest = json.loads((pack / "manifest.json").read_text(encoding="utf-8"))
+            readme = (pack / "README.md").read_text(encoding="utf-8")
+            index = (pack / "index.html").read_text(encoding="utf-8")
+            scope_report = json.loads((pack / "scope-report.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["metadata"]["artifact_count"], 33)
+            self.assertEqual(scope_report["summary"]["status"], "warn")
+            self.assertIn("scope-report.md", readme)
+            self.assertIn("Scope Report", index)
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "--scope",
+                        str(ROOT / "examples" / "scope.sample.toml"),
+                        "--fail-on-scope-warn",
+                        "-o",
+                        str(fail_pack),
+                    ]
+                ),
+                1,
+            )
+            self.assertTrue((fail_pack / "manifest.json").is_file())
+
     def test_review_create_can_fail_on_gate_after_writing_pack(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)

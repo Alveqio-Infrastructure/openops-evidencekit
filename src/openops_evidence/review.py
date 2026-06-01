@@ -30,6 +30,7 @@ from .reports import (
     render_sarif,
 )
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
+from .scope import create_scope_report, render_scope_csv, render_scope_markdown
 
 
 def create_review_pack(
@@ -38,6 +39,7 @@ def create_review_pack(
     output_dir: str | Path,
     *,
     waiver_document: dict[str, Any] | None = None,
+    scope_document: dict[str, Any] | None = None,
     name: str = "openops-review-pack",
     max_findings: int = 5,
     min_score: int | None = None,
@@ -52,6 +54,7 @@ def create_review_pack(
     checks = parse_policy(policy_document)
     report = evaluate_policy(evidence, checks)
     inventory = create_evidence_inventory(evidence)
+    scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
     policy_matrix = create_policy_matrix(checks)
     coverage = create_coverage_report(evidence, checks)
     scorecard = create_report_scorecard(report)
@@ -85,6 +88,10 @@ def create_review_pack(
     add_artifact("inventory.json", dump_json(inventory), "Evidence inventory", "Machine-readable asset and signal inventory.")
     add_artifact("inventory.md", render_inventory_markdown(inventory), "Evidence inventory", "Wiki-friendly asset and signal inventory.")
     add_artifact("inventory.csv", render_inventory_csv(inventory), "Evidence inventory", "Spreadsheet-friendly inventory export.")
+    if scope_report is not None:
+        add_artifact("scope-report.json", dump_json(scope_report), "Scope report", "Machine-readable scope boundary report.")
+        add_artifact("scope-report.md", render_scope_markdown(scope_report), "Scope report", "Human-readable scope boundary report.")
+        add_artifact("scope-report.csv", render_scope_csv(scope_report), "Scope report", "Spreadsheet-friendly scope boundary report.")
     add_artifact("policy-matrix.json", dump_json(policy_matrix), "Policy matrix", "Machine-readable policy coverage map.")
     add_artifact("policy-matrix.md", render_policy_matrix_markdown(policy_matrix), "Policy matrix", "Reviewable policy coverage table.")
     add_artifact("policy-matrix.csv", render_policy_matrix_csv(policy_matrix), "Policy matrix", "Spreadsheet-friendly policy coverage export.")
@@ -141,6 +148,7 @@ def create_review_pack(
         "artifact_count": len(artifacts) + 1,
         "report": report,
         "gate": gate,
+        "scope_report": scope_report,
         "privacy_scan": privacy_scan,
         "manifest": manifest,
     }
@@ -156,6 +164,20 @@ def render_review_pack_readme(
     summary = report.get("summary", {})
     gate_summary = gate.get("summary", {})
     privacy_summary = privacy_scan.get("summary", {})
+    suggested_steps = [
+        "Read `executive-brief.md` for the management summary.",
+        "Use `scorecard.md` to see which operational domains need attention.",
+    ]
+    if any(artifact.get("filename") == "scope-report.md" for artifact in artifacts):
+        suggested_steps.append("Check `scope-report.md` for in-scope, out-of-scope, and unclassified evidence.")
+    suggested_steps.extend(
+        [
+            "Open `report.md` and `gate-result.md` for the technical decision.",
+            "Use `action-plan.md` or `action-plan.csv` to assign remediation work.",
+            "Check `privacy-scan.md` before sending the pack to anyone else.",
+            "Verify `manifest.json` before archiving or publishing the pack.",
+        ]
+    )
     lines = [
         "# OpenOps Review Pack",
         "",
@@ -185,15 +207,11 @@ def render_review_pack_readme(
             "",
             "## Suggested Review Order",
             "",
-            "1. Read `executive-brief.md` for the management summary.",
-            "2. Use `scorecard.md` to see which operational domains need attention.",
-            "3. Open `report.md` and `gate-result.md` for the technical decision.",
-            "4. Use `action-plan.md` or `action-plan.csv` to assign remediation work.",
-            "5. Check `privacy-scan.md` before sending the pack to anyone else.",
-            "6. Verify `manifest.json` before archiving or publishing the pack.",
-            "",
         ]
     )
+    for index, step in enumerate(suggested_steps, start=1):
+        lines.append(f"{index}. {step}")
+    lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -208,6 +226,7 @@ def render_review_pack_html(
     gate_summary = gate.get("summary", {})
     privacy_summary = privacy_scan.get("summary", {})
     artifact_rows = "\n".join(_artifact_row_html(item) for item in artifacts)
+    quick_links = _quick_links_html(artifacts)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -320,12 +339,7 @@ def render_review_pack_html(
       <div class="metric"><span>Privacy findings</span><strong>{_escape(privacy_summary.get('findings_count', 0))}</strong></div>
     </section>
     <nav class="quick" aria-label="Review shortcuts">
-      <a href="executive-brief.md">Executive Brief</a>
-      <a href="scorecard.html">Scorecard</a>
-      <a href="report.md">Report</a>
-      <a href="action-plan.md">Action Plan</a>
-      <a href="privacy-scan.md">Privacy Scan</a>
-      <a href="manifest.json">Manifest</a>
+{quick_links}
     </nav>
     <h2>Artifacts</h2>
     <table>
@@ -362,6 +376,25 @@ def _artifact_row_html(artifact: dict[str, Any]) -> str:
         f"<td>{_escape(description)}</td>"
         "</tr>"
     )
+
+
+def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
+    filenames = {str(artifact.get("filename") or "") for artifact in artifacts}
+    links = [
+        ("executive-brief.md", "Executive Brief"),
+        ("scorecard.html", "Scorecard"),
+        ("scope-report.md", "Scope Report"),
+        ("report.md", "Report"),
+        ("action-plan.md", "Action Plan"),
+        ("privacy-scan.md", "Privacy Scan"),
+    ]
+    lines = [
+        f"      <a href=\"{_escape(filename)}\">{_escape(label)}</a>"
+        for filename, label in links
+        if filename in filenames
+    ]
+    lines.append("      <a href=\"manifest.json\">Manifest</a>")
+    return "\n".join(lines)
 
 
 def _status_class(value: Any) -> str:

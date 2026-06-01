@@ -306,6 +306,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("-o", "--output-dir", required=True)
     review_create.add_argument("--name", default="openops-review-pack")
     review_create.add_argument("--waivers", help="TOML or JSON file with accepted risk waivers")
+    review_create.add_argument("--scope", help="TOML or JSON file declaring in-scope and out-of-scope evidence")
     review_create.add_argument("--max-findings", type=int, default=5)
     review_create.add_argument("--min-score", type=int)
     review_create.add_argument("--max-failed", type=int)
@@ -314,6 +315,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--max-high", type=int)
     review_create.add_argument("--ignore-report-status", action="store_true")
     review_create.add_argument("--fail-on-gate", action="store_true")
+    review_create.add_argument("--fail-on-scope-warn", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
 
@@ -826,6 +828,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         waiver_errors = validate_waiver_document(waiver_document)
         if waiver_errors:
             raise UserFacingError("Waiver validation failed:\n- " + "\n- ".join(waiver_errors))
+    scope_document = None
+    if args.scope:
+        scope_document = load_structured(args.scope)
+        scope_errors = validate_scope_document(scope_document)
+        if scope_errors:
+            raise UserFacingError("Scope validation failed:\n- " + "\n- ".join(scope_errors))
     if args.max_findings < 0:
         raise UserFacingError("--max-findings must be at least 0")
     _validate_gate_args(args)
@@ -834,6 +842,7 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         policy_raw,
         args.output_dir,
         waiver_document=waiver_document,
+        scope_document=scope_document,
         name=args.name,
         max_findings=args.max_findings,
         min_score=args.min_score,
@@ -859,6 +868,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         )
         print(f"created review archive at {args.archive}")
     if args.fail_on_gate and pack["gate"]["summary"]["status"] == "fail":
+        return 1
+    if (
+        args.fail_on_scope_warn
+        and pack.get("scope_report") is not None
+        and pack["scope_report"]["summary"]["status"] == "warn"
+    ):
         return 1
     return 0
 

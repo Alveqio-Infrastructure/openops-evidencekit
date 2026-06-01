@@ -4,7 +4,7 @@
 readiness handoff folder.
 
 ```powershell
-python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
+python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml --scope scope.toml -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
 ```
 
 The command evaluates the policy and writes the common outputs that different
@@ -18,6 +18,7 @@ audiences need:
 | `executive-brief.json` / `executive-brief.md` | Stakeholder summary with top findings and next steps. |
 | `action-plan.json` / `action-plan.md` / `action-plan.csv` | Prioritized remediation queue. |
 | `inventory.json` / `inventory.md` / `inventory.csv` | Asset and signal-domain inventory from evidence. |
+| `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
 | `policy-matrix.json` / `policy-matrix.md` / `policy-matrix.csv` | Coverage map for the policy that was evaluated. |
 | `policy-coverage.json` / `policy-coverage.md` / `policy-coverage.csv` | Evidence-domain coverage and gap analysis for the evaluated policy. |
 | `scorecard.json` / `scorecard.md` / `scorecard.csv` / `scorecard.html` | Readiness summary grouped by operational evidence area. |
@@ -47,6 +48,10 @@ should return a failing exit code if the generated gate fails:
 ```powershell
 python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0 --fail-on-gate
 ```
+
+When `--scope` is provided, add `--fail-on-scope-warn` if unclassified evidence,
+out-of-scope evidence, or missing required scope items should fail the review
+pack command after the pack has been written.
 
 Risk waivers can be applied to the generated action plan:
 
