@@ -58,6 +58,9 @@ class ReviewPackTests(unittest.TestCase):
                 "report.md",
                 "report.prom",
                 "report.sarif.json",
+                "scorecard.csv",
+                "scorecard.json",
+                "scorecard.md",
             ]
             for filename in expected:
                 self.assertTrue((pack / filename).is_file(), filename)
@@ -65,6 +68,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(pack / "report.json"), "-t", "report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "inventory.json"), "-t", "inventory"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "policy-matrix.json"), "-t", "policy-matrix"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "scorecard.json"), "-t", "scorecard"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "executive-brief.json"), "-t", "executive-brief"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "action-plan.json"), "-t", "action-plan"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "readiness-badge.json"), "-t", "badge"]), 0)

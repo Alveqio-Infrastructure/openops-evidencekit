@@ -27,6 +27,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("-p policy.baseline.toml", workflow_text)
             self.assertIn("openops-evidence badge report", workflow_text)
             self.assertIn("openops-evidence brief report", workflow_text)
+            self.assertIn("openops-evidence scorecard report", workflow_text)
             self.assertIn("openops-evidence history append", workflow_text)
             self.assertIn("-f prometheus", workflow_text)
             self.assertIn("openops-evidence review create", workflow_text)
@@ -52,6 +53,9 @@ class CliWorkflowTests(unittest.TestCase):
             badge = temp / "readiness-badge.json"
             brief = temp / "executive-brief.json"
             brief_markdown = temp / "executive-brief.md"
+            scorecard = temp / "scorecard.json"
+            scorecard_markdown = temp / "scorecard.md"
+            scorecard_csv = temp / "scorecard.csv"
             history = temp / "readiness-history.json"
             history_markdown = temp / "readiness-history.md"
             markdown = temp / "report.md"
@@ -127,6 +131,10 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(main(["brief", "report", "-i", str(report), "-f", "json", "-o", str(brief)]), 0)
             self.assertEqual(main(["validate", "-i", str(brief), "-t", "executive-brief"]), 0)
             self.assertEqual(main(["brief", "report", "-i", str(report), "-o", str(brief_markdown)]), 0)
+            self.assertEqual(main(["scorecard", "report", "-i", str(report), "-f", "json", "-o", str(scorecard)]), 0)
+            self.assertEqual(main(["validate", "-i", str(scorecard), "-t", "scorecard"]), 0)
+            self.assertEqual(main(["scorecard", "report", "-i", str(report), "-o", str(scorecard_markdown)]), 0)
+            self.assertEqual(main(["scorecard", "report", "-i", str(report), "-f", "csv", "-o", str(scorecard_csv)]), 0)
             self.assertEqual(
                 main(["history", "append", "-i", str(report), "--source", "workflow-test", "-o", str(history)]),
                 0,
@@ -152,6 +160,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(gate),
                         str(badge),
                         str(brief),
+                        str(scorecard),
                         str(history),
                         str(markdown),
                         str(sarif),
@@ -221,6 +230,7 @@ class CliWorkflowTests(unittest.TestCase):
             gate_data = json.loads(gate.read_text(encoding="utf-8"))
             badge_data = json.loads(badge.read_text(encoding="utf-8"))
             brief_data = json.loads(brief.read_text(encoding="utf-8"))
+            scorecard_data = json.loads(scorecard.read_text(encoding="utf-8"))
             history_data = json.loads(history.read_text(encoding="utf-8"))
             manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
             verification_data = json.loads(verification.read_text(encoding="utf-8"))
@@ -231,8 +241,9 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(gate_data["summary"]["status"], "pass")
             self.assertEqual(badge_data["message"], "pass 100")
             self.assertEqual(brief_data["summary"]["health"], "on_track")
+            self.assertEqual(scorecard_data["summary"]["domains_total"], 6)
             self.assertEqual(history_data["summary"]["latest_score"], 100)
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 10)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 11)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -243,6 +254,8 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(json.loads(sarif.read_text(encoding="utf-8"))["version"], "2.1.0")
             self.assertIn("openops_readiness_score 100", prometheus.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Executive Brief", brief_markdown.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Domain Scorecard", scorecard_markdown.read_text(encoding="utf-8"))
+            self.assertIn("domain,title,status,score", scorecard_csv.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Readiness History", history_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Evidence Inventory", inventory_markdown.read_text(encoding="utf-8"))
 

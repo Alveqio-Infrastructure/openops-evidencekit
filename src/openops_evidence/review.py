@@ -27,6 +27,7 @@ from .reports import (
     render_prometheus,
     render_sarif,
 )
+from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_markdown
 
 
 def create_review_pack(
@@ -50,6 +51,7 @@ def create_review_pack(
     report = evaluate_policy(evidence, checks)
     inventory = create_evidence_inventory(evidence)
     policy_matrix = create_policy_matrix(checks)
+    scorecard = create_report_scorecard(report)
     brief = create_report_brief(report, max_findings=max_findings)
     action_plan = create_action_plan(report, waiver_document=waiver_document)
     badge = create_report_badge(report)
@@ -83,6 +85,9 @@ def create_review_pack(
     add_artifact("policy-matrix.json", dump_json(policy_matrix), "Policy matrix", "Machine-readable policy coverage map.")
     add_artifact("policy-matrix.md", render_policy_matrix_markdown(policy_matrix), "Policy matrix", "Reviewable policy coverage table.")
     add_artifact("policy-matrix.csv", render_policy_matrix_csv(policy_matrix), "Policy matrix", "Spreadsheet-friendly policy coverage export.")
+    add_artifact("scorecard.json", dump_json(scorecard), "Domain scorecard", "Machine-readable domain summary.")
+    add_artifact("scorecard.md", render_scorecard_markdown(scorecard), "Domain scorecard", "Human-readable domain summary.")
+    add_artifact("scorecard.csv", render_scorecard_csv(scorecard), "Domain scorecard", "Spreadsheet-friendly domain summary.")
     add_artifact("report.json", dump_json(report), "Readiness report", "Canonical check result JSON.")
     add_artifact("report.md", render_markdown(report), "Readiness report", "Human-readable report.")
     add_artifact("report.junit.xml", render_junit(report), "JUnit report", "CI test-result output.")
@@ -167,10 +172,11 @@ def render_review_pack_readme(
             "## Suggested Review Order",
             "",
             "1. Read `executive-brief.md` for the management summary.",
-            "2. Open `report.md` and `gate-result.md` for the technical decision.",
-            "3. Use `action-plan.md` or `action-plan.csv` to assign remediation work.",
-            "4. Check `privacy-scan.md` before sending the pack to anyone else.",
-            "5. Verify `manifest.json` before archiving or publishing the pack.",
+            "2. Use `scorecard.md` to see which operational domains need attention.",
+            "3. Open `report.md` and `gate-result.md` for the technical decision.",
+            "4. Use `action-plan.md` or `action-plan.csv` to assign remediation work.",
+            "5. Check `privacy-scan.md` before sending the pack to anyone else.",
+            "6. Verify `manifest.json` before archiving or publishing the pack.",
             "",
         ]
     )

@@ -29,7 +29,7 @@ Automation exit codes are documented in [docs/exit-codes.md](docs/exit-codes.md)
 The same report can be rendered for people, CI systems, dashboards, and
 handoff bundles: Markdown or BookStack pages, HTML, JUnit XML, SARIF JSON,
 Prometheus text metrics, a Shields-compatible badge, executive briefs, action
-plans, tickets, and signed evidence bundles.
+plans, domain scorecards, tickets, and signed evidence bundles.
 
 ## Status
 
@@ -49,6 +49,7 @@ python -m openops_evidence check -i evidence.local.json -p examples/policy.basel
 python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
 python -m openops_evidence badge report -i report.local.json -o readiness-badge.json
 python -m openops_evidence brief report -i report.local.json -o executive-brief.md
+python -m openops_evidence scorecard report -i report.local.json -o scorecard.md
 python -m openops_evidence history append -i report.local.json --source local -o readiness-history.json
 python -m openops_evidence history render -i readiness-history.json -f markdown -o readiness-history.md
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
@@ -210,6 +211,7 @@ Report history tracking is described in [docs/report-history.md](docs/report-his
 Executive briefs are described in [docs/executive-brief.md](docs/executive-brief.md).
 Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence-inventory.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
+Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).
 Action plans are described in [docs/action-plan.md](docs/action-plan.md).
 CI gates are described in [docs/gates.md](docs/gates.md).
 Status badges are emitted as Shields-compatible endpoint JSON and can be used

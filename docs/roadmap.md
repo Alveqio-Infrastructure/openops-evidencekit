@@ -49,6 +49,7 @@ having to deploy a platform first.
 - Report history timeline for recurring readiness reviews.
 - Executive brief export for stakeholder handoff.
 - Review-pack generation for complete readiness handoff folders.
+- Domain scorecard export for operational area summaries.
 - Action plan ticket export.
 - CLI version and exit-code documentation.
 - Bundled policy pack discovery and export.

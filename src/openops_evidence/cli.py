@@ -73,7 +73,9 @@ from .schema import (
     validate_report,
     validate_report_comparison,
     validate_report_history,
+    validate_scorecard,
 )
+from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_markdown
 from .tickets import export_action_plan_tickets
 from .waivers import validate_waiver_document
 
@@ -218,6 +220,14 @@ def build_parser() -> argparse.ArgumentParser:
     brief_report.add_argument("-o", "--output", default="-")
     brief_report.set_defaults(func=cmd_brief_report)
 
+    scorecard = sub.add_parser("scorecard", help="Create domain scorecards from reports")
+    scorecard_sub = scorecard.add_subparsers(required=True)
+    scorecard_report = scorecard_sub.add_parser("report", help="Group report checks by evidence domain")
+    scorecard_report.add_argument("-i", "--input", required=True)
+    scorecard_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    scorecard_report.add_argument("-o", "--output", default="-")
+    scorecard_report.set_defaults(func=cmd_scorecard_report)
+
     plan = sub.add_parser("plan", help="Create a prioritized remediation action plan from a report")
     plan.add_argument("-i", "--input", required=True)
     plan.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="json")
@@ -332,6 +342,7 @@ def build_parser() -> argparse.ArgumentParser:
             "inventory",
             "privacy-scan",
             "history",
+            "scorecard",
             "bundle",
             "bundle-verification",
             "bundle-signature",
@@ -584,6 +595,22 @@ def cmd_brief_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_scorecard_report(args: argparse.Namespace) -> int:
+    report = load_json(args.input)
+    errors = validate_report(report)
+    if errors:
+        raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
+    scorecard = create_report_scorecard(report)
+    if args.format == "json":
+        rendered = dump_json(scorecard)
+    elif args.format == "csv":
+        rendered = render_scorecard_csv(scorecard)
+    else:
+        rendered = render_scorecard_markdown(scorecard)
+    write_text(args.output, rendered)
+    return 0
+
+
 def _load_existing_history(path: str | None, output: str | None) -> dict[str, Any] | None:
     history_path = Path(path) if path else None
     if history_path is None and output and output != "-":
@@ -806,6 +833,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_privacy_scan(document)
     elif args.type == "history":
         errors = validate_report_history(document)
+    elif args.type == "scorecard":
+        errors = validate_scorecard(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":

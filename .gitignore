@@ -18,6 +18,9 @@ privacy-scan.md
 gate-result.json
 gate-result.md
 readiness-badge.json
+/scorecard.json
+/scorecard.md
+/scorecard.csv
 /executive-brief.json
 /executive-brief.md
 readiness-history.json

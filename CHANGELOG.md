@@ -47,3 +47,4 @@
 - Add deterministic executive brief export for stakeholder handoff.
 - Add evidence inventory export for assets and signal domains.
 - Add complete review-pack generation for shareable readiness handoffs.
+- Add domain scorecard export for report summaries by evidence area.

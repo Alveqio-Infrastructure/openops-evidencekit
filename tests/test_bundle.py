@@ -200,6 +200,7 @@ class BundleTests(unittest.TestCase):
             gate = temp / "gate.json"
             badge = temp / "badge.json"
             brief = temp / "executive-brief.json"
+            scorecard = temp / "scorecard.json"
             sarif = temp / "report.sarif.json"
             prometheus = temp / "report.prom"
             comparison = temp / "comparison.json"
@@ -323,6 +324,54 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            scorecard.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "source_score": 100,
+                            "domains_total": 1,
+                            "domains_passed": 1,
+                            "domains_failed": 0,
+                            "domains_warn": 0,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_failed": 0,
+                            "checks_warn": 0,
+                        },
+                        "domains": [
+                            {
+                                "domain": "backup",
+                                "title": "Backup",
+                                "status": "pass",
+                                "score": 100,
+                                "checks_total": 1,
+                                "checks_passed": 1,
+                                "checks_failed": 0,
+                                "checks_warn": 0,
+                                "critical_count": 0,
+                                "high_count": 0,
+                                "medium_count": 0,
+                                "low_count": 0,
+                                "checks": [
+                                    {
+                                        "id": "backup_recent",
+                                        "title": "Recent backup",
+                                        "status": "pass",
+                                        "severity": "critical",
+                                        "required": True,
+                                        "path": "signals.backup.last_success_at",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             comparison.write_text(
                 json.dumps(
                     {
@@ -414,6 +463,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(gate), "gate-result")
             self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(brief), "executive-brief")
+            self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(comparison), "report-comparison")

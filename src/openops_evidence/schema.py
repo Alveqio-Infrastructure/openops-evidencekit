@@ -222,6 +222,66 @@ def validate_privacy_scan(document: Any) -> list[str]:
     return errors
 
 
+def validate_scorecard(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Scorecard must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "domains", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        _require_int_range(summary, "source_score", errors, minimum=0, maximum=100, prefix="summary.")
+        for key in (
+            "domains_total",
+            "domains_passed",
+            "domains_failed",
+            "domains_warn",
+            "checks_total",
+            "checks_passed",
+            "checks_failed",
+            "checks_warn",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, domain in enumerate(document.get("domains", [])):
+        if not isinstance(domain, dict):
+            errors.append(f"domains[{index}] must be an object.")
+            continue
+        prefix = f"domains[{index}]."
+        _require_string(domain, "domain", errors, prefix=prefix)
+        _require_string(domain, "title", errors, prefix=prefix)
+        _require_enum(domain, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        _require_int_range(domain, "score", errors, minimum=0, maximum=100, prefix=prefix)
+        for key in (
+            "checks_total",
+            "checks_passed",
+            "checks_failed",
+            "checks_warn",
+            "critical_count",
+            "high_count",
+            "medium_count",
+            "low_count",
+        ):
+            _require_int_range(domain, key, errors, minimum=0, prefix=prefix)
+        _require_list(domain, "checks", errors, prefix=prefix)
+        for check_index, check in enumerate(domain.get("checks", [])):
+            if not isinstance(check, dict):
+                errors.append(f"{prefix}checks[{check_index}] must be an object.")
+                continue
+            check_prefix = f"{prefix}checks[{check_index}]."
+            _require_string(check, "id", errors, prefix=check_prefix)
+            _require_string(check, "title", errors, prefix=check_prefix)
+            _require_enum(check, "status", {"pass", "warn", "fail"}, errors, prefix=check_prefix)
+            _require_enum(check, "severity", {"critical", "high", "medium", "low"}, errors, prefix=check_prefix)
+            if not isinstance(check.get("required"), bool):
+                errors.append(f"{check_prefix}required must be a boolean.")
+            _require_string_type(check, "path", errors, prefix=check_prefix)
+    return errors
+
+
 def validate_gate_result(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
