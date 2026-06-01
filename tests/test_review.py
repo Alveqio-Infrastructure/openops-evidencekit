@@ -178,17 +178,25 @@ class ReviewPackTests(unittest.TestCase):
             self.assertTrue((pack / "service-catalog.json").is_file())
             self.assertTrue((pack / "service-catalog.md").is_file())
             self.assertTrue((pack / "service-catalog.csv").is_file())
+            self.assertTrue((pack / "runbook-report.json").is_file())
+            self.assertTrue((pack / "runbook-report.md").is_file())
+            self.assertTrue((pack / "runbook-report.csv").is_file())
             self.assertEqual(main(["validate", "-i", str(pack / "service-catalog.json"), "-t", "service-catalog"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "runbook-report.json"), "-t", "runbook-report"]), 0)
 
             manifest = json.loads((pack / "manifest.json").read_text(encoding="utf-8"))
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 33)
+            runbook_report = json.loads((pack / "runbook-report.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["metadata"]["artifact_count"], 36)
             self.assertEqual(service_catalog["summary"]["status"], "warn")
             self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
+            self.assertEqual(runbook_report["summary"]["missing_runbooks_count"], 1)
             self.assertIn("service-catalog.md", readme)
+            self.assertIn("runbook-report.md", readme)
             self.assertIn("Service Catalog", index)
+            self.assertIn("Runbook Report", index)
 
             self.assertEqual(
                 main(
@@ -209,6 +217,27 @@ class ReviewPackTests(unittest.TestCase):
                 1,
             )
             self.assertTrue((fail_pack / "manifest.json").is_file())
+
+            runbook_fail_pack = temp / "review-pack-runbook-fail"
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "--catalog",
+                        str(ROOT / "examples" / "service-catalog.sample.toml"),
+                        "--fail-on-runbook-warn",
+                        "-o",
+                        str(runbook_fail_pack),
+                    ]
+                ),
+                1,
+            )
+            self.assertTrue((runbook_fail_pack / "manifest.json").is_file())
 
     def test_review_create_can_include_evidence_drift_report(self):
         with tempfile.TemporaryDirectory() as temp_dir:

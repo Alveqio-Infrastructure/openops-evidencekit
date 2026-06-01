@@ -60,6 +60,7 @@ python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i evidence.local.json -s examples/scope.sample.toml -o scope-report.md
 python -m openops_evidence catalog validate examples/service-catalog.sample.toml
 python -m openops_evidence catalog report -i evidence.local.json -c examples/service-catalog.sample.toml -o service-catalog.md
+python -m openops_evidence runbook report -i evidence.local.json -c examples/service-catalog.sample.toml --max-age-days 365 -o runbook-report.md
 python -m openops_evidence evidence diff --base examples/evidence.previous.json --current evidence.local.json -f markdown -o evidence-drift.md
 python -m openops_evidence coverage report -i evidence.local.json -p examples/policy.baseline.toml -o policy-coverage.md
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
@@ -219,6 +220,8 @@ Use `scope report` when the assessment needs explicit in-scope, out-of-scope,
 missing, and unclassified evidence boundaries.
 Use `catalog report` when service ownership, criticality, assets, evidence
 domains, and runbook coverage should be reviewed together.
+Use `runbook report` when required runbooks should be checked for presence,
+freshness, service references, and orphaned documentation.
 Use `evidence diff` when recurring runs should show asset and signal-domain
 drift before the policy result is interpreted.
 
@@ -241,6 +244,7 @@ Evidence scaffolds are described in [docs/evidence-scaffold.md](docs/evidence-sc
 Evidence drift reports are described in [docs/evidence-drift.md](docs/evidence-drift.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
 Service catalog reports are described in [docs/service-catalog.md](docs/service-catalog.md).
+Runbook coverage reports are described in [docs/runbook-report.md](docs/runbook-report.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
 Review attestations are described in [docs/review-attestation.md](docs/review-attestation.md).
 Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).

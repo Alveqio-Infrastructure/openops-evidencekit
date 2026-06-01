@@ -19,6 +19,7 @@ from openops_evidence.schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_runbook_report,
     validate_scorecard,
     validate_service_catalog_report,
     validate_scope_report,
@@ -777,6 +778,53 @@ class SchemaTests(unittest.TestCase):
                     }
                 ],
                 "unassigned_assets": [],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_runbook_report(self):
+        errors = validate_runbook_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "runbooks_total": 1,
+                    "observed_runbooks": 0,
+                    "expected_runbooks": 1,
+                    "missing_runbooks_count": 1,
+                    "stale_runbooks_count": 0,
+                    "unreferenced_runbooks_count": 0,
+                    "invalid_timestamp_count": 0,
+                    "services_total": 1,
+                    "services_with_missing_runbooks": 1,
+                },
+                "runbooks": [
+                    {
+                        "name": "database-restore",
+                        "status": "missing",
+                        "path": "",
+                        "updated_at": "",
+                        "age_days": None,
+                        "timestamp_valid": None,
+                        "expected": True,
+                        "observed": False,
+                        "referenced_by": ["database"],
+                        "reason": "Expected by service catalog but not found in evidence.",
+                    }
+                ],
+                "services": [
+                    {
+                        "id": "database",
+                        "name": "Primary database",
+                        "owner": "platform",
+                        "status": "warn",
+                        "runbooks": ["database-restore"],
+                        "present_runbooks": [],
+                        "missing_runbooks": ["database-restore"],
+                    }
+                ],
             }
         )
         self.assertEqual(errors, [])

@@ -21,6 +21,7 @@ audiences need:
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
 | `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
 | `service-catalog.json` / `service-catalog.md` / `service-catalog.csv` | Optional service ownership and evidence coverage report when `--catalog` is provided. |
+| `runbook-report.json` / `runbook-report.md` / `runbook-report.csv` | Optional runbook coverage report when `--catalog` is provided. |
 | `policy-matrix.json` / `policy-matrix.md` / `policy-matrix.csv` | Coverage map for the policy that was evaluated. |
 | `policy-coverage.json` / `policy-coverage.md` / `policy-coverage.csv` | Evidence-domain coverage and gap analysis for the evaluated policy. |
 | `scorecard.json` / `scorecard.md` / `scorecard.csv` / `scorecard.html` | Readiness summary grouped by operational evidence area. |
@@ -65,6 +66,10 @@ pack command after the pack has been written.
 When `--catalog` is provided, add `--fail-on-catalog-warn` if missing service
 assets, evidence domains, runbooks, or unassigned evidence assets should fail
 the review pack command after the pack has been written.
+
+Add `--fail-on-runbook-warn` when stale, missing, unreferenced, or malformed
+runbook evidence should fail the review pack command after the pack has been
+written.
 
 When `--base-evidence` is provided, add `--fail-on-drift` if asset or
 signal-domain drift should fail the review pack command after the pack has been

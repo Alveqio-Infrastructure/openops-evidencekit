@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/runbook-report.schema.json",
+  "title": "OpenOps Runbook Coverage Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "runbooks", "services"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "runbooks_total",
+        "observed_runbooks",
+        "expected_runbooks",
+        "missing_runbooks_count",
+        "stale_runbooks_count",
+        "unreferenced_runbooks_count",
+        "invalid_timestamp_count",
+        "services_total",
+        "services_with_missing_runbooks"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn"]
+        },
+        "runbooks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_runbooks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_runbooks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_runbooks_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stale_runbooks_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unreferenced_runbooks_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "invalid_timestamp_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_with_missing_runbooks": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "runbooks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/runbook"
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/service"
+      }
+    }
+  },
+  "$defs": {
+    "string_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runbook": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "status",
+        "path",
+        "updated_at",
+        "age_days",
+        "timestamp_valid",
+        "expected",
+        "observed",
+        "referenced_by",
+        "reason"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["current", "missing", "stale", "unreferenced", "warn"]
+        },
+        "path": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "age_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "timestamp_valid": {
+          "type": ["boolean", "null"]
+        },
+        "expected": {
+          "type": "boolean"
+        },
+        "observed": {
+          "type": "boolean"
+        },
+        "referenced_by": {
+          "$ref": "#/$defs/string_list"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "name", "owner", "status", "runbooks", "present_runbooks", "missing_runbooks"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "status": {
+          "enum": ["pass", "warn"]
+        },
+        "runbooks": {
+          "$ref": "#/$defs/string_list"
+        },
+        "present_runbooks": {
+          "$ref": "#/$defs/string_list"
+        },
+        "missing_runbooks": {
+          "$ref": "#/$defs/string_list"
+        }
+      }
+    }
+  }
+}

@@ -35,6 +35,9 @@ readiness-badge.json
 /service-catalog.json
 /service-catalog.md
 /service-catalog.csv
+/runbook-report.json
+/runbook-report.md
+/runbook-report.csv
 /questionnaire.*
 /evidence-questionnaire.*
 /executive-brief.json

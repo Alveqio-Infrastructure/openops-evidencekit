@@ -62,3 +62,4 @@
 - Add review attestation artifacts for manifest-bound sign-off records.
 - Add a README gallery image showing common generated report artifacts.
 - Add service catalog reports for service ownership and evidence coverage.
+- Add runbook coverage reports for freshness and service references.

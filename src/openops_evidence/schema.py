@@ -417,6 +417,66 @@ def validate_service_catalog_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_runbook_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Runbook report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "runbooks", errors)
+    _require_list(document, "services", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn"}, errors, prefix="summary.")
+        for key in (
+            "runbooks_total",
+            "observed_runbooks",
+            "expected_runbooks",
+            "missing_runbooks_count",
+            "stale_runbooks_count",
+            "unreferenced_runbooks_count",
+            "invalid_timestamp_count",
+            "services_total",
+            "services_with_missing_runbooks",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, runbook in enumerate(document.get("runbooks", [])):
+        if not isinstance(runbook, dict):
+            errors.append(f"runbooks[{index}] must be an object.")
+            continue
+        prefix = f"runbooks[{index}]."
+        _require_string(runbook, "name", errors, prefix=prefix)
+        _require_enum(runbook, "status", {"current", "missing", "stale", "unreferenced", "warn"}, errors, prefix=prefix)
+        for key in ("path", "updated_at", "reason"):
+            _require_string_type(runbook, key, errors, prefix=prefix)
+        if "age_days" not in runbook:
+            errors.append(f"{prefix}age_days is required.")
+        elif runbook["age_days"] is not None:
+            _require_int_range(runbook, "age_days", errors, minimum=0, prefix=prefix)
+        if "timestamp_valid" not in runbook:
+            errors.append(f"{prefix}timestamp_valid is required.")
+        elif runbook["timestamp_valid"] is not None and not isinstance(runbook["timestamp_valid"], bool):
+            errors.append(f"{prefix}timestamp_valid must be a boolean or null.")
+        for key in ("expected", "observed"):
+            if not isinstance(runbook.get(key), bool):
+                errors.append(f"{prefix}{key} must be a boolean.")
+        _require_list(runbook, "referenced_by", errors, prefix=prefix)
+    for index, service in enumerate(document.get("services", [])):
+        if not isinstance(service, dict):
+            errors.append(f"services[{index}] must be an object.")
+            continue
+        prefix = f"services[{index}]."
+        _require_string(service, "id", errors, prefix=prefix)
+        _require_string_type(service, "name", errors, prefix=prefix)
+        _require_string_type(service, "owner", errors, prefix=prefix)
+        _require_enum(service, "status", {"pass", "warn"}, errors, prefix=prefix)
+        for key in ("runbooks", "present_runbooks", "missing_runbooks"):
+            _require_list(service, key, errors, prefix=prefix)
+    return errors
+
+
 def _validate_drift_change(change: Any, errors: list[str], prefix: str, name_key: str) -> None:
     if not isinstance(change, dict):
         errors.append(f"{prefix[:-1]} must be an object.")

@@ -206,6 +206,7 @@ class BundleTests(unittest.TestCase):
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             service_catalog = temp / "service-catalog.json"
+            runbook_report = temp / "runbook-report.json"
             sarif = temp / "report.sarif.json"
             prometheus = temp / "report.prom"
             svg = temp / "history.svg"
@@ -585,6 +586,53 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            runbook_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "runbooks_total": 1,
+                            "observed_runbooks": 1,
+                            "expected_runbooks": 1,
+                            "missing_runbooks_count": 0,
+                            "stale_runbooks_count": 0,
+                            "unreferenced_runbooks_count": 0,
+                            "invalid_timestamp_count": 0,
+                            "services_total": 1,
+                            "services_with_missing_runbooks": 0,
+                        },
+                        "runbooks": [
+                            {
+                                "name": "backup-restore",
+                                "status": "current",
+                                "path": "runbooks/backup-restore.md",
+                                "updated_at": "2026-06-01T10:00:00+00:00",
+                                "age_days": 0,
+                                "timestamp_valid": True,
+                                "expected": True,
+                                "observed": True,
+                                "referenced_by": ["public-web"],
+                                "reason": "Runbook is present.",
+                            }
+                        ],
+                        "services": [
+                            {
+                                "id": "public-web",
+                                "name": "Public website",
+                                "owner": "platform",
+                                "status": "pass",
+                                "runbooks": ["backup-restore"],
+                                "present_runbooks": ["backup-restore"],
+                                "missing_runbooks": [],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             comparison.write_text(
                 json.dumps(
                     {
@@ -714,6 +762,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(service_catalog), "service-catalog")
+            self.assertEqual(classify_artifact(runbook_report), "runbook-report")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(svg), "visual")

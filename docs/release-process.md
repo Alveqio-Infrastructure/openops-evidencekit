@@ -53,6 +53,9 @@ python -m openops_evidence catalog validate examples/service-catalog.sample.toml
 python -m openops_evidence catalog report -i examples/evidence.sample.json -c examples/service-catalog.sample.toml -f json -o service-catalog.json
 python -m openops_evidence validate -i service-catalog.json -t service-catalog
 python -m openops_evidence catalog report -i examples/evidence.sample.json -c examples/service-catalog.sample.toml -o service-catalog.md
+python -m openops_evidence runbook report -i examples/evidence.sample.json -c examples/service-catalog.sample.toml --max-age-days 365 -f json -o runbook-report.json
+python -m openops_evidence validate -i runbook-report.json -t runbook-report
+python -m openops_evidence runbook report -i examples/evidence.sample.json -c examples/service-catalog.sample.toml --max-age-days 365 -o runbook-report.md
 python -m openops_evidence evidence diff --base examples/evidence.previous.json --current examples/evidence.sample.json -f json -o evidence-drift.json
 python -m openops_evidence validate -i evidence-drift.json -t evidence-drift
 python -m openops_evidence evidence diff --base examples/evidence.previous.json --current examples/evidence.sample.json -f markdown -o evidence-drift.md
@@ -92,7 +95,7 @@ python -m openops_evidence privacy scan evidence.redacted.json report.local.md -
 python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
 python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --catalog examples/service-catalog.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
-python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json scope-report.json service-catalog.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
@@ -123,6 +126,7 @@ Then inspect:
    `schemas/scorecard.schema.json`,
    `schemas/scope-report.schema.json`,
    `schemas/service-catalog.schema.json`,
+   `schemas/runbook-report.schema.json`,
    `schemas/action-plan.schema.json`, `schemas/gate-result.schema.json`,
    `schemas/badge.schema.json`, `schemas/policy-matrix.schema.json`,
    `schemas/policy-coverage.schema.json`,

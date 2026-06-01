@@ -35,6 +35,7 @@ from .reports import (
     render_prometheus,
     render_sarif,
 )
+from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown
 
@@ -65,6 +66,7 @@ def create_review_pack(
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
     service_catalog = create_service_catalog_report(evidence, catalog_document) if catalog_document is not None else None
+    runbook_report = create_runbook_report(evidence, catalog_document=catalog_document) if catalog_document is not None else None
     policy_matrix = create_policy_matrix(checks)
     coverage = create_coverage_report(evidence, checks)
     scorecard = create_report_scorecard(report)
@@ -125,6 +127,10 @@ def create_review_pack(
             "Service catalog",
             "Spreadsheet-friendly service catalog report.",
         )
+    if runbook_report is not None:
+        add_artifact("runbook-report.json", dump_json(runbook_report), "Runbook report", "Machine-readable runbook coverage report.")
+        add_artifact("runbook-report.md", render_runbook_markdown(runbook_report), "Runbook report", "Human-readable runbook coverage report.")
+        add_artifact("runbook-report.csv", render_runbook_csv(runbook_report), "Runbook report", "Spreadsheet-friendly runbook coverage report.")
     add_artifact("policy-matrix.json", dump_json(policy_matrix), "Policy matrix", "Machine-readable policy coverage map.")
     add_artifact("policy-matrix.md", render_policy_matrix_markdown(policy_matrix), "Policy matrix", "Reviewable policy coverage table.")
     add_artifact("policy-matrix.csv", render_policy_matrix_csv(policy_matrix), "Policy matrix", "Spreadsheet-friendly policy coverage export.")
@@ -184,6 +190,7 @@ def create_review_pack(
         "evidence_drift": evidence_drift,
         "scope_report": scope_report,
         "service_catalog": service_catalog,
+        "runbook_report": runbook_report,
         "privacy_scan": privacy_scan,
         "manifest": manifest,
     }
@@ -207,6 +214,8 @@ def render_review_pack_readme(
         suggested_steps.append("Check `scope-report.md` for in-scope, out-of-scope, and unclassified evidence.")
     if any(artifact.get("filename") == "service-catalog.md" for artifact in artifacts):
         suggested_steps.append("Review `service-catalog.md` for service ownership, criticality, assets, and runbook gaps.")
+    if any(artifact.get("filename") == "runbook-report.md" for artifact in artifacts):
+        suggested_steps.append("Use `runbook-report.md` to confirm required runbooks are present and current.")
     if any(artifact.get("filename") == "evidence-drift.md" for artifact in artifacts):
         suggested_steps.append("Review `evidence-drift.md` for asset and signal-domain changes since the base evidence.")
     suggested_steps.extend(
@@ -424,6 +433,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("scorecard.html", "Scorecard"),
         ("scope-report.md", "Scope Report"),
         ("service-catalog.md", "Service Catalog"),
+        ("runbook-report.md", "Runbook Report"),
         ("evidence-drift.md", "Evidence Drift"),
         ("report.md", "Report"),
         ("action-plan.md", "Action Plan"),

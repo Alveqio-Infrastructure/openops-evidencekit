@@ -32,6 +32,9 @@ jobs:
           openops-evidence catalog report -i evidence.sample.json -c service-catalog.sample.toml -f json -o service-catalog.json || true
           openops-evidence validate -i service-catalog.json -t service-catalog
           openops-evidence catalog report -i evidence.sample.json -c service-catalog.sample.toml -o service-catalog.md || true
+          openops-evidence runbook report -i evidence.sample.json -c service-catalog.sample.toml --max-age-days 365 -f json -o runbook-report.json
+          openops-evidence validate -i runbook-report.json -t runbook-report
+          openops-evidence runbook report -i evidence.sample.json -c service-catalog.sample.toml --max-age-days 365 -o runbook-report.md
           openops-evidence coverage report -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o policy-coverage.md
           openops-evidence check -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o report.openops.json || true
           openops-evidence validate -i report.openops.json -t report
@@ -59,6 +62,8 @@ jobs:
             inventory.md
             service-catalog.json
             service-catalog.md
+            runbook-report.json
+            runbook-report.md
             policy-coverage.md
             report.openops.md
             report.openops.junit.xml

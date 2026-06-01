@@ -68,6 +68,7 @@ from .reports import (
     render_sarif,
 )
 from .review import create_review_pack
+from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scaffold import create_evidence_scaffold
 from .schema import (
     validate_action_plan,
@@ -88,6 +89,7 @@ from .schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_runbook_report,
     validate_scorecard,
     validate_service_catalog_report,
     validate_scope_report,
@@ -269,6 +271,17 @@ def build_parser() -> argparse.ArgumentParser:
     catalog_report.add_argument("-o", "--output", default="-")
     catalog_report.set_defaults(func=cmd_catalog_report)
 
+    runbook = sub.add_parser("runbook", help="Inspect runbook coverage and freshness")
+    runbook_sub = runbook.add_subparsers(required=True)
+    runbook_report = runbook_sub.add_parser("report", help="Render runbook freshness and service coverage")
+    runbook_report.add_argument("-i", "--input", required=True)
+    runbook_report.add_argument("-c", "--catalog")
+    runbook_report.add_argument("--max-age-days", type=int)
+    runbook_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    runbook_report.add_argument("--fail-on-warn", action="store_true")
+    runbook_report.add_argument("-o", "--output", default="-")
+    runbook_report.set_defaults(func=cmd_runbook_report)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -354,6 +367,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-drift", action="store_true")
     review_create.add_argument("--fail-on-scope-warn", action="store_true")
     review_create.add_argument("--fail-on-catalog-warn", action="store_true")
+    review_create.add_argument("--fail-on-runbook-warn", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
 
@@ -455,6 +469,7 @@ def build_parser() -> argparse.ArgumentParser:
             "scorecard",
             "scope-report",
             "service-catalog",
+            "runbook-report",
             "bundle",
             "bundle-verification",
             "bundle-signature",
@@ -758,6 +773,36 @@ def cmd_catalog_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_runbook_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    if args.max_age_days is not None and args.max_age_days < 0:
+        raise UserFacingError("--max-age-days must be at least 0")
+    catalog_document = None
+    if args.catalog:
+        catalog_document = load_structured(args.catalog)
+        catalog_errors = validate_catalog_document(catalog_document)
+        if catalog_errors:
+            raise UserFacingError("Service catalog validation failed:\n- " + "\n- ".join(catalog_errors))
+    report = create_runbook_report(
+        evidence,
+        catalog_document=catalog_document,
+        max_age_days=args.max_age_days,
+    )
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_runbook_csv(report)
+    else:
+        rendered = render_runbook_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] == "warn":
+        return 1
+    return 0
+
+
 def cmd_evidence_diff(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -1016,6 +1061,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         and pack["service_catalog"]["summary"]["status"] == "warn"
     ):
         return 1
+    if (
+        args.fail_on_runbook_warn
+        and pack.get("runbook_report") is not None
+        and pack["runbook_report"]["summary"]["status"] == "warn"
+    ):
+        return 1
     return 0
 
 
@@ -1204,6 +1255,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_scope_report(document)
     elif args.type == "service-catalog":
         errors = validate_service_catalog_report(document)
+    elif args.type == "runbook-report":
+        errors = validate_runbook_report(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":

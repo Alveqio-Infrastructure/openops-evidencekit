@@ -35,6 +35,7 @@ produces the common CI artifacts below.
 | Inventory JSON | `openops-evidence inventory evidence -i evidence.json -f json -o inventory.json` | Publish asset and signal-domain inventory from evidence. |
 | Scope report | `openops-evidence scope report -i evidence.json -s scope.toml -o scope-report.md` | Show in-scope, out-of-scope, missing, and unclassified evidence boundaries. |
 | Service catalog | `openops-evidence catalog report -i evidence.json -c service-catalog.toml -o service-catalog.md` | Check service owners, criticality, assets, evidence domains, and runbooks against collected evidence. |
+| Runbook coverage | `openops-evidence runbook report -i evidence.json -c service-catalog.toml --max-age-days 90 -o runbook-report.md` | Check required runbooks for presence, freshness, service references, and unreferenced documents. |
 | Evidence drift | `openops-evidence evidence diff --base previous.json --current evidence.json -o evidence-drift.json` | Detect asset and signal-domain drift between recurring evidence runs. |
 | Policy coverage | `openops-evidence coverage report -i evidence.json -p policy.toml -o policy-coverage.md` | Find evidence domains that are not covered by policy checks and policy domains that are missing evidence. |
 | Gate JSON | `openops-evidence gate report -i report.json --min-score 90 -o gate-result.json` | Enforce readiness thresholds in CI. |

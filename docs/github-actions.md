@@ -16,9 +16,9 @@ Generated files:
 
 The workflow validates evidence, renders an inventory, evaluates the baseline
 policy, creates an evidence questionnaire, service catalog report, policy
-coverage, Markdown, JUnit, SARIF, badge, executive brief, scorecard, history
-Markdown/SVG, Prometheus, and review-pack artifacts, then enforces a
-configurable gate:
+coverage, runbook coverage, Markdown, JUnit, SARIF, badge, executive brief,
+scorecard, history Markdown/SVG, Prometheus, and review-pack artifacts, then
+enforces a configurable gate:
 
 ```yaml
 openops-evidence gate report -i report.openops.json --min-score 90 --max-warnings 0 -o gate-result.json

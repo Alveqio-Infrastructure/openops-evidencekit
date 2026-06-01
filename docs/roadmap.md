@@ -52,6 +52,7 @@ having to deploy a platform first.
 - Executive brief export for stakeholder handoff.
 - Scope report export for explicit in-scope and out-of-scope boundaries.
 - Service catalog reports for service ownership and evidence coverage.
+- Runbook coverage reports for freshness and service references.
 - Review-pack generation for complete readiness handoff folders.
 - Review attestation export for manifest-bound sign-off records.
 - Domain scorecard export for operational area summaries.
