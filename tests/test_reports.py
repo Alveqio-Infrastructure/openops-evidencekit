@@ -2,7 +2,13 @@ import json
 import unittest
 import xml.etree.ElementTree as ET
 
-from openops_evidence.reports import render_bookstack_markdown, render_junit, render_markdown, render_sarif
+from openops_evidence.reports import (
+    render_bookstack_markdown,
+    render_junit,
+    render_markdown,
+    render_prometheus,
+    render_sarif,
+)
 
 
 class ReportTests(unittest.TestCase):
@@ -217,6 +223,39 @@ class ReportTests(unittest.TestCase):
             run["results"][0]["locations"][0]["logicalLocations"][0]["name"],
             "signals.backup.last_success_at",
         )
+
+    def test_prometheus_report_exports_score_and_findings(self):
+        rendered = render_prometheus(
+            {
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "summary": {
+                    "status": "fail",
+                    "score": 40,
+                    "checks_total": 1,
+                    "checks_passed": 0,
+                    "checks_failed": 1,
+                    "checks_warn": 0,
+                },
+                "results": [
+                    {
+                        "id": 'backup"recent',
+                        "title": "Recent backup",
+                        "status": "fail",
+                        "severity": "critical",
+                        "required": True,
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                    }
+                ],
+            }
+        )
+
+        self.assertIn("openops_readiness_score 40", rendered)
+        self.assertIn('openops_report_status{status="pass"} 0', rendered)
+        self.assertIn('openops_report_status{status="fail"} 1', rendered)
+        self.assertIn('openops_checks_total{result="failed"} 1', rendered)
+        self.assertIn('check_id="backup\\"recent"', rendered)
+        self.assertIn('required="true"', rendered)
 
 
 if __name__ == "__main__":

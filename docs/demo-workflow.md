@@ -38,6 +38,7 @@ python -m openops_evidence validate -i readiness-badge.json -t badge
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
+python -m openops_evidence report -i report.local.json -f prometheus -o report.local.prom
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
 python -m openops_evidence compare --base report.local.json --current report.local.json -o report.comparison.json
 python -m openops_evidence compare --base report.local.json --current report.local.json -f markdown -o report.comparison.md
@@ -46,7 +47,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
 python -m openops_evidence ticket export -i action-plan.json -o action-tickets
-python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json readiness-badge.json report.docs.json report.local.md report.local.sarif.json readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json readiness-badge.json report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification

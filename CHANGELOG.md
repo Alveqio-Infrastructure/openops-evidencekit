@@ -40,3 +40,4 @@
 - Add configurable report gates for CI thresholds.
 - Add SARIF report output for review tooling.
 - Add Shields-compatible readiness badge output.
+- Add Prometheus text report output for monitoring pipelines.

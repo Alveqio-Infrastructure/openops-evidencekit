@@ -45,7 +45,14 @@ from .policy import (
 from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_pack
 from .privacy import render_privacy_scan_markdown, scan_privacy
 from .redact import redact_document
-from .reports import render_bookstack_markdown, render_html, render_junit, render_markdown, render_sarif
+from .reports import (
+    render_bookstack_markdown,
+    render_html,
+    render_junit,
+    render_markdown,
+    render_prometheus,
+    render_sarif,
+)
 from .schema import (
     validate_action_plan,
     validate_badge,
@@ -287,7 +294,7 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument(
         "-f",
         "--format",
-        choices=["markdown", "bookstack", "html", "junit", "sarif"],
+        choices=["markdown", "bookstack", "html", "junit", "sarif", "prometheus"],
         default="markdown",
     )
     report.add_argument("-o", "--output", default="-")
@@ -654,6 +661,8 @@ def cmd_report(args: argparse.Namespace) -> int:
         rendered = render_junit(report)
     elif args.format == "sarif":
         rendered = render_sarif(report)
+    elif args.format == "prometheus":
+        rendered = render_prometheus(report)
     elif args.format == "bookstack":
         rendered = render_bookstack_markdown(report)
     else:

@@ -4,6 +4,7 @@ import html
 import json
 import re
 import xml.etree.ElementTree as ET
+from datetime import datetime
 from typing import Any
 
 
@@ -196,6 +197,55 @@ def render_sarif(report: dict[str, Any]) -> str:
     return json.dumps(sarif, indent=2, sort_keys=True) + "\n"
 
 
+def render_prometheus(report: dict[str, Any]) -> str:
+    summary = report.get("summary", {})
+    status = str(summary.get("status", "unknown"))
+    lines = [
+        "# HELP openops_readiness_score OpenOps readiness score from the latest report.",
+        "# TYPE openops_readiness_score gauge",
+        f"openops_readiness_score {_metric_number(summary.get('score'))}",
+        "# HELP openops_report_status OpenOps report status, labelled by status.",
+        "# TYPE openops_report_status gauge",
+        f'openops_report_status{{status="pass"}} {_status_metric(status, "pass")}',
+        f'openops_report_status{{status="fail"}} {_status_metric(status, "fail")}',
+        "# HELP openops_checks_total OpenOps checks evaluated by result class.",
+        "# TYPE openops_checks_total gauge",
+        f'openops_checks_total{{result="total"}} {_metric_number(summary.get("checks_total"))}',
+        f'openops_checks_total{{result="passed"}} {_metric_number(summary.get("checks_passed"))}',
+        f'openops_checks_total{{result="failed"}} {_metric_number(summary.get("checks_failed"))}',
+        f'openops_checks_total{{result="warnings"}} {_metric_number(summary.get("checks_warn"))}',
+    ]
+    generated_at_seconds = _timestamp_seconds(report.get("generated_at"))
+    if generated_at_seconds is not None:
+        lines.extend(
+            [
+                "# HELP openops_report_generated_at_seconds Unix timestamp for the source report.",
+                "# TYPE openops_report_generated_at_seconds gauge",
+                f"openops_report_generated_at_seconds {generated_at_seconds}",
+            ]
+        )
+    lines.extend(
+        [
+            "# HELP openops_check_result OpenOps check result by check, status, severity, and required flag.",
+            "# TYPE openops_check_result gauge",
+        ]
+    )
+    for item in report.get("results", []):
+        if not isinstance(item, dict):
+            continue
+        labels = {
+            "check_id": item.get("id", "unknown"),
+            "status": item.get("status", "unknown"),
+            "severity": item.get("severity", "unknown"),
+            "required": str(bool(item.get("required"))).lower(),
+        }
+        label_text = ",".join(
+            f'{key}="{_prometheus_label(value)}"' for key, value in labels.items()
+        )
+        lines.append(f"openops_check_result{{{label_text}}} 1")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def _sarif_rule(item: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": str(item.get("id", "unknown")),
@@ -249,6 +299,32 @@ def _sarif_level(item: dict[str, Any]) -> str:
     if item.get("status") == "warn":
         return "warning"
     return "note"
+
+
+def _metric_number(value: Any) -> str:
+    if isinstance(value, bool):
+        return "1" if value else "0"
+    if isinstance(value, (int, float)):
+        return str(value)
+    return "0"
+
+
+def _status_metric(actual: str, expected: str) -> str:
+    return "1" if actual == expected else "0"
+
+
+def _prometheus_label(value: Any) -> str:
+    return str(value).replace("\\", "\\\\").replace("\n", "\\n").replace('"', '\\"')
+
+
+def _timestamp_seconds(value: Any) -> int | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return int(parsed.timestamp())
 
 
 def _junit_detail(item: dict[str, Any]) -> str:

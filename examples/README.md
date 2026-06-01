@@ -47,7 +47,8 @@ manifests. Reports can also be rendered as JUnit XML for CI systems. Generated
 files are ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis
 result uploads. Badge JSON is available for README, portal, or dashboard status
-widgets that understand Shields-compatible endpoint output.
+widgets that understand Shields-compatible endpoint output. Prometheus text
+output is available for monitoring pipelines that ingest textfile metrics.
 Run `privacy scan` on generated sharing artifacts before attaching them to
 issues, tickets, or public discussions.
 Use `gate report` when CI should enforce score, warning, or severity thresholds

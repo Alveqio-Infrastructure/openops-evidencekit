@@ -269,6 +269,8 @@ def classify_artifact(path: Path) -> str:
         return "report-markdown"
     if suffix in {".html", ".htm"}:
         return "report-html"
+    if suffix in {".prom", ".metrics"}:
+        return "report-prometheus"
     return "artifact"
 
 
@@ -384,6 +386,8 @@ def _media_type(path: Path) -> str:
         return "text/markdown"
     if suffix in {".html", ".htm"}:
         return "text/html"
+    if suffix in {".prom", ".metrics"}:
+        return "text/plain"
     if suffix == ".txt":
         return "text/plain"
     return "application/octet-stream"

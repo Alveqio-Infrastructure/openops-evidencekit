@@ -41,6 +41,7 @@ python -m openops_evidence badge report -i report.local.json -o readiness-badge.
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
+python -m openops_evidence report -i report.local.json -f prometheus -o report.local.prom
 ```
 
 See [docs/demo-workflow.md](docs/demo-workflow.md) for a complete synthetic
@@ -193,6 +194,8 @@ CI gates are described in [docs/gates.md](docs/gates.md).
 Status badges are emitted as Shields-compatible endpoint JSON and can be used
 in README files, internal portals, or wiki dashboards. See
 [docs/status-badges.md](docs/status-badges.md).
+Prometheus text output is described in
+[docs/prometheus-output.md](docs/prometheus-output.md).
 
 Policy checks are intentionally small:
 

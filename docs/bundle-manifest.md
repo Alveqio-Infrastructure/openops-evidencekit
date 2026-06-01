@@ -127,6 +127,7 @@ EvidenceKit infers a simple role for each artifact:
 - `policy` for other TOML files
 - `report-markdown` for Markdown files
 - `report-html` for HTML files
+- `report-prometheus` for Prometheus/OpenMetrics text output
 - `json` or `artifact` as fallback
 
 Role inference is descriptive only. It does not prove that the file is complete

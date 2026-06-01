@@ -199,6 +199,7 @@ class BundleTests(unittest.TestCase):
             gate = temp / "gate.json"
             badge = temp / "badge.json"
             sarif = temp / "report.sarif.json"
+            prometheus = temp / "report.prom"
             comparison = temp / "comparison.json"
             signature = temp / "signature.json"
             report.write_text(
@@ -221,6 +222,10 @@ class BundleTests(unittest.TestCase):
             )
             sarif.write_text(
                 json.dumps({"version": "2.1.0", "runs": []}),
+                encoding="utf-8",
+            )
+            prometheus.write_text(
+                "openops_readiness_score 100\n",
                 encoding="utf-8",
             )
             gate.write_text(
@@ -306,6 +311,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(gate), "gate-result")
             self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
+            self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
             self.assertEqual(classify_artifact(policy), "policy")

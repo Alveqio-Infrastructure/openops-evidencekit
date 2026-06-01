@@ -37,6 +37,7 @@ report.local.md
 report.local.html
 report.local.junit.xml
 report.local.sarif.json
+report.local.prom
 report.docs.json
 report.comparison.json
 report.comparison.md
