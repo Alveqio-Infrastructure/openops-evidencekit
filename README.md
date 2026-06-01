@@ -52,6 +52,13 @@ Compare two reports over time:
 python -m openops_evidence compare --base previous-report.json --current report.local.json -f markdown -o report.comparison.md
 ```
 
+Turn findings into a prioritized action plan:
+
+```powershell
+python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.md
+python -m openops_evidence plan -i report.local.json -f csv -o action-plan.csv
+```
+
 Create a hash manifest for the files you plan to share:
 
 ```powershell
@@ -163,6 +170,7 @@ Example inputs and generated artifact shapes are described in
 Bundled policies are described in [docs/policy-packs.md](docs/policy-packs.md).
 Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest.md).
 Report comparisons are described in [docs/report-comparison.md](docs/report-comparison.md).
+Action plans are described in [docs/action-plan.md](docs/action-plan.md).
 
 Policy checks are intentionally small:
 

@@ -36,6 +36,6 @@ installation.
 
 ## Regenerating Demo Output
 
-Use the workflow in `docs/demo-workflow.md` to regenerate local evidence and
-reports. Generated files are ignored by git so they can be reviewed without
-polluting commits.
+Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
+reports, comparisons, action plans, and bundle manifests. Generated files are
+ignored by git so they can be reviewed without polluting commits.

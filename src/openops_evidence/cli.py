@@ -6,6 +6,7 @@ from importlib import resources
 from pathlib import Path
 
 from . import __version__
+from .actions import create_action_plan, render_action_plan_csv, render_action_plan_markdown
 from .bundle import (
     DEFAULT_SIGNING_KEY_ENV,
     create_bundle_manifest,
@@ -34,6 +35,7 @@ from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_p
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
 from .schema import (
+    validate_action_plan,
     validate_bundle_manifest,
     validate_bundle_signature,
     validate_bundle_verification,
@@ -140,6 +142,14 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("-o", "--output", default="-")
     compare.set_defaults(func=cmd_compare)
 
+    plan = sub.add_parser("plan", help="Create a prioritized remediation action plan from a report")
+    plan.add_argument("-i", "--input", required=True)
+    plan.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="json")
+    plan.add_argument("--fail-only", action="store_true")
+    plan.add_argument("--include-pass", action="store_true")
+    plan.add_argument("-o", "--output", default="-")
+    plan.set_defaults(func=cmd_plan)
+
     merge = sub.add_parser("merge", help="Merge multiple evidence JSON files")
     merge.add_argument("inputs", nargs="+")
     merge.add_argument("-o", "--output", default="-")
@@ -180,7 +190,15 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument(
         "-t",
         "--type",
-        choices=["evidence", "report", "bundle", "bundle-verification", "bundle-signature", "comparison"],
+        choices=[
+            "evidence",
+            "report",
+            "action-plan",
+            "bundle",
+            "bundle-verification",
+            "bundle-signature",
+            "comparison",
+        ],
         default="evidence",
     )
     validate.set_defaults(func=cmd_validate)
@@ -320,6 +338,21 @@ def cmd_compare(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_plan(args: argparse.Namespace) -> int:
+    report = load_json(args.input)
+    errors = validate_report(report)
+    if errors:
+        raise UserFacingError("Report validation failed:\n- " + "\n- ".join(errors))
+    plan = create_action_plan(report, fail_only=args.fail_only, include_pass=args.include_pass)
+    if args.format == "markdown":
+        write_text(args.output, render_action_plan_markdown(plan))
+    elif args.format == "csv":
+        write_text(args.output, render_action_plan_csv(plan))
+    else:
+        write_text(args.output, dump_json(plan))
+    return 0 if plan["summary"]["status"] == "pass" else 1
+
+
 def cmd_merge(args: argparse.Namespace) -> int:
     documents = []
     for path in args.inputs:
@@ -374,6 +407,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
     document = load_json(args.input)
     if args.type == "report":
         errors = validate_report(document)
+    elif args.type == "action-plan":
+        errors = validate_action_plan(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":

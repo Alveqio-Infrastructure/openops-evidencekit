@@ -9,11 +9,12 @@ python -m openops_evidence policy list
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence report -i report.local.json -f markdown -o report.local.md
+python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.md
 python -m openops_evidence compare --base report.local.json --current report.local.json -f markdown -o report.comparison.md
 ```
 
-For a fuller workflow with collectors, redaction, reports, and a bundle
-manifest, use `docs/demo-workflow.md`.
+For a fuller workflow with collectors, redaction, reports, action plans, and a
+bundle manifest, use `docs/demo-workflow.md`.
 
 ## First Real Assessment
 
@@ -22,5 +23,6 @@ manifest, use `docs/demo-workflow.md`.
 3. Run collectors against exported files.
 4. Merge collector outputs.
 5. Redact before sharing.
-6. Compare current reports against a prior review.
-7. Keep raw evidence private.
+6. Generate an action plan for remediation work.
+7. Compare current reports against a prior review.
+8. Keep raw evidence private.

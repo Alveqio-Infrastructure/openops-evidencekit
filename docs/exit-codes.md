@@ -12,6 +12,7 @@ and automation wrappers.
 ## Commands That May Return 1
 
 - `check` returns `1` when required checks fail.
+- `plan` returns `1` when the generated action plan has at least one action item.
 - `validate` returns `1` when the selected artifact is invalid.
 - `policy validate` returns `1` when the selected policy is invalid.
 - `compare --fail-on-regression` returns `1` when an existing check regresses.

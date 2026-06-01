@@ -1,6 +1,7 @@
 import unittest
 
 from openops_evidence.schema import (
+    validate_action_plan,
     validate_bundle_manifest,
     validate_bundle_signature,
     validate_bundle_verification,
@@ -127,6 +128,81 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("results[0].required must be a boolean.", errors)
         self.assertIn("results[0].path must be a string.", errors)
         self.assertIn("results[0].operator must be a string.", errors)
+
+    def test_valid_action_plan(self):
+        errors = validate_action_plan(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "action_required",
+                    "items_total": 1,
+                    "fail_count": 1,
+                    "warn_count": 0,
+                    "pass_count": 0,
+                    "critical_count": 1,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "items": [
+                    {
+                        "priority": "P0",
+                        "id": "backup_recent",
+                        "title": "Recent backup",
+                        "status": "fail",
+                        "severity": "critical",
+                        "required": True,
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                        "observed_count": 0,
+                        "recommended_action": "Configure backups.",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_action_plan_is_reported(self):
+        errors = validate_action_plan(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "unknown",
+                    "items_total": -1,
+                    "fail_count": 0,
+                    "warn_count": 0,
+                    "pass_count": 0,
+                    "critical_count": 0,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "items": [
+                    {
+                        "priority": "P9",
+                        "id": "",
+                        "title": "Bad",
+                        "status": "unknown",
+                        "severity": "urgent",
+                        "required": "yes",
+                        "path": 123,
+                        "operator": None,
+                        "observed_count": -1,
+                        "recommended_action": "",
+                    }
+                ],
+            }
+        )
+        self.assertIn("summary.status must be one of: action_required, pass.", errors)
+        self.assertIn("summary.items_total must be at least 0.", errors)
+        self.assertIn("items[0].priority must be one of: P0, P1, P2, P3.", errors)
+        self.assertIn("items[0].id must be a non-empty string.", errors)
+        self.assertIn("items[0].required must be a boolean.", errors)
+        self.assertIn("items[0].observed_count must be at least 0.", errors)
 
     def test_valid_bundle_manifest(self):
         errors = validate_bundle_manifest(

@@ -29,3 +29,4 @@
 - Enforce the published report summary and result contract in built-in validation.
 - Add governance and maintainer policy documentation.
 - Cover policy operators and bundle signatures in CI sample workflow checks.
+- Add prioritized action plan generation from report findings.

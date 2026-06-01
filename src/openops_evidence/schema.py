@@ -59,6 +59,48 @@ def validate_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_action_plan(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Action plan must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "items", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "action_required"}, errors, prefix="summary.")
+        for key in (
+            "items_total",
+            "fail_count",
+            "warn_count",
+            "pass_count",
+            "critical_count",
+            "high_count",
+            "medium_count",
+            "low_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, item in enumerate(document.get("items", [])):
+        if not isinstance(item, dict):
+            errors.append(f"items[{index}] must be an object.")
+            continue
+        prefix = f"items[{index}]."
+        _require_enum(item, "priority", {"P0", "P1", "P2", "P3"}, errors, prefix=prefix)
+        _require_string(item, "id", errors, prefix=prefix)
+        _require_string(item, "title", errors, prefix=prefix)
+        _require_enum(item, "status", {"pass", "fail", "warn"}, errors, prefix=prefix)
+        _require_enum(item, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        if not isinstance(item.get("required"), bool):
+            errors.append(f"{prefix}required must be a boolean.")
+        _require_string_type(item, "path", errors, prefix=prefix)
+        _require_string_type(item, "operator", errors, prefix=prefix)
+        _require_int_range(item, "observed_count", errors, minimum=0, prefix=prefix)
+        _require_string(item, "recommended_action", errors, prefix=prefix)
+    return errors
+
+
 def validate_bundle_manifest(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

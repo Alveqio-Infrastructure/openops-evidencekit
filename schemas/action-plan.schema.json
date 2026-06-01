@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/action-plan.schema.json",
+  "title": "OpenOps Action Plan",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "items"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "items_total",
+        "fail_count",
+        "warn_count",
+        "pass_count",
+        "critical_count",
+        "high_count",
+        "medium_count",
+        "low_count"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "action_required"]
+        },
+        "items_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fail_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warn_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pass_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/action_item"
+      }
+    }
+  },
+  "$defs": {
+    "action_item": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "priority",
+        "id",
+        "title",
+        "status",
+        "severity",
+        "required",
+        "path",
+        "operator",
+        "observed_count",
+        "recommended_action"
+      ],
+      "properties": {
+        "priority": {
+          "enum": ["P0", "P1", "P2", "P3"]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["pass", "fail", "warn"]
+        },
+        "severity": {
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "observed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recommended_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

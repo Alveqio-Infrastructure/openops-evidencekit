@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .schema import (
+    validate_action_plan,
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
@@ -199,6 +200,8 @@ def classify_artifact(path: Path) -> str:
             return "evidence"
         if validate_report(document) == []:
             return "report"
+        if validate_action_plan(document) == []:
+            return "action-plan"
         if _looks_like_bundle_manifest(document):
             return "bundle-manifest"
         if validate_bundle_signature(document) == []:
