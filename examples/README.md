@@ -55,7 +55,7 @@ Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
 evidence scaffolds, scope reports, executive briefs, scorecards, history
 timelines, evidence drift reports, comparisons, action plans, ticket drafts,
-review packs, and bundle manifests.
+review packs, review attestations, and bundle manifests.
 Reports can also be rendered as JUnit XML for CI systems. Generated files are
 ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis

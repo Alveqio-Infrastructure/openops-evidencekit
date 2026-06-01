@@ -18,6 +18,7 @@ from openops_evidence.schema import (
     validate_report,
     validate_report_comparison,
     validate_report_history,
+    validate_review_attestation,
     validate_scorecard,
     validate_scope_report,
 )
@@ -637,6 +638,43 @@ class SchemaTests(unittest.TestCase):
                                 "path": "signals.backup.last_success_at",
                             }
                         ],
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_review_attestation(self):
+        errors = validate_review_attestation(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {
+                    "approver": "Example Reviewer",
+                    "role": "Operations",
+                    "statement": "Reviewed generated artifacts.",
+                    "review_id": "RR-2026-001",
+                },
+                "summary": {
+                    "status": "pass",
+                    "checks_total": 1,
+                    "checks_passed": 1,
+                    "checks_warn": 0,
+                    "artifact_count": 1,
+                },
+                "manifest": {
+                    "path": "manifest.json",
+                    "name": "openops-evidence-bundle",
+                    "artifact_count": 1,
+                    "size_bytes": 128,
+                    "sha256": "a" * 64,
+                },
+                "checks": [
+                    {
+                        "id": "manifest_recorded",
+                        "title": "Manifest hash is recorded",
+                        "status": "pass",
+                        "observed": "Manifest path, size, artifact count, and SHA-256 are recorded.",
                     }
                 ],
             }

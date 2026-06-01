@@ -24,6 +24,7 @@ and automation wrappers.
 - `review create --fail-on-gate` returns `1` when the generated gate fails.
 - `review create --fail-on-drift` returns `1` when an included evidence drift report warns.
 - `review create --fail-on-scope-warn` returns `1` when an included scope report warns.
+- `attest review --fail-on-warn` returns `1` when an included attestation check warns.
 - `bundle verify --fail-on-mismatch` returns `1` when an artifact is missing or changed.
 - `bundle verify-signature --fail-on-invalid` returns `1` when the manifest signature does not match.
 

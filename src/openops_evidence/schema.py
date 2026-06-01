@@ -224,6 +224,49 @@ def validate_evidence_drift(document: Any) -> list[str]:
     return errors
 
 
+def validate_review_attestation(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Review attestation must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_mapping(document, "manifest", errors)
+    _require_list(document, "checks", errors)
+    metadata = document.get("metadata")
+    if isinstance(metadata, dict):
+        _require_string(metadata, "approver", errors, prefix="metadata.")
+        _require_string(metadata, "role", errors, prefix="metadata.")
+        _require_string(metadata, "statement", errors, prefix="metadata.")
+        _require_string_type(metadata, "review_id", errors, prefix="metadata.")
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn"}, errors, prefix="summary.")
+        for key in ("checks_total", "checks_passed", "checks_warn", "artifact_count"):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    manifest = document.get("manifest")
+    if isinstance(manifest, dict):
+        _require_string(manifest, "path", errors, prefix="manifest.")
+        _require_string_type(manifest, "name", errors, prefix="manifest.")
+        _require_int_range(manifest, "artifact_count", errors, minimum=0, prefix="manifest.")
+        _require_int_range(manifest, "size_bytes", errors, minimum=0, prefix="manifest.")
+        _require_string(manifest, "sha256", errors, prefix="manifest.")
+        sha256 = manifest.get("sha256")
+        if isinstance(sha256, str) and sha256 and not _is_sha256_hex(sha256):
+            errors.append("manifest.sha256 must be a lowercase SHA-256 hex digest.")
+    for index, check in enumerate(document.get("checks", [])):
+        if not isinstance(check, dict):
+            errors.append(f"checks[{index}] must be an object.")
+            continue
+        prefix = f"checks[{index}]."
+        _require_string(check, "id", errors, prefix=prefix)
+        _require_string(check, "title", errors, prefix=prefix)
+        _require_enum(check, "status", {"pass", "warn"}, errors, prefix=prefix)
+        _require_string_type(check, "observed", errors, prefix=prefix)
+    return errors
+
+
 def validate_scope_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

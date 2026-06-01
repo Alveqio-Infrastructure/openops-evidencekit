@@ -22,6 +22,9 @@ privacy-scan.md
 gate-result.json
 gate-result.md
 readiness-badge.json
+/review-attestation.json
+/review-attestation.md
+/review-attestation.csv
 /scorecard.json
 /scorecard.md
 /scorecard.csv

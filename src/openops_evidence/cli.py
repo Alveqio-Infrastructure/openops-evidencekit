@@ -8,6 +8,7 @@ from typing import Any
 
 from . import __version__
 from .actions import create_action_plan, render_action_plan_csv, render_action_plan_markdown
+from .attestations import create_review_attestation, render_attestation_csv, render_attestation_markdown
 from .badges import create_report_badge
 from .briefs import create_report_brief, render_brief_markdown
 from .bundle import (
@@ -80,6 +81,7 @@ from .schema import (
     validate_report,
     validate_report_comparison,
     validate_report_history,
+    validate_review_attestation,
     validate_scorecard,
     validate_scope_report,
 )
@@ -333,6 +335,24 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
 
+    attest = sub.add_parser("attest", help="Create review sign-off attestations")
+    attest_sub = attest.add_subparsers(required=True)
+    attest_review = attest_sub.add_parser("review", help="Create a review attestation from a manifest and optional summaries")
+    attest_review.add_argument("--manifest", required=True)
+    attest_review.add_argument("--approver", required=True)
+    attest_review.add_argument("--role", required=True)
+    attest_review.add_argument("--statement", required=True)
+    attest_review.add_argument("--review-id", default="")
+    attest_review.add_argument("--report")
+    attest_review.add_argument("--gate")
+    attest_review.add_argument("--scope-report")
+    attest_review.add_argument("--evidence-drift")
+    attest_review.add_argument("--privacy-scan")
+    attest_review.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="json")
+    attest_review.add_argument("--fail-on-warn", action="store_true")
+    attest_review.add_argument("-o", "--output", default="-")
+    attest_review.set_defaults(func=cmd_attest_review)
+
     badge = sub.add_parser("badge", help="Create status badge artifacts")
     badge_sub = badge.add_subparsers(required=True)
     badge_report = badge_sub.add_parser("report", help="Create a Shields-compatible badge JSON from a report")
@@ -401,6 +421,7 @@ def build_parser() -> argparse.ArgumentParser:
             "action-plan",
             "executive-brief",
             "evidence-drift",
+            "review-attestation",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -928,6 +949,55 @@ def cmd_review_create(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_attest_review(args: argparse.Namespace) -> int:
+    manifest = load_json(args.manifest)
+    manifest_errors = validate_bundle_manifest(manifest)
+    if manifest_errors:
+        raise UserFacingError("Bundle manifest validation failed:\n- " + "\n- ".join(manifest_errors))
+    report = _optional_validated_json(args.report, validate_report, "Report")
+    gate = _optional_validated_json(args.gate, validate_gate_result, "Gate result")
+    scope_report = _optional_validated_json(args.scope_report, validate_scope_report, "Scope report")
+    evidence_drift = _optional_validated_json(args.evidence_drift, validate_evidence_drift, "Evidence drift")
+    privacy_scan = _optional_validated_json(args.privacy_scan, validate_privacy_scan, "Privacy scan")
+    attestation = create_review_attestation(
+        manifest,
+        args.manifest,
+        approver=args.approver,
+        role=args.role,
+        statement=args.statement,
+        review_id=args.review_id,
+        report=report,
+        gate=gate,
+        scope_report=scope_report,
+        evidence_drift=evidence_drift,
+        privacy_scan=privacy_scan,
+    )
+    if args.format == "markdown":
+        rendered = render_attestation_markdown(attestation)
+    elif args.format == "csv":
+        rendered = render_attestation_csv(attestation)
+    else:
+        rendered = dump_json(attestation)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and attestation["summary"]["status"] == "warn":
+        return 1
+    return 0
+
+
+def _optional_validated_json(
+    path: str | None,
+    validator: Any,
+    label: str,
+) -> dict[str, Any] | None:
+    if not path:
+        return None
+    document = load_json(path)
+    errors = validator(document)
+    if errors:
+        raise UserFacingError(f"{label} validation failed:\n- " + "\n- ".join(errors))
+    return document
+
+
 def cmd_badge_report(args: argparse.Namespace) -> int:
     report = load_json(args.input)
     errors = validate_report(report)
@@ -1040,6 +1110,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_executive_brief(document)
     elif args.type == "evidence-drift":
         errors = validate_evidence_drift(document)
+    elif args.type == "review-attestation":
+        errors = validate_review_attestation(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

@@ -202,6 +202,7 @@ class BundleTests(unittest.TestCase):
             badge = temp / "badge.json"
             brief = temp / "executive-brief.json"
             evidence_drift = temp / "evidence-drift.json"
+            attestation = temp / "review-attestation.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             sarif = temp / "report.sarif.json"
@@ -395,6 +396,43 @@ class BundleTests(unittest.TestCase):
                             }
                         ],
                         "domain_changes": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            attestation.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {
+                            "approver": "Example Reviewer",
+                            "role": "Operations",
+                            "statement": "Reviewed generated artifacts.",
+                            "review_id": "RR-2026-001",
+                        },
+                        "summary": {
+                            "status": "pass",
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "artifact_count": 1,
+                        },
+                        "manifest": {
+                            "path": "manifest.json",
+                            "name": "openops-evidence-bundle",
+                            "artifact_count": 1,
+                            "size_bytes": 128,
+                            "sha256": "a" * 64,
+                        },
+                        "checks": [
+                            {
+                                "id": "manifest_recorded",
+                                "title": "Manifest hash is recorded",
+                                "status": "pass",
+                                "observed": "Manifest path, size, artifact count, and SHA-256 are recorded.",
+                            }
+                        ],
                     }
                 ),
                 encoding="utf-8",
@@ -627,6 +665,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(brief), "executive-brief")
             self.assertEqual(classify_artifact(evidence_drift), "evidence-drift")
+            self.assertEqual(classify_artifact(attestation), "review-attestation")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(sarif), "report-sarif")

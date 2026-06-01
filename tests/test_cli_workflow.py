@@ -78,6 +78,8 @@ class CliWorkflowTests(unittest.TestCase):
             prometheus = temp / "report.prom"
             manifest = temp / "manifest.json"
             verification = temp / "verification.json"
+            attestation = temp / "review-attestation.json"
+            attestation_markdown = temp / "review-attestation.md"
             signature = temp / "manifest.signature.json"
             signature_verification = temp / "signature-verification.json"
             archive = temp / "evidence-bundle.zip"
@@ -333,6 +335,29 @@ class CliWorkflowTests(unittest.TestCase):
                 main(["bundle", "archive", str(manifest), "--base-dir", str(temp), "-o", str(archive)]),
                 0,
             )
+            attestation_args = [
+                "attest",
+                "review",
+                "--manifest",
+                str(manifest),
+                "--report",
+                str(report),
+                "--gate",
+                str(gate),
+                "--scope-report",
+                str(scope_report),
+                "--evidence-drift",
+                str(evidence_drift),
+                "--approver",
+                "Example Reviewer",
+                "--role",
+                "Operations",
+                "--statement",
+                "Reviewed generated artifacts for the workflow test.",
+            ]
+            self.assertEqual(main([*attestation_args, "-o", str(attestation)]), 0)
+            self.assertEqual(main(["validate", "-i", str(attestation), "-t", "review-attestation"]), 0)
+            self.assertEqual(main([*attestation_args, "-f", "markdown", "-o", str(attestation_markdown)]), 0)
             old_key = os.environ.get("OPENOPS_TEST_SIGNING_KEY")
             os.environ["OPENOPS_TEST_SIGNING_KEY"] = "test-signing-key"
             try:
@@ -387,6 +412,7 @@ class CliWorkflowTests(unittest.TestCase):
             scorecard_data = json.loads(scorecard.read_text(encoding="utf-8"))
             history_data = json.loads(history.read_text(encoding="utf-8"))
             manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
+            attestation_data = json.loads(attestation.read_text(encoding="utf-8"))
             verification_data = json.loads(verification.read_text(encoding="utf-8"))
             signature_data = json.loads(signature.read_text(encoding="utf-8"))
             signature_verification_data = json.loads(signature_verification.read_text(encoding="utf-8"))
@@ -404,6 +430,8 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(scorecard_data["summary"]["domains_total"], 6)
             self.assertEqual(history_data["summary"]["latest_score"], 100)
             self.assertEqual(manifest_data["metadata"]["artifact_count"], 16)
+            self.assertEqual(attestation_data["summary"]["status"], "warn")
+            self.assertEqual(attestation_data["manifest"]["artifact_count"], 16)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -424,6 +452,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("# OpenOps Evidence Inventory", inventory_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Scope Report", scope_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Evidence Drift", evidence_drift_markdown.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Review Attestation", attestation_markdown.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

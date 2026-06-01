@@ -122,6 +122,7 @@ EvidenceKit infers a simple role for each artifact:
 - `policy-coverage` for valid policy coverage JSON
 - `report` for valid report JSON
 - `report-history` for valid report history JSON
+- `review-attestation` for valid review attestation JSON
 - `executive-brief` for valid executive brief JSON
 - `scorecard` for valid domain scorecard JSON
 - `questionnaire` for valid evidence questionnaire JSON

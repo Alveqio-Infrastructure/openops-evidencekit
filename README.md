@@ -64,6 +64,7 @@ python -m openops_evidence report -i report.local.json -f junit -o report.local.
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
 python -m openops_evidence report -i report.local.json -f prometheus -o report.local.prom
 python -m openops_evidence review create -i evidence.local.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
+python -m openops_evidence attest review --manifest review-pack/manifest.json --report review-pack/report.json --gate review-pack/gate-result.json --scope-report review-pack/scope-report.json --evidence-drift review-pack/evidence-drift.json --privacy-scan review-pack/privacy-scan.json --approver "Example Reviewer" --role "Operations" --statement "Reviewed generated artifacts for internal handoff." -o review-attestation.json
 ```
 
 See [docs/demo-workflow.md](docs/demo-workflow.md) for a complete synthetic
@@ -227,6 +228,7 @@ Evidence scaffolds are described in [docs/evidence-scaffold.md](docs/evidence-sc
 Evidence drift reports are described in [docs/evidence-drift.md](docs/evidence-drift.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
+Review attestations are described in [docs/review-attestation.md](docs/review-attestation.md).
 Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).
 Policy coverage reports are described in [docs/policy-coverage.md](docs/policy-coverage.md).
 Policy questionnaires are described in [docs/questionnaire.md](docs/questionnaire.md).

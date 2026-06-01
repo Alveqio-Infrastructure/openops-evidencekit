@@ -43,6 +43,13 @@ python -m openops_evidence bundle verify review-pack/manifest.json --base-dir re
 Pass `--archive review-pack.zip` when the handoff should also be written as a
 ZIP file. The archive includes `manifest.json` and the generated artifacts.
 
+After a pack has been reviewed, create a separate attestation bound to the
+manifest hash:
+
+```powershell
+python -m openops_evidence attest review --manifest review-pack/manifest.json --report review-pack/report.json --gate review-pack/gate-result.json --privacy-scan review-pack/privacy-scan.json --approver "Example Reviewer" --role "Operations" --statement "Reviewed generated artifacts for handoff." -o review-attestation.json
+```
+
 For CI pipelines, add `--fail-on-gate` when the review pack command itself
 should return a failing exit code if the generated gate fails:
 

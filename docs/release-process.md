@@ -93,6 +93,8 @@ python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
 python -m openops_evidence bundle archive evidence-bundle.manifest.json --base-dir . -o evidence-bundle.zip
+python -m openops_evidence attest review --manifest evidence-bundle.manifest.json --report report.local.json --gate gate-result.json --scope-report scope-report.json --evidence-drift evidence-drift.json --privacy-scan privacy-scan.json --approver "Example Reviewer" --role "Operations" --statement "Reviewed generated artifacts for release checks." -o review-attestation.json
+python -m openops_evidence validate -i review-attestation.json -t review-attestation
 python -m openops_evidence bundle sign evidence-bundle.manifest.json --key-file .secrets/openops-bundle-signing.key --key-id release-check -o evidence-bundle.signature.json
 python -m openops_evidence validate -i evidence-bundle.signature.json -t bundle-signature
 python -m openops_evidence bundle verify-signature evidence-bundle.manifest.json evidence-bundle.signature.json --key-file .secrets/openops-bundle-signing.key --fail-on-invalid -o evidence-bundle.signature-verification.json
@@ -113,6 +115,7 @@ Then inspect:
    `schemas/report-history.schema.json`,
    `schemas/executive-brief.schema.json`,
    `schemas/evidence-drift.schema.json`,
+   `schemas/review-attestation.schema.json`,
    `schemas/scorecard.schema.json`,
    `schemas/scope-report.schema.json`,
    `schemas/action-plan.schema.json`, `schemas/gate-result.schema.json`,

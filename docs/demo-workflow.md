@@ -84,6 +84,8 @@ python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
 python -m openops_evidence bundle archive evidence-bundle.manifest.json --base-dir . -o evidence-bundle.zip
+python -m openops_evidence attest review --manifest evidence-bundle.manifest.json --report report.local.json --gate gate-result.json --scope-report scope-report.json --evidence-drift evidence-drift.json --privacy-scan privacy-scan.json --approver "Example Reviewer" --role "Operations" --statement "Reviewed generated artifacts for demo handoff." -o review-attestation.json
+python -m openops_evidence validate -i review-attestation.json -t review-attestation
 ```
 
 Expected result for the baseline fixture:
