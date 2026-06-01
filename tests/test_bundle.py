@@ -160,7 +160,14 @@ class BundleTests(unittest.TestCase):
                     {
                         "schema_version": "0.1",
                         "generated_at": "2026-05-31T10:00:00+00:00",
-                        "summary": {},
+                        "summary": {
+                            "score": 100,
+                            "status": "pass",
+                            "checks_total": 0,
+                            "checks_passed": 0,
+                            "checks_failed": 0,
+                            "checks_warn": 0,
+                        },
                         "results": [],
                     }
                 ),

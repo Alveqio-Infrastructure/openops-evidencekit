@@ -26,3 +26,4 @@
 - Add explicit `name@version` references for bundled policy packs.
 - Add schema-version compatibility checks for generated artifact validators.
 - Add a CLI-visible policy operator catalog with stable semantics.
+- Enforce the published report summary and result contract in built-in validation.

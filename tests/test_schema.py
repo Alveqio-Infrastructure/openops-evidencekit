@@ -68,11 +68,65 @@ class SchemaTests(unittest.TestCase):
             {
                 "schema_version": "0.1",
                 "generated_at": "2026-05-31T10:00:00+00:00",
-                "summary": {},
-                "results": [],
+                "summary": {
+                    "score": 100,
+                    "status": "pass",
+                    "checks_total": 1,
+                    "checks_passed": 1,
+                    "checks_failed": 0,
+                    "checks_warn": 0,
+                },
+                "results": [
+                    {
+                        "id": "backup_recent",
+                        "title": "Recent backup",
+                        "status": "pass",
+                        "severity": "critical",
+                        "required": True,
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                    }
+                ],
             }
         )
         self.assertEqual(errors, [])
+
+    def test_invalid_report_contract_is_reported(self):
+        errors = validate_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "summary": {
+                    "score": 101,
+                    "status": "unknown",
+                    "checks_total": -1,
+                    "checks_passed": 0,
+                    "checks_failed": 0,
+                    "checks_warn": "none",
+                },
+                "results": [
+                    {
+                        "id": "",
+                        "title": "Bad",
+                        "status": "unknown",
+                        "severity": "urgent",
+                        "required": "yes",
+                        "path": 123,
+                        "operator": None,
+                    }
+                ],
+            }
+        )
+        self.assertIn("summary.score must be at most 100.", errors)
+        self.assertIn("summary.status must be one of: fail, pass.", errors)
+        self.assertIn("summary.checks_total must be at least 0.", errors)
+        self.assertIn("summary.checks_warn must be an integer.", errors)
+        self.assertIn("results[0].id must be a non-empty string.", errors)
+        self.assertIn("results[0].status must be one of: fail, pass, warn.", errors)
+        self.assertIn("results[0].severity must be one of: critical, high, low, medium.", errors)
+        self.assertIn("results[0].required must be a boolean.", errors)
+        self.assertIn("results[0].path must be a string.", errors)
+        self.assertIn("results[0].operator must be a string.", errors)
 
     def test_valid_bundle_manifest(self):
         errors = validate_bundle_manifest(

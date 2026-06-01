@@ -37,6 +37,25 @@ def validate_report(document: Any) -> list[str]:
     _require_datetime(document, "generated_at", errors)
     _require_mapping(document, "summary", errors)
     _require_list(document, "results", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_int_range(summary, "score", errors, minimum=0, maximum=100, prefix="summary.")
+        _require_enum(summary, "status", {"pass", "fail"}, errors, prefix="summary.")
+        for key in ("checks_total", "checks_passed", "checks_failed", "checks_warn"):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, result in enumerate(document.get("results", [])):
+        if not isinstance(result, dict):
+            errors.append(f"results[{index}] must be an object.")
+            continue
+        prefix = f"results[{index}]."
+        _require_string(result, "id", errors, prefix=prefix)
+        _require_string(result, "title", errors, prefix=prefix)
+        _require_enum(result, "status", {"pass", "fail", "warn"}, errors, prefix=prefix)
+        _require_enum(result, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        if not isinstance(result.get("required"), bool):
+            errors.append(f"{prefix}required must be a boolean.")
+        _require_string_type(result, "path", errors, prefix=prefix)
+        _require_string_type(result, "operator", errors, prefix=prefix)
     return errors
 
 
@@ -157,6 +176,43 @@ def _require_supported_schema_version(document: dict[str, Any], errors: list[str
             f"{prefix}schema_version {value!r} is not supported; expected "
             f"{SUPPORTED_SCHEMA_MAJOR_MINOR} or {SUPPORTED_SCHEMA_MAJOR_MINOR}.x."
         )
+
+
+def _require_enum(
+    document: dict[str, Any],
+    key: str,
+    allowed: set[str],
+    errors: list[str],
+    prefix: str = "",
+) -> None:
+    value = document.get(key)
+    if value not in allowed:
+        choices = ", ".join(sorted(allowed))
+        errors.append(f"{prefix}{key} must be one of: {choices}.")
+
+
+def _require_int_range(
+    document: dict[str, Any],
+    key: str,
+    errors: list[str],
+    *,
+    minimum: int | None = None,
+    maximum: int | None = None,
+    prefix: str = "",
+) -> None:
+    value = document.get(key)
+    if not isinstance(value, int):
+        errors.append(f"{prefix}{key} must be an integer.")
+        return
+    if minimum is not None and value < minimum:
+        errors.append(f"{prefix}{key} must be at least {minimum}.")
+    if maximum is not None and value > maximum:
+        errors.append(f"{prefix}{key} must be at most {maximum}.")
+
+
+def _require_string_type(document: dict[str, Any], key: str, errors: list[str], prefix: str = "") -> None:
+    if not isinstance(document.get(key), str):
+        errors.append(f"{prefix}{key} must be a string.")
 
 
 def _require_datetime(document: dict[str, Any], key: str, errors: list[str], prefix: str = "") -> None:
