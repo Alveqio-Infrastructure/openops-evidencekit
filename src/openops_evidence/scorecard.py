@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import html
 import re
 from datetime import UTC, datetime
 from io import StringIO
@@ -122,6 +123,158 @@ def render_scorecard_csv(scorecard: dict[str, Any]) -> str:
     return output.getvalue()
 
 
+def render_scorecard_html(scorecard: dict[str, Any]) -> str:
+    summary = scorecard.get("summary", {})
+    cards = "\n".join(_domain_card_html(domain) for domain in scorecard.get("domains", []))
+    rows = "\n".join(_domain_row_html(domain) for domain in scorecard.get("domains", []))
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>OpenOps Domain Scorecard</title>
+  <style>
+    :root {{
+      color-scheme: light;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #17202a;
+      --muted: #566573;
+      --line: #d5dde5;
+      --pass: #1e8449;
+      --warn: #b7950b;
+      --fail: #b03a2e;
+    }}
+    body {{
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }}
+    main {{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }}
+    h1 {{
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.15;
+    }}
+    h2 {{
+      margin: 32px 0 12px;
+      font-size: 20px;
+    }}
+    .summary {{
+      color: var(--muted);
+      margin: 0 0 24px;
+    }}
+    .metrics {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin: 0 0 24px;
+    }}
+    .metric, .card {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }}
+    .metric span {{
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }}
+    .metric strong {{
+      display: block;
+      font-size: 24px;
+      margin-top: 4px;
+    }}
+    .cards {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }}
+    .card h3 {{
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 12px;
+      font-size: 17px;
+    }}
+    .status {{
+      border-radius: 999px;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1;
+      padding: 5px 8px;
+      text-transform: uppercase;
+    }}
+    .status.pass {{ background: var(--pass); }}
+    .status.warn {{ background: var(--warn); }}
+    .status.fail {{ background: var(--fail); }}
+    .bar {{
+      background: #e8eef3;
+      border-radius: 999px;
+      height: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    }}
+    .fill {{
+      height: 100%;
+      background: #2874a6;
+    }}
+    table {{
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }}
+    th, td {{
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }}
+    th {{
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }}
+    td.number {{
+      text-align: right;
+      white-space: nowrap;
+    }}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>OpenOps Domain Scorecard</h1>
+    <p class="summary">Generated {_escape(scorecard.get("generated_at", "unknown"))}</p>
+    <section class="metrics">
+      <div class="metric"><span>Overall status</span><strong>{_escape(summary.get("status", "unknown")).upper()}</strong></div>
+      <div class="metric"><span>Source score</span><strong>{_escape(summary.get("source_score", 0))}</strong></div>
+      <div class="metric"><span>Domains</span><strong>{_escape(summary.get("domains_total", 0))}</strong></div>
+      <div class="metric"><span>Failed domains</span><strong>{_escape(summary.get("domains_failed", 0))}</strong></div>
+    </section>
+    <section class="cards">
+{cards}
+    </section>
+    <h2>Domain Detail</h2>
+    <table>
+      <thead>
+        <tr><th>Domain</th><th>Status</th><th>Score</th><th>Checks</th><th>Failed</th><th>Warnings</th><th>Critical</th><th>High</th></tr>
+      </thead>
+      <tbody>
+{rows}
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>
+"""
+
+
 def _domain_scorecard(domain: str, items: list[dict[str, Any]]) -> dict[str, Any]:
     checks = [_check_summary(item) for item in sorted(items, key=_check_sort_key)]
     failed = [item for item in checks if item["status"] == "fail"]
@@ -204,3 +357,33 @@ def _severity_weight(value: Any) -> int:
 
 def _int(value: Any) -> int:
     return value if isinstance(value, int) and not isinstance(value, bool) else 0
+
+
+def _domain_card_html(domain: dict[str, Any]) -> str:
+    score = _int(domain.get("score"))
+    status = str(domain.get("status", "unknown"))
+    return f"""      <article class="card">
+        <h3>{_escape(domain.get("title", ""))}<span class="status {_escape(status)}">{_escape(status)}</span></h3>
+        <div class="bar"><div class="fill" style="width: {score}%"></div></div>
+        <p>{score} score, {_escape(domain.get("checks_failed", 0))} failed, {_escape(domain.get("checks_warn", 0))} warnings.</p>
+      </article>"""
+
+
+def _domain_row_html(domain: dict[str, Any]) -> str:
+    status = str(domain.get("status", "unknown"))
+    return (
+        "        <tr>"
+        f"<td>{_escape(domain.get('title', ''))}</td>"
+        f"<td><span class=\"status {_escape(status)}\">{_escape(status)}</span></td>"
+        f"<td class=\"number\">{_escape(domain.get('score', 0))}</td>"
+        f"<td class=\"number\">{_escape(domain.get('checks_total', 0))}</td>"
+        f"<td class=\"number\">{_escape(domain.get('checks_failed', 0))}</td>"
+        f"<td class=\"number\">{_escape(domain.get('checks_warn', 0))}</td>"
+        f"<td class=\"number\">{_escape(domain.get('critical_count', 0))}</td>"
+        f"<td class=\"number\">{_escape(domain.get('high_count', 0))}</td>"
+        "</tr>"
+    )
+
+
+def _escape(value: Any) -> str:
+    return html.escape(str(value), quote=True)

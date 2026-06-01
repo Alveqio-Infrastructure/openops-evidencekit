@@ -75,7 +75,7 @@ from .schema import (
     validate_report_history,
     validate_scorecard,
 )
-from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_markdown
+from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .tickets import export_action_plan_tickets
 from .waivers import validate_waiver_document
 
@@ -224,7 +224,7 @@ def build_parser() -> argparse.ArgumentParser:
     scorecard_sub = scorecard.add_subparsers(required=True)
     scorecard_report = scorecard_sub.add_parser("report", help="Group report checks by evidence domain")
     scorecard_report.add_argument("-i", "--input", required=True)
-    scorecard_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    scorecard_report.add_argument("-f", "--format", choices=["json", "markdown", "csv", "html"], default="markdown")
     scorecard_report.add_argument("-o", "--output", default="-")
     scorecard_report.set_defaults(func=cmd_scorecard_report)
 
@@ -605,6 +605,8 @@ def cmd_scorecard_report(args: argparse.Namespace) -> int:
         rendered = dump_json(scorecard)
     elif args.format == "csv":
         rendered = render_scorecard_csv(scorecard)
+    elif args.format == "html":
+        rendered = render_scorecard_html(scorecard)
     else:
         rendered = render_scorecard_markdown(scorecard)
     write_text(args.output, rendered)

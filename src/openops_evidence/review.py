@@ -27,7 +27,7 @@ from .reports import (
     render_prometheus,
     render_sarif,
 )
-from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_markdown
+from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 
 
 def create_review_pack(
@@ -88,6 +88,7 @@ def create_review_pack(
     add_artifact("scorecard.json", dump_json(scorecard), "Domain scorecard", "Machine-readable domain summary.")
     add_artifact("scorecard.md", render_scorecard_markdown(scorecard), "Domain scorecard", "Human-readable domain summary.")
     add_artifact("scorecard.csv", render_scorecard_csv(scorecard), "Domain scorecard", "Spreadsheet-friendly domain summary.")
+    add_artifact("scorecard.html", render_scorecard_html(scorecard), "Domain scorecard", "Self-contained HTML dashboard.")
     add_artifact("report.json", dump_json(report), "Readiness report", "Canonical check result JSON.")
     add_artifact("report.md", render_markdown(report), "Readiness report", "Human-readable report.")
     add_artifact("report.junit.xml", render_junit(report), "JUnit report", "CI test-result output.")

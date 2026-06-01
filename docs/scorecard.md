@@ -7,6 +7,7 @@ when a full check list is too detailed for the first review pass.
 python -m openops_evidence scorecard report -i report.local.json -o scorecard.md
 python -m openops_evidence scorecard report -i report.local.json -f json -o scorecard.json
 python -m openops_evidence scorecard report -i report.local.json -f csv -o scorecard.csv
+python -m openops_evidence scorecard report -i report.local.json -f html -o scorecard.html
 ```
 
 Domains are inferred from report result paths. For example,
@@ -27,5 +28,5 @@ The JSON output can be validated:
 python -m openops_evidence validate -i scorecard.json -t scorecard
 ```
 
-Review packs include `scorecard.json`, `scorecard.md`, and `scorecard.csv`
-automatically.
+Review packs include `scorecard.json`, `scorecard.md`, `scorecard.csv`, and a
+self-contained `scorecard.html` dashboard automatically.

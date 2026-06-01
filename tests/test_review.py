@@ -59,6 +59,7 @@ class ReviewPackTests(unittest.TestCase):
                 "report.prom",
                 "report.sarif.json",
                 "scorecard.csv",
+                "scorecard.html",
                 "scorecard.json",
                 "scorecard.md",
             ]

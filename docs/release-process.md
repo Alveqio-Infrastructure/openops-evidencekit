@@ -51,6 +51,7 @@ python -m openops_evidence brief report -i report.local.json -o executive-brief.
 python -m openops_evidence scorecard report -i report.local.json -f json -o scorecard.json
 python -m openops_evidence validate -i scorecard.json -t scorecard
 python -m openops_evidence scorecard report -i report.local.json -o scorecard.md
+python -m openops_evidence scorecard report -i report.local.json -f html -o scorecard.html
 python -m openops_evidence history append -i report.local.json --source release-check -o readiness-history.json
 python -m openops_evidence validate -i readiness-history.json -t history
 python -m openops_evidence history render -i readiness-history.json -f markdown -o readiness-history.md

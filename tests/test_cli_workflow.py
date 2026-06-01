@@ -56,6 +56,7 @@ class CliWorkflowTests(unittest.TestCase):
             scorecard = temp / "scorecard.json"
             scorecard_markdown = temp / "scorecard.md"
             scorecard_csv = temp / "scorecard.csv"
+            scorecard_html = temp / "scorecard.html"
             history = temp / "readiness-history.json"
             history_markdown = temp / "readiness-history.md"
             markdown = temp / "report.md"
@@ -135,6 +136,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(scorecard), "-t", "scorecard"]), 0)
             self.assertEqual(main(["scorecard", "report", "-i", str(report), "-o", str(scorecard_markdown)]), 0)
             self.assertEqual(main(["scorecard", "report", "-i", str(report), "-f", "csv", "-o", str(scorecard_csv)]), 0)
+            self.assertEqual(main(["scorecard", "report", "-i", str(report), "-f", "html", "-o", str(scorecard_html)]), 0)
             self.assertEqual(
                 main(["history", "append", "-i", str(report), "--source", "workflow-test", "-o", str(history)]),
                 0,
@@ -256,6 +258,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("# OpenOps Executive Brief", brief_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Domain Scorecard", scorecard_markdown.read_text(encoding="utf-8"))
             self.assertIn("domain,title,status,score", scorecard_csv.read_text(encoding="utf-8"))
+            self.assertIn("<title>OpenOps Domain Scorecard</title>", scorecard_html.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Readiness History", history_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Evidence Inventory", inventory_markdown.read_text(encoding="utf-8"))
 

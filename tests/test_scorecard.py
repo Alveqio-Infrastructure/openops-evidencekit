@@ -17,6 +17,7 @@ class ScorecardTests(unittest.TestCase):
             scorecard = temp / "scorecard.json"
             markdown = temp / "scorecard.md"
             csv = temp / "scorecard.csv"
+            html = temp / "scorecard.html"
 
             self.assertEqual(
                 main(
@@ -45,6 +46,10 @@ class ScorecardTests(unittest.TestCase):
                 main(["scorecard", "report", "-i", str(report), "-f", "csv", "-o", str(csv)]),
                 0,
             )
+            self.assertEqual(
+                main(["scorecard", "report", "-i", str(report), "-f", "html", "-o", str(html)]),
+                0,
+            )
 
             data = json.loads(scorecard.read_text(encoding="utf-8"))
             domains = {item["domain"]: item for item in data["domains"]}
@@ -55,6 +60,7 @@ class ScorecardTests(unittest.TestCase):
             self.assertEqual(domains["tls"]["title"], "TLS")
             self.assertIn("# OpenOps Domain Scorecard", markdown.read_text(encoding="utf-8"))
             self.assertIn("domain,title,status,score", csv.read_text(encoding="utf-8"))
+            self.assertIn("<title>OpenOps Domain Scorecard</title>", html.read_text(encoding="utf-8"))
 
     def test_scorecard_marks_warning_domains(self):
         with tempfile.TemporaryDirectory() as temp_dir:
