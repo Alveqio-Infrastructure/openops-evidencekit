@@ -4,7 +4,7 @@
 readiness handoff folder.
 
 ```powershell
-python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml -o review-pack --min-score 90 --max-warnings 0
+python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
 ```
 
 The command evaluates the policy and writes the common outputs that different
@@ -37,11 +37,14 @@ python -m openops_evidence validate -i review-pack/manifest.json -t bundle
 python -m openops_evidence bundle verify review-pack/manifest.json --base-dir review-pack -o review-pack/verification.json
 ```
 
+Pass `--archive review-pack.zip` when the handoff should also be written as a
+ZIP file. The archive includes `manifest.json` and the generated artifacts.
+
 For CI pipelines, add `--fail-on-gate` when the review pack command itself
 should return a failing exit code if the generated gate fails:
 
 ```powershell
-python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml -o review-pack --min-score 90 --max-warnings 0 --fail-on-gate
+python -m openops_evidence review create -i evidence.redacted.json -p policy.baseline.toml -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0 --fail-on-gate
 ```
 
 Risk waivers can be applied to the generated action plan:

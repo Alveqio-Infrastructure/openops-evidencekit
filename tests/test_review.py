@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from openops_evidence.cli import main
@@ -127,6 +128,38 @@ remediation = "Add the missing operational signal to evidence."
             gate = json.loads((pack / "gate-result.json").read_text(encoding="utf-8"))
             self.assertEqual(gate["summary"]["status"], "fail")
             self.assertTrue((pack / "manifest.json").is_file())
+
+    def test_review_create_can_write_zip_archive(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            pack = temp / "review-pack"
+            archive = temp / "review-pack.zip"
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "-o",
+                        str(pack),
+                        "--archive",
+                        str(archive),
+                    ]
+                ),
+                0,
+            )
+
+            self.assertTrue(archive.is_file())
+            with zipfile.ZipFile(archive) as zip_file:
+                names = set(zip_file.namelist())
+            self.assertIn("manifest.json", names)
+            self.assertIn("README.md", names)
+            self.assertIn("report.json", names)
+            self.assertIn("scorecard.html", names)
 
 
 if __name__ == "__main__":

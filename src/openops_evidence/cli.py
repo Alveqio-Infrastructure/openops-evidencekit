@@ -288,6 +288,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--max-high", type=int)
     review_create.add_argument("--ignore-report-status", action="store_true")
     review_create.add_argument("--fail-on-gate", action="store_true")
+    review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
 
     badge = sub.add_parser("badge", help="Create status badge artifacts")
@@ -769,6 +770,17 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         f"created review pack in {pack['output_dir']} "
         f"with {pack['artifact_count']} artifact(s)"
     )
+    if args.archive:
+        verification = verify_bundle_manifest(pack["manifest"], base_dir=args.output_dir)
+        if verification["summary"]["status"] == "fail":
+            raise UserFacingError("Review archive refused because manifest verification failed.")
+        create_bundle_archive(
+            pack["manifest"],
+            pack["manifest_path"],
+            args.archive,
+            base_dir=args.output_dir,
+        )
+        print(f"created review archive at {args.archive}")
     if args.fail_on_gate and pack["gate"]["summary"]["status"] == "fail":
         return 1
     return 0

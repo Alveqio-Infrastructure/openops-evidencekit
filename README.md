@@ -59,7 +59,7 @@ python -m openops_evidence report -i report.local.json -f markdown -o report.loc
 python -m openops_evidence report -i report.local.json -f junit -o report.local.junit.xml
 python -m openops_evidence report -i report.local.json -f sarif -o report.local.sarif.json
 python -m openops_evidence report -i report.local.json -f prometheus -o report.local.prom
-python -m openops_evidence review create -i evidence.local.json -p examples/policy.baseline.toml -o review-pack --min-score 90 --max-warnings 0
+python -m openops_evidence review create -i evidence.local.json -p examples/policy.baseline.toml -o review-pack --archive review-pack.zip --min-score 90 --max-warnings 0
 ```
 
 See [docs/demo-workflow.md](docs/demo-workflow.md) for a complete synthetic

@@ -39,7 +39,7 @@ produces the common CI artifacts below.
 | Domain scorecard | `openops-evidence scorecard report -i report.json -o scorecard.md` | Summarize readiness by operational evidence area. |
 | History JSON | `openops-evidence history append -i report.json -o readiness-history.json` | Track score and finding changes across recurring reviews. |
 | History SVG | `openops-evidence history render -i readiness-history.json -f svg -o readiness-history.svg` | Publish a compact trend graphic for README, wiki, or portal dashboards. |
-| Review pack | `openops-evidence review create -i evidence.json -p policy.toml -o review-pack` | Generate a complete handoff folder with report, brief, inventory, gate, badge, action plan, privacy scan, and manifest. |
+| Review pack | `openops-evidence review create -i evidence.json -p policy.toml -o review-pack --archive review-pack.zip` | Generate a complete handoff folder and ZIP archive with report, brief, inventory, gate, badge, action plan, privacy scan, and manifest. |
 | JUnit XML | `openops-evidence report -i report.json -f junit -o report.junit.xml` | Publish readiness checks as CI test results. |
 | SARIF JSON | `openops-evidence report -i report.json -f sarif -o report.sarif.json` | Import findings into SARIF-aware review tools. |
 | Prometheus text | `openops-evidence report -i report.json -f prometheus -o report.prom` | Export score, status, and check counts into monitoring pipelines. |

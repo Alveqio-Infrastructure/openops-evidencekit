@@ -52,3 +52,4 @@
 - Add policy coverage reports for evidence-domain gap analysis.
 - Add policy questionnaire export for evidence request workflows.
 - Add SVG trend rendering for readiness report history.
+- Add optional ZIP archive creation to review pack generation.
