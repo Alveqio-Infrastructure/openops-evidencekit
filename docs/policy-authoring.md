@@ -8,6 +8,7 @@ Bundled policy packs can be listed and exported with:
 python -m openops_evidence policy list
 python -m openops_evidence policy show baseline -o policy.baseline.toml
 python -m openops_evidence policy validate policy.baseline.toml
+python -m openops_evidence policy matrix policy.baseline.toml -f markdown -o policy.matrix.md
 ```
 
 See [policy-packs.md](policy-packs.md) for pack names and workflow guidance.
@@ -35,6 +36,21 @@ python -m openops_evidence policy validate policy.baseline.toml
 Validation catches missing fields, duplicate check IDs, unsupported operators,
 unsupported severities, unsupported modes, wrong `required` types, and missing
 or malformed operator values.
+
+## Coverage Matrix
+
+Render a policy matrix when reviewers need to understand what a pack checks
+before running it against evidence:
+
+```powershell
+python -m openops_evidence policy matrix policy.baseline.toml -f markdown -o policy.matrix.md
+python -m openops_evidence policy matrix policy.baseline.toml -f csv -o policy.matrix.csv
+python -m openops_evidence policy matrix policy.baseline.toml -f json -o policy.matrix.json
+```
+
+The matrix lists check IDs, titles, paths, operators, values, severities,
+required flags, modes, and remediation text. It is useful for internal review,
+customer scope discussions, and pull requests that change policy packs.
 
 ## Path Queries
 

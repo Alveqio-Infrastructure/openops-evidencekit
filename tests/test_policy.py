@@ -1,15 +1,22 @@
+import csv
 import json
+import tempfile
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
+from pathlib import Path
 
 from openops_evidence.cli import main
 from openops_evidence.policy import (
     SUPPORTED_OPERATORS,
     Check,
+    create_policy_matrix,
     evaluate_check,
     evaluate_policy,
     list_policy_operators,
+    parse_policy,
+    render_policy_matrix_csv,
+    render_policy_matrix_markdown,
     render_policy_operator_list,
     validate_policy_document,
 )
@@ -37,6 +44,65 @@ class PolicyTests(unittest.TestCase):
             self.assertEqual(main(["policy", "operators"]), 0)
         self.assertIn("within_days", stdout.getvalue())
         self.assertIn("safe regex", stdout.getvalue())
+
+    def test_policy_matrix_renders_markdown_and_csv(self):
+        checks = parse_policy(
+            {
+                "checks": [
+                    {
+                        "id": "backup_recent",
+                        "title": "Recent backup",
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                        "value": 2,
+                        "severity": "critical",
+                        "required": True,
+                        "remediation": "Configure backups.",
+                    },
+                    {
+                        "id": "dmarc",
+                        "path": "signals.mail.domains[*].dmarc",
+                        "operator": "one_of",
+                        "value": ["quarantine", "reject"],
+                        "required": False,
+                    },
+                ]
+            }
+        )
+        matrix = create_policy_matrix(checks)
+        markdown = render_policy_matrix_markdown(matrix)
+        csv_rows = list(csv.DictReader(StringIO(render_policy_matrix_csv(matrix))))
+
+        self.assertEqual(matrix["summary"]["check_count"], 2)
+        self.assertEqual(matrix["summary"]["required_count"], 1)
+        self.assertIn("backup_recent", markdown)
+        self.assertEqual(csv_rows[1]["value"], '["quarantine", "reject"]')
+
+    def test_cli_policy_matrix_writes_json(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            policy = temp / "policy.toml"
+            output = temp / "matrix.json"
+            policy.write_text(
+                "\n".join(
+                    [
+                        "[[checks]]",
+                        'id = "backup_recent"',
+                        'path = "signals.backup.last_success_at"',
+                        'operator = "within_days"',
+                        "value = 2",
+                        'severity = "critical"',
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            exit_code = main(["policy", "matrix", str(policy), "-f", "json", "-o", str(output)])
+
+            self.assertEqual(exit_code, 0)
+            matrix = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(matrix["summary"]["critical_count"], 1)
+            self.assertEqual(main(["validate", "-i", str(output), "-t", "policy-matrix"]), 0)
 
     def test_evaluate_equals_check_passes(self):
         evidence = {"signals": {"access": {"mfa_required": True}}}

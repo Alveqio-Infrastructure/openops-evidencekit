@@ -157,6 +157,7 @@ python -m openops_evidence policy operators
 python -m openops_evidence policy show security-minimum -o policy.security-minimum.toml
 python -m openops_evidence policy show security-minimum@0.1 -o policy.security-minimum.toml
 python -m openops_evidence policy validate policy.security-minimum.toml
+python -m openops_evidence policy matrix policy.security-minimum.toml -f markdown -o policy.matrix.md
 ```
 
 ## Core Concepts

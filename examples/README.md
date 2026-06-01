@@ -42,6 +42,6 @@ installation.
 ## Regenerating Demo Output
 
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
-reports, comparisons, action plans, ticket drafts, and bundle manifests.
-Generated files are ignored by git so they can be reviewed without polluting
-commits.
+policy matrices, reports, comparisons, action plans, ticket drafts, and bundle
+manifests. Generated files are ignored by git so they can be reviewed without
+polluting commits.

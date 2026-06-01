@@ -22,6 +22,7 @@ evidence-bundle.zip
 /action-tickets/
 policy.exported.toml
 policy.*exported.toml
+policy.matrix.*
 init-demo/
 borg.evidence.json
 docker.evidence.json

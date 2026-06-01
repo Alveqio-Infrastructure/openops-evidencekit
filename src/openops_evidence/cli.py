@@ -31,7 +31,15 @@ from .collectors import (
 )
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
-from .policy import evaluate_policy, parse_policy, render_policy_operator_list, validate_policy_document
+from .policy import (
+    create_policy_matrix,
+    evaluate_policy,
+    parse_policy,
+    render_policy_matrix_csv,
+    render_policy_matrix_markdown,
+    render_policy_operator_list,
+    validate_policy_document,
+)
 from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_pack
 from .redact import redact_document
 from .reports import render_bookstack_markdown, render_html, render_markdown
@@ -41,6 +49,7 @@ from .schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_policy_matrix,
     validate_report,
     validate_report_comparison,
 )
@@ -136,6 +145,11 @@ def build_parser() -> argparse.ArgumentParser:
     policy_validate = policy_sub.add_parser("validate", help="Validate a policy TOML or JSON file")
     policy_validate.add_argument("path")
     policy_validate.set_defaults(func=cmd_policy_validate)
+    policy_matrix = policy_sub.add_parser("matrix", help="Render a policy coverage matrix")
+    policy_matrix.add_argument("path")
+    policy_matrix.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    policy_matrix.add_argument("-o", "--output", default="-")
+    policy_matrix.set_defaults(func=cmd_policy_matrix)
 
     waiver = sub.add_parser("waiver", help="Inspect risk acceptance waivers")
     waiver_sub = waiver.add_subparsers(required=True)
@@ -209,7 +223,7 @@ def build_parser() -> argparse.ArgumentParser:
     verify_signature.add_argument("-o", "--output", default="-")
     verify_signature.set_defaults(func=cmd_bundle_verify_signature)
 
-    validate = sub.add_parser("validate", help="Validate evidence, report, bundle, signature, or comparison JSON")
+    validate = sub.add_parser("validate", help="Validate generated JSON artifacts")
     validate.add_argument("-i", "--input", required=True)
     validate.add_argument(
         "-t",
@@ -218,6 +232,7 @@ def build_parser() -> argparse.ArgumentParser:
             "evidence",
             "report",
             "action-plan",
+            "policy-matrix",
             "bundle",
             "bundle-verification",
             "bundle-signature",
@@ -336,6 +351,21 @@ def cmd_policy_validate(args: argparse.Namespace) -> int:
             print(f"- {error}")
         return 1
     print("valid")
+    return 0
+
+
+def cmd_policy_matrix(args: argparse.Namespace) -> int:
+    policy_raw = load_structured(args.path)
+    errors = validate_policy_document(policy_raw)
+    if errors:
+        raise UserFacingError("Policy validation failed:\n- " + "\n- ".join(errors))
+    matrix = create_policy_matrix(parse_policy(policy_raw))
+    if args.format == "json":
+        write_text(args.output, dump_json(matrix))
+    elif args.format == "csv":
+        write_text(args.output, render_policy_matrix_csv(matrix))
+    else:
+        write_text(args.output, render_policy_matrix_markdown(matrix))
     return 0
 
 
@@ -488,6 +518,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_report(document)
     elif args.type == "action-plan":
         errors = validate_action_plan(document)
+    elif args.type == "policy-matrix":
+        errors = validate_policy_matrix(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":

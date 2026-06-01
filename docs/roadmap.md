@@ -41,6 +41,7 @@ having to deploy a platform first.
 - Action plan ticket export.
 - CLI version and exit-code documentation.
 - Bundled policy pack discovery and export.
+- Policy coverage matrix export.
 - Bundle manifest verification.
 - Policy validation and authoring guardrails.
 

@@ -34,3 +34,4 @@
 - Add verified ZIP archive creation for evidence bundles.
 - Add owner-approved risk waivers for action plans.
 - Add Markdown ticket export for action plan items.
+- Add policy coverage matrix export.

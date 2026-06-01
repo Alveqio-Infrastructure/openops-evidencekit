@@ -108,6 +108,44 @@ def validate_action_plan(document: Any) -> list[str]:
     return errors
 
 
+def validate_policy_matrix(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Policy matrix must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        for key in (
+            "check_count",
+            "required_count",
+            "optional_count",
+            "path_count",
+            "critical_count",
+            "high_count",
+            "medium_count",
+            "low_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        if not isinstance(check, dict):
+            errors.append(f"checks[{index}] must be an object.")
+            continue
+        prefix = f"checks[{index}]."
+        _require_string(check, "id", errors, prefix=prefix)
+        _require_string(check, "title", errors, prefix=prefix)
+        _require_string_type(check, "path", errors, prefix=prefix)
+        _require_string_type(check, "operator", errors, prefix=prefix)
+        _require_enum(check, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        _require_enum(check, "mode", {"any", "all", "none"}, errors, prefix=prefix)
+        if not isinstance(check.get("required"), bool):
+            errors.append(f"{prefix}required must be a boolean.")
+        _require_string_type(check, "remediation", errors, prefix=prefix)
+    return errors
+
+
 def validate_bundle_manifest(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

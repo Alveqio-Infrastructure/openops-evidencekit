@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/policy-matrix.schema.json",
+  "title": "OpenOps Policy Matrix",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "summary", "checks"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "check_count",
+        "required_count",
+        "optional_count",
+        "path_count",
+        "critical_count",
+        "high_count",
+        "medium_count",
+        "low_count"
+      ],
+      "properties": {
+        "check_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "optional_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "path_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/check"
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "title",
+        "path",
+        "operator",
+        "value",
+        "severity",
+        "mode",
+        "required",
+        "remediation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "value": true,
+        "severity": {
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "mode": {
+          "enum": ["any", "all", "none"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "remediation": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

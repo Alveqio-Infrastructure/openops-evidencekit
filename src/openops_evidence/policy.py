@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import csv
 import json
 import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from functools import lru_cache
+from io import StringIO
 from typing import Any
 
 from .pathquery import query
+from .reports import escape_markdown_text, format_markdown_code
 
 
 OPERATOR_SPECS = [
@@ -102,6 +105,92 @@ def render_policy_operator_list(format_name: str = "table") -> str:
     for operator in operators:
         lines.append(f"{operator['name']} | {operator['value']} | {operator['semantics']}")
     return "\n".join(lines) + "\n"
+
+
+def create_policy_matrix(checks: list[Check]) -> dict[str, Any]:
+    paths = {check.path for check in checks}
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "summary": {
+            "check_count": len(checks),
+            "required_count": sum(1 for check in checks if check.required),
+            "optional_count": sum(1 for check in checks if not check.required),
+            "path_count": len(paths),
+            "critical_count": sum(1 for check in checks if check.severity == "critical"),
+            "high_count": sum(1 for check in checks if check.severity == "high"),
+            "medium_count": sum(1 for check in checks if check.severity == "medium"),
+            "low_count": sum(1 for check in checks if check.severity == "low"),
+        },
+        "checks": [
+            {
+                "id": check.id,
+                "title": check.title,
+                "path": check.path,
+                "operator": check.operator,
+                "value": check.value,
+                "severity": check.severity,
+                "mode": check.mode,
+                "required": check.required,
+                "remediation": check.remediation,
+            }
+            for check in checks
+        ],
+    }
+
+
+def render_policy_matrix_markdown(matrix: dict[str, Any]) -> str:
+    summary = matrix.get("summary", {})
+    lines = [
+        "# OpenOps Policy Matrix",
+        "",
+        f"- Generated: {format_markdown_code(matrix.get('generated_at', 'unknown'))}",
+        f"- Checks: **{escape_markdown_text(summary.get('check_count', 0))}**",
+        f"- Required: **{escape_markdown_text(summary.get('required_count', 0))}**",
+        f"- Optional: **{escape_markdown_text(summary.get('optional_count', 0))}**",
+        f"- Evidence paths: **{escape_markdown_text(summary.get('path_count', 0))}**",
+        "",
+        "| Check | Severity | Required | Mode | Path | Operator | Value | Remediation |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for check in matrix.get("checks", []):
+        lines.append(
+            "| "
+            f"{format_markdown_code(check.get('id', ''))} {escape_markdown_text(check.get('title', ''))} | "
+            f"{escape_markdown_text(check.get('severity', ''))} | "
+            f"{format_markdown_code(str(bool(check.get('required'))).lower())} | "
+            f"{escape_markdown_text(check.get('mode', ''))} | "
+            f"{format_markdown_code(check.get('path', ''))} | "
+            f"{escape_markdown_text(check.get('operator', ''))} | "
+            f"{format_markdown_code(_display_policy_value(check.get('value')))} | "
+            f"{escape_markdown_text(check.get('remediation', ''))} |"
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_policy_matrix_csv(matrix: dict[str, Any]) -> str:
+    output = StringIO()
+    writer = csv.DictWriter(
+        output,
+        fieldnames=[
+            "id",
+            "title",
+            "severity",
+            "required",
+            "mode",
+            "path",
+            "operator",
+            "value",
+            "remediation",
+        ],
+        lineterminator="\n",
+    )
+    writer.writeheader()
+    for check in matrix.get("checks", []):
+        row = {key: check.get(key) for key in writer.fieldnames}
+        row["value"] = _display_policy_value(row["value"])
+        writer.writerow(row)
+    return output.getvalue()
 
 
 def parse_policy(raw: dict[str, Any]) -> list[Check]:
@@ -278,6 +367,14 @@ def _age_days(value: Any) -> float | None:
 
 def _severity_weight(severity: str) -> int:
     return {"critical": 5, "high": 3, "medium": 2, "low": 1}.get(severity, 2)
+
+
+def _display_policy_value(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, sort_keys=True)
+    return str(value)
 
 
 def _required_string(item: dict[str, Any], key: str, errors: list[str], prefix: str) -> str | None:

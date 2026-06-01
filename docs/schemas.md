@@ -6,6 +6,7 @@ machine-readable artifacts:
 - `schemas/evidence.schema.json`
 - `schemas/report.schema.json`
 - `schemas/action-plan.schema.json`
+- `schemas/policy-matrix.schema.json`
 - `schemas/waivers.schema.json`
 - `schemas/bundle-manifest.schema.json`
 - `schemas/bundle-signature.schema.json`
@@ -67,6 +68,17 @@ They are generated from report JSON and sort failed or warning checks into a
 deterministic remediation queue. Each item includes a priority, check identity,
 status, severity, source path, operator, observed count, waiver metadata, and
 recommended action.
+
+## Policy Matrices
+
+Policy matrices contain:
+
+- `summary`
+- `checks`
+
+They are generated from policy TOML/JSON and list the coverage contract for each
+check: ID, title, evidence path, operator, expected value, severity, mode,
+required flag, and remediation text.
 
 ## Waivers
 

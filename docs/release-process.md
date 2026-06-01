@@ -30,6 +30,9 @@ python -m openops_evidence policy list
 python -m openops_evidence policy operators
 python -m openops_evidence policy show baseline -o policy.exported.toml
 python -m openops_evidence policy validate policy.exported.toml
+python -m openops_evidence policy matrix policy.exported.toml -f markdown -o policy.matrix.md
+python -m openops_evidence policy matrix policy.exported.toml -f json -o policy.matrix.json
+python -m openops_evidence validate -i policy.matrix.json -t policy-matrix
 python -m openops_evidence validate -i examples/evidence.sample.json
 python -m openops_evidence collect docs examples/docs-sample --required inventory.md --required runbooks/backup-restore.md --max-age-days 365 -o docs.evidence.json
 python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json
@@ -66,8 +69,8 @@ Then inspect:
 1. Update `CHANGELOG.md`.
 2. Confirm sample artifacts match the current schema.
 3. Confirm `schemas/evidence.schema.json`, `schemas/report.schema.json`,
-   `schemas/action-plan.schema.json`, `schemas/waivers.schema.json`,
-   `schemas/bundle-manifest.schema.json`,
+   `schemas/action-plan.schema.json`, `schemas/policy-matrix.schema.json`,
+   `schemas/waivers.schema.json`, `schemas/bundle-manifest.schema.json`,
    `schemas/bundle-signature.schema.json`, `schemas/bundle-verification.schema.json`,
    and `schemas/report-comparison.schema.json` are still aligned with generated output.
 4. Run the pre-release checks.

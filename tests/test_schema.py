@@ -6,6 +6,7 @@ from openops_evidence.schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_evidence,
+    validate_policy_matrix,
     validate_report,
     validate_report_comparison,
 )
@@ -216,6 +217,77 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("items[0].required must be a boolean.", errors)
         self.assertIn("items[0].waived must be a boolean when present.", errors)
         self.assertIn("items[0].observed_count must be at least 0.", errors)
+
+    def test_valid_policy_matrix(self):
+        errors = validate_policy_matrix(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "summary": {
+                    "check_count": 1,
+                    "required_count": 1,
+                    "optional_count": 0,
+                    "path_count": 1,
+                    "critical_count": 1,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "checks": [
+                    {
+                        "id": "backup_recent",
+                        "title": "Recent backup",
+                        "path": "signals.backup.last_success_at",
+                        "operator": "within_days",
+                        "value": 2,
+                        "severity": "critical",
+                        "mode": "any",
+                        "required": True,
+                        "remediation": "Configure backups.",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_policy_matrix_is_reported(self):
+        errors = validate_policy_matrix(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-05-31T10:00:00+00:00",
+                "summary": {
+                    "check_count": -1,
+                    "required_count": 0,
+                    "optional_count": 0,
+                    "path_count": 0,
+                    "critical_count": 0,
+                    "high_count": 0,
+                    "medium_count": 0,
+                    "low_count": 0,
+                },
+                "checks": [
+                    {
+                        "id": "",
+                        "title": "Bad",
+                        "path": 123,
+                        "operator": None,
+                        "value": None,
+                        "severity": "urgent",
+                        "mode": "sometimes",
+                        "required": "yes",
+                        "remediation": None,
+                    }
+                ],
+            }
+        )
+        self.assertIn("summary.check_count must be at least 0.", errors)
+        self.assertIn("checks[0].id must be a non-empty string.", errors)
+        self.assertIn("checks[0].path must be a string.", errors)
+        self.assertIn("checks[0].operator must be a string.", errors)
+        self.assertIn("checks[0].severity must be one of: critical, high, low, medium.", errors)
+        self.assertIn("checks[0].mode must be one of: all, any, none.", errors)
+        self.assertIn("checks[0].required must be a boolean.", errors)
+        self.assertIn("checks[0].remediation must be a string.", errors)
 
     def test_valid_bundle_manifest(self):
         errors = validate_bundle_manifest(

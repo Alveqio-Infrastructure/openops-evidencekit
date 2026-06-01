@@ -6,6 +6,7 @@ Bundled policies can be listed and exported:
 python -m openops_evidence policy list
 python -m openops_evidence policy show baseline -o policy.baseline.toml
 python -m openops_evidence policy validate policy.baseline.toml
+python -m openops_evidence policy matrix policy.baseline.toml -f markdown -o policy.matrix.md
 ```
 
 Policies are TOML files with one or more checks:
