@@ -48,6 +48,7 @@ having to deploy a platform first.
 - Report comparison and regression guardrails.
 - Report history timeline for recurring readiness reviews.
 - Evidence drift reports for asset and signal-domain changes between runs.
+- Evidence freshness reports for timestamp recency review.
 - SVG trend rendering for readiness history dashboards.
 - Executive brief export for stakeholder handoff.
 - Scope report export for explicit in-scope and out-of-scope boundaries.

@@ -42,6 +42,9 @@ class ReviewPackTests(unittest.TestCase):
                 "action-plan.md",
                 "executive-brief.json",
                 "executive-brief.md",
+                "freshness-report.csv",
+                "freshness-report.json",
+                "freshness-report.md",
                 "gate-result.json",
                 "gate-result.md",
                 "index.html",
@@ -73,6 +76,7 @@ class ReviewPackTests(unittest.TestCase):
 
             self.assertEqual(main(["validate", "-i", str(pack / "report.json"), "-t", "report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "inventory.json"), "-t", "inventory"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "freshness-report.json"), "-t", "freshness-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "policy-matrix.json"), "-t", "policy-matrix"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "policy-coverage.json"), "-t", "policy-coverage"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "scorecard.json"), "-t", "scorecard"]), 0)
@@ -89,8 +93,10 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(manifest["metadata"]["artifact_count"], len(expected) - 1)
             self.assertIn("does not include raw evidence by default", readme)
             self.assertIn("executive-brief.md", readme)
+            self.assertIn("freshness-report.md", readme)
             self.assertIn("privacy-scan.md", readme)
             self.assertIn("<title>OpenOps Review Pack</title>", index)
+            self.assertIn("Freshness", index)
             self.assertIn("scorecard.html", index)
 
     def test_review_create_can_include_scope_report(self):
@@ -126,7 +132,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             scope_report = json.loads((pack / "scope-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 33)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 36)
             self.assertEqual(scope_report["summary"]["status"], "warn")
             self.assertIn("scope-report.md", readme)
             self.assertIn("Scope Report", index)
@@ -189,7 +195,7 @@ class ReviewPackTests(unittest.TestCase):
             index = (pack / "index.html").read_text(encoding="utf-8")
             service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
             runbook_report = json.loads((pack / "runbook-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 36)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 39)
             self.assertEqual(service_catalog["summary"]["status"], "warn")
             self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(runbook_report["summary"]["missing_runbooks_count"], 1)
@@ -272,7 +278,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             drift = json.loads((pack / "evidence-drift.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 33)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 36)
             self.assertEqual(drift["summary"]["status"], "warn")
             self.assertIn("evidence-drift.md", readme)
             self.assertIn("Evidence Drift", index)
@@ -335,6 +341,33 @@ remediation = "Add the missing operational signal to evidence."
 
             gate = json.loads((pack / "gate-result.json").read_text(encoding="utf-8"))
             self.assertEqual(gate["summary"]["status"], "fail")
+            self.assertTrue((pack / "manifest.json").is_file())
+
+    def test_review_create_can_fail_on_freshness_after_writing_pack(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            pack = temp / "review-pack"
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(ROOT / "examples" / "evidence.sample.json"),
+                        "-p",
+                        str(ROOT / "examples" / "policy.baseline.toml"),
+                        "--freshness-max-age-days",
+                        "0",
+                        "--fail-on-freshness-warn",
+                        "-o",
+                        str(pack),
+                    ]
+                ),
+                1,
+            )
+
+            self.assertTrue((pack / "freshness-report.json").is_file())
             self.assertTrue((pack / "manifest.json").is_file())
 
     def test_review_create_can_write_zip_archive(self):

@@ -477,6 +477,44 @@ def validate_runbook_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_freshness_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Freshness report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "timestamps", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn"}, errors, prefix="summary.")
+        for key in ("timestamps_total", "current_count", "stale_count", "future_count", "invalid_count"):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+        for key in ("oldest_age_days", "newest_age_days"):
+            if key not in summary:
+                errors.append(f"summary.{key} is required.")
+            elif summary[key] is not None:
+                _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, item in enumerate(document.get("timestamps", [])):
+        if not isinstance(item, dict):
+            errors.append(f"timestamps[{index}] must be an object.")
+            continue
+        prefix = f"timestamps[{index}]."
+        _require_string(item, "path", errors, prefix=prefix)
+        _require_enum(item, "status", {"current", "stale", "future", "invalid"}, errors, prefix=prefix)
+        _require_string_type(item, "value", errors, prefix=prefix)
+        _require_string(item, "reason", errors, prefix=prefix)
+        for key in ("age_days", "future_days", "max_age_days"):
+            if key not in item:
+                errors.append(f"{prefix}{key} is required.")
+            elif item[key] is not None:
+                _require_int_range(item, key, errors, minimum=0, prefix=prefix)
+        if not isinstance(item.get("timestamp_valid"), bool):
+            errors.append(f"{prefix}timestamp_valid must be a boolean.")
+    return errors
+
+
 def _validate_drift_change(change: Any, errors: list[str], prefix: str, name_key: str) -> None:
     if not isinstance(change, dict):
         errors.append(f"{prefix[:-1]} must be an object.")

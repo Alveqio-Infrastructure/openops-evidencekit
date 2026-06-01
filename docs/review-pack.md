@@ -18,6 +18,7 @@ audiences need:
 | `executive-brief.json` / `executive-brief.md` | Stakeholder summary with top findings and next steps. |
 | `action-plan.json` / `action-plan.md` / `action-plan.csv` | Prioritized remediation queue. |
 | `inventory.json` / `inventory.md` / `inventory.csv` | Asset and signal-domain inventory from evidence. |
+| `freshness-report.json` / `freshness-report.md` / `freshness-report.csv` | Evidence timestamp freshness report. |
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
 | `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
 | `service-catalog.json` / `service-catalog.md` / `service-catalog.csv` | Optional service ownership and evidence coverage report when `--catalog` is provided. |
@@ -70,6 +71,10 @@ the review pack command after the pack has been written.
 Add `--fail-on-runbook-warn` when stale, missing, unreferenced, or malformed
 runbook evidence should fail the review pack command after the pack has been
 written.
+
+Add `--fail-on-freshness-warn` when stale or invalid evidence timestamps should
+fail the review pack command after the pack has been written. Use
+`--freshness-max-age-days` to tune the default 30-day freshness window.
 
 When `--base-evidence` is provided, add `--fail-on-drift` if asset or
 signal-domain drift should fail the review pack command after the pack has been

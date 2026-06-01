@@ -41,6 +41,7 @@ from .collectors import (
 )
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
+from .freshness import create_freshness_report, render_freshness_csv, render_freshness_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .history import append_report_history, render_history_csv, render_history_markdown, render_history_svg
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
@@ -79,6 +80,7 @@ from .schema import (
     validate_evidence,
     validate_evidence_drift,
     validate_executive_brief,
+    validate_freshness_report,
     validate_gate_result,
     validate_inventory,
     validate_policy_matrix,
@@ -282,6 +284,16 @@ def build_parser() -> argparse.ArgumentParser:
     runbook_report.add_argument("-o", "--output", default="-")
     runbook_report.set_defaults(func=cmd_runbook_report)
 
+    freshness = sub.add_parser("freshness", help="Inspect timestamp freshness in evidence")
+    freshness_sub = freshness.add_subparsers(required=True)
+    freshness_report = freshness_sub.add_parser("report", help="Render evidence timestamp freshness")
+    freshness_report.add_argument("-i", "--input", required=True)
+    freshness_report.add_argument("--max-age-days", type=int, default=30)
+    freshness_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    freshness_report.add_argument("--fail-on-warn", action="store_true")
+    freshness_report.add_argument("-o", "--output", default="-")
+    freshness_report.set_defaults(func=cmd_freshness_report)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -362,12 +374,14 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--max-warnings", type=int)
     review_create.add_argument("--max-critical", type=int)
     review_create.add_argument("--max-high", type=int)
+    review_create.add_argument("--freshness-max-age-days", type=int, default=30)
     review_create.add_argument("--ignore-report-status", action="store_true")
     review_create.add_argument("--fail-on-gate", action="store_true")
     review_create.add_argument("--fail-on-drift", action="store_true")
     review_create.add_argument("--fail-on-scope-warn", action="store_true")
     review_create.add_argument("--fail-on-catalog-warn", action="store_true")
     review_create.add_argument("--fail-on-runbook-warn", action="store_true")
+    review_create.add_argument("--fail-on-freshness-warn", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
 
@@ -470,6 +484,7 @@ def build_parser() -> argparse.ArgumentParser:
             "scope-report",
             "service-catalog",
             "runbook-report",
+            "freshness-report",
             "bundle",
             "bundle-verification",
             "bundle-signature",
@@ -803,6 +818,26 @@ def cmd_runbook_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_freshness_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    if args.max_age_days is not None and args.max_age_days < 0:
+        raise UserFacingError("--max-age-days must be at least 0")
+    report = create_freshness_report(evidence, max_age_days=args.max_age_days)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_freshness_csv(report)
+    else:
+        rendered = render_freshness_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] == "warn":
+        return 1
+    return 0
+
+
 def cmd_evidence_diff(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -1008,6 +1043,8 @@ def cmd_review_create(args: argparse.Namespace) -> int:
             raise UserFacingError("Base evidence validation failed:\n- " + "\n- ".join(base_errors))
     if args.max_findings < 0:
         raise UserFacingError("--max-findings must be at least 0")
+    if args.freshness_max_age_days is not None and args.freshness_max_age_days < 0:
+        raise UserFacingError("--freshness-max-age-days must be at least 0")
     _validate_gate_args(args)
     pack = create_review_pack(
         evidence,
@@ -1025,6 +1062,7 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         max_critical=args.max_critical,
         max_high=args.max_high,
         ignore_report_status=args.ignore_report_status,
+        freshness_max_age_days=args.freshness_max_age_days,
     )
     print(
         f"created review pack in {pack['output_dir']} "
@@ -1066,6 +1104,8 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         and pack.get("runbook_report") is not None
         and pack["runbook_report"]["summary"]["status"] == "warn"
     ):
+        return 1
+    if args.fail_on_freshness_warn and pack["freshness_report"]["summary"]["status"] == "warn":
         return 1
     return 0
 
@@ -1257,6 +1297,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_service_catalog_report(document)
     elif args.type == "runbook-report":
         errors = validate_runbook_report(document)
+    elif args.type == "freshness-report":
+        errors = validate_freshness_report(document)
     elif args.type == "bundle":
         errors = validate_bundle_manifest(document)
     elif args.type == "bundle-verification":

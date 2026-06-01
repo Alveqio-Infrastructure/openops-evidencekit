@@ -35,6 +35,9 @@ jobs:
           openops-evidence runbook report -i evidence.sample.json -c service-catalog.sample.toml --max-age-days 365 -f json -o runbook-report.json
           openops-evidence validate -i runbook-report.json -t runbook-report
           openops-evidence runbook report -i evidence.sample.json -c service-catalog.sample.toml --max-age-days 365 -o runbook-report.md
+          openops-evidence freshness report -i evidence.sample.json --max-age-days 30 -f json -o freshness-report.json
+          openops-evidence validate -i freshness-report.json -t freshness-report
+          openops-evidence freshness report -i evidence.sample.json --max-age-days 30 -o freshness-report.md
           openops-evidence coverage report -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o policy-coverage.md
           openops-evidence check -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o report.openops.json || true
           openops-evidence validate -i report.openops.json -t report
@@ -64,6 +67,8 @@ jobs:
             service-catalog.md
             runbook-report.json
             runbook-report.md
+            freshness-report.json
+            freshness-report.md
             policy-coverage.md
             report.openops.md
             report.openops.junit.xml

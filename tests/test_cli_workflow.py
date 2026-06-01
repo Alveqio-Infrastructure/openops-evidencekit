@@ -25,6 +25,7 @@ class CliWorkflowTests(unittest.TestCase):
             workflow_text = workflow.read_text(encoding="utf-8")
             self.assertIn("openops-evidence inventory evidence", workflow_text)
             self.assertIn("openops-evidence catalog report", workflow_text)
+            self.assertIn("openops-evidence freshness report", workflow_text)
             self.assertIn("openops-evidence questionnaire policy", workflow_text)
             self.assertIn("openops-evidence coverage report", workflow_text)
             self.assertIn("openops-evidence check", workflow_text)
@@ -59,6 +60,8 @@ class CliWorkflowTests(unittest.TestCase):
             service_catalog_markdown = temp / "service-catalog.md"
             runbook_report = temp / "runbook-report.json"
             runbook_markdown = temp / "runbook-report.md"
+            freshness_report = temp / "freshness-report.json"
+            freshness_markdown = temp / "freshness-report.md"
             evidence_drift = temp / "evidence-drift.json"
             evidence_drift_markdown = temp / "evidence-drift.md"
             coverage = temp / "policy-coverage.json"
@@ -213,6 +216,39 @@ class CliWorkflowTests(unittest.TestCase):
                         str(ROOT / "examples" / "service-catalog.sample.toml"),
                         "-o",
                         str(runbook_markdown),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(
+                main(
+                    [
+                        "freshness",
+                        "report",
+                        "-i",
+                        str(merged),
+                        "--max-age-days",
+                        "365",
+                        "-f",
+                        "json",
+                        "-o",
+                        str(freshness_report),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(main(["validate", "-i", str(freshness_report), "-t", "freshness-report"]), 0)
+            self.assertEqual(
+                main(
+                    [
+                        "freshness",
+                        "report",
+                        "-i",
+                        str(merged),
+                        "--max-age-days",
+                        "365",
+                        "-o",
+                        str(freshness_markdown),
                     ]
                 ),
                 0,
@@ -381,6 +417,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(scope_report),
                         str(service_catalog),
                         str(runbook_report),
+                        str(freshness_report),
                         str(evidence_drift),
                         str(questionnaire),
                         str(coverage),
@@ -484,6 +521,7 @@ class CliWorkflowTests(unittest.TestCase):
             scope_data = json.loads(scope_report.read_text(encoding="utf-8"))
             service_catalog_data = json.loads(service_catalog.read_text(encoding="utf-8"))
             runbook_data = json.loads(runbook_report.read_text(encoding="utf-8"))
+            freshness_data = json.loads(freshness_report.read_text(encoding="utf-8"))
             evidence_drift_data = json.loads(evidence_drift.read_text(encoding="utf-8"))
             gate_data = json.loads(gate.read_text(encoding="utf-8"))
             badge_data = json.loads(badge.read_text(encoding="utf-8"))
@@ -505,6 +543,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(service_catalog_data["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(runbook_data["summary"]["status"], "warn")
             self.assertEqual(runbook_data["summary"]["missing_runbooks_count"], 1)
+            self.assertGreater(freshness_data["summary"]["timestamps_total"], 0)
             self.assertEqual(evidence_drift_data["summary"]["status"], "warn")
             self.assertGreater(evidence_drift_data["summary"]["asset_changes_count"], 0)
             self.assertEqual(gate_data["summary"]["status"], "pass")
@@ -512,9 +551,9 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(brief_data["summary"]["health"], "on_track")
             self.assertEqual(scorecard_data["summary"]["domains_total"], 6)
             self.assertEqual(history_data["summary"]["latest_score"], 100)
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 18)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 19)
             self.assertEqual(attestation_data["summary"]["status"], "warn")
-            self.assertEqual(attestation_data["manifest"]["artifact_count"], 18)
+            self.assertEqual(attestation_data["manifest"]["artifact_count"], 19)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -536,6 +575,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("# OpenOps Scope Report", scope_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Service Catalog Report", service_catalog_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Runbook Coverage Report", runbook_markdown.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Evidence Freshness Report", freshness_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Evidence Drift", evidence_drift_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Review Attestation", attestation_markdown.read_text(encoding="utf-8"))
 

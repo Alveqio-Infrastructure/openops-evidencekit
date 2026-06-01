@@ -16,6 +16,7 @@ from .catalog import (
 )
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
+from .freshness import create_freshness_report, render_freshness_csv, render_freshness_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import dump_json, write_text
@@ -57,12 +58,14 @@ def create_review_pack(
     max_critical: int | None = None,
     max_high: int | None = None,
     ignore_report_status: bool = False,
+    freshness_max_age_days: int | None = 30,
 ) -> dict[str, Any]:
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
     checks = parse_policy(policy_document)
     report = evaluate_policy(evidence, checks)
     inventory = create_evidence_inventory(evidence)
+    freshness_report = create_freshness_report(evidence, max_age_days=freshness_max_age_days)
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
     service_catalog = create_service_catalog_report(evidence, catalog_document) if catalog_document is not None else None
@@ -100,6 +103,9 @@ def create_review_pack(
     add_artifact("inventory.json", dump_json(inventory), "Evidence inventory", "Machine-readable asset and signal inventory.")
     add_artifact("inventory.md", render_inventory_markdown(inventory), "Evidence inventory", "Wiki-friendly asset and signal inventory.")
     add_artifact("inventory.csv", render_inventory_csv(inventory), "Evidence inventory", "Spreadsheet-friendly inventory export.")
+    add_artifact("freshness-report.json", dump_json(freshness_report), "Evidence freshness", "Machine-readable evidence timestamp freshness report.")
+    add_artifact("freshness-report.md", render_freshness_markdown(freshness_report), "Evidence freshness", "Human-readable evidence timestamp freshness report.")
+    add_artifact("freshness-report.csv", render_freshness_csv(freshness_report), "Evidence freshness", "Spreadsheet-friendly timestamp freshness export.")
     if evidence_drift is not None:
         add_artifact("evidence-drift.json", dump_json(evidence_drift), "Evidence drift", "Machine-readable evidence drift report.")
         add_artifact("evidence-drift.md", render_evidence_diff_markdown(evidence_drift), "Evidence drift", "Human-readable evidence drift report.")
@@ -187,6 +193,7 @@ def create_review_pack(
         "artifact_count": len(artifacts) + 1,
         "report": report,
         "gate": gate,
+        "freshness_report": freshness_report,
         "evidence_drift": evidence_drift,
         "scope_report": scope_report,
         "service_catalog": service_catalog,
@@ -212,6 +219,8 @@ def render_review_pack_readme(
     ]
     if any(artifact.get("filename") == "scope-report.md" for artifact in artifacts):
         suggested_steps.append("Check `scope-report.md` for in-scope, out-of-scope, and unclassified evidence.")
+    if any(artifact.get("filename") == "freshness-report.md" for artifact in artifacts):
+        suggested_steps.append("Check `freshness-report.md` before relying on old evidence timestamps.")
     if any(artifact.get("filename") == "service-catalog.md" for artifact in artifacts):
         suggested_steps.append("Review `service-catalog.md` for service ownership, criticality, assets, and runbook gaps.")
     if any(artifact.get("filename") == "runbook-report.md" for artifact in artifacts):
@@ -431,6 +440,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
     links = [
         ("executive-brief.md", "Executive Brief"),
         ("scorecard.html", "Scorecard"),
+        ("freshness-report.md", "Freshness"),
         ("scope-report.md", "Scope Report"),
         ("service-catalog.md", "Service Catalog"),
         ("runbook-report.md", "Runbook Report"),

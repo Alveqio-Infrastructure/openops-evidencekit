@@ -38,6 +38,9 @@ readiness-badge.json
 /runbook-report.json
 /runbook-report.md
 /runbook-report.csv
+/freshness-report.json
+/freshness-report.md
+/freshness-report.csv
 /questionnaire.*
 /evidence-questionnaire.*
 /executive-brief.json

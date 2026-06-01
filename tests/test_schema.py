@@ -9,6 +9,7 @@ from openops_evidence.schema import (
     validate_evidence,
     validate_evidence_drift,
     validate_executive_brief,
+    validate_freshness_report,
     validate_gate_result,
     validate_inventory,
     validate_policy_coverage,
@@ -823,6 +824,38 @@ class SchemaTests(unittest.TestCase):
                         "runbooks": ["database-restore"],
                         "present_runbooks": [],
                         "missing_runbooks": ["database-restore"],
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_freshness_report(self):
+        errors = validate_freshness_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "timestamps_total": 1,
+                    "current_count": 0,
+                    "stale_count": 1,
+                    "future_count": 0,
+                    "invalid_count": 0,
+                    "oldest_age_days": 31,
+                    "newest_age_days": 31,
+                },
+                "timestamps": [
+                    {
+                        "path": "signals.backup.last_success_at",
+                        "status": "stale",
+                        "value": "2026-05-01T00:00:00+00:00",
+                        "age_days": 31,
+                        "future_days": None,
+                        "max_age_days": 30,
+                        "timestamp_valid": True,
+                        "reason": "Timestamp is older than 30 day(s).",
                     }
                 ],
             }

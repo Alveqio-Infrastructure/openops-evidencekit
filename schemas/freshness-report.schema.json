@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/freshness-report.schema.json",
+  "title": "OpenOps Evidence Freshness Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "timestamps"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "timestamps_total",
+        "current_count",
+        "stale_count",
+        "future_count",
+        "invalid_count",
+        "oldest_age_days",
+        "newest_age_days"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn"]
+        },
+        "timestamps_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "current_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stale_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "future_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "invalid_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "oldest_age_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "newest_age_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        }
+      }
+    },
+    "timestamps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/timestamp"
+      }
+    }
+  },
+  "$defs": {
+    "timestamp": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "path",
+        "status",
+        "value",
+        "age_days",
+        "future_days",
+        "max_age_days",
+        "timestamp_valid",
+        "reason"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["current", "stale", "future", "invalid"]
+        },
+        "value": {
+          "type": "string"
+        },
+        "age_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "future_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "max_age_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "timestamp_valid": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

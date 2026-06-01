@@ -33,6 +33,7 @@ produces the common CI artifacts below.
 | Evidence scaffold | `openops-evidence scaffold evidence policy.toml -o evidence.scaffold.json` | Create an editable starter Evidence JSON file from expected policy signal paths. |
 | Evidence questionnaire | `openops-evidence questionnaire policy policy.toml -o evidence-questionnaire.md` | Send a concrete evidence request list before a readiness review starts. |
 | Inventory JSON | `openops-evidence inventory evidence -i evidence.json -f json -o inventory.json` | Publish asset and signal-domain inventory from evidence. |
+| Freshness report | `openops-evidence freshness report -i evidence.json --max-age-days 30 -o freshness-report.md` | Show stale, future, and invalid timestamp-like evidence fields before review. |
 | Scope report | `openops-evidence scope report -i evidence.json -s scope.toml -o scope-report.md` | Show in-scope, out-of-scope, missing, and unclassified evidence boundaries. |
 | Service catalog | `openops-evidence catalog report -i evidence.json -c service-catalog.toml -o service-catalog.md` | Check service owners, criticality, assets, evidence domains, and runbooks against collected evidence. |
 | Runbook coverage | `openops-evidence runbook report -i evidence.json -c service-catalog.toml --max-age-days 90 -o runbook-report.md` | Check required runbooks for presence, freshness, service references, and unreferenced documents. |

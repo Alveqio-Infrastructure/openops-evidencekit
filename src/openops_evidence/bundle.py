@@ -18,6 +18,7 @@ from .schema import (
     validate_evidence,
     validate_evidence_drift,
     validate_executive_brief,
+    validate_freshness_report,
     validate_gate_result,
     validate_inventory,
     validate_policy_coverage,
@@ -271,6 +272,8 @@ def classify_artifact(path: Path) -> str:
             return "report-comparison"
         if validate_evidence_drift(document) == []:
             return "evidence-drift"
+        if validate_freshness_report(document) == []:
+            return "freshness-report"
         if validate_report_history(document) == []:
             return "report-history"
         if validate_review_attestation(document) == []:

@@ -207,6 +207,7 @@ class BundleTests(unittest.TestCase):
             scope_report = temp / "scope-report.json"
             service_catalog = temp / "service-catalog.json"
             runbook_report = temp / "runbook-report.json"
+            freshness_report = temp / "freshness-report.json"
             sarif = temp / "report.sarif.json"
             prometheus = temp / "report.prom"
             svg = temp / "history.svg"
@@ -633,6 +634,38 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            freshness_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "timestamps_total": 1,
+                            "current_count": 1,
+                            "stale_count": 0,
+                            "future_count": 0,
+                            "invalid_count": 0,
+                            "oldest_age_days": 0,
+                            "newest_age_days": 0,
+                        },
+                        "timestamps": [
+                            {
+                                "path": "generated_at",
+                                "status": "current",
+                                "value": "2026-06-01T10:00:00+00:00",
+                                "age_days": 0,
+                                "future_days": None,
+                                "max_age_days": 30,
+                                "timestamp_valid": True,
+                                "reason": "Timestamp is current.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             comparison.write_text(
                 json.dumps(
                     {
@@ -763,6 +796,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(service_catalog), "service-catalog")
             self.assertEqual(classify_artifact(runbook_report), "runbook-report")
+            self.assertEqual(classify_artifact(freshness_report), "freshness-report")
             self.assertEqual(classify_artifact(sarif), "report-sarif")
             self.assertEqual(classify_artifact(prometheus), "report-prometheus")
             self.assertEqual(classify_artifact(svg), "visual")

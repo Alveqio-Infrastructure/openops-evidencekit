@@ -128,6 +128,7 @@ EvidenceKit infers a simple role for each artifact:
 - `scope-report` for valid scope report JSON
 - `service-catalog` for valid service catalog report JSON
 - `runbook-report` for valid runbook coverage report JSON
+- `freshness-report` for valid evidence freshness report JSON
 - `questionnaire` for valid evidence questionnaire JSON
 - `report-sarif` for SARIF report JSON
 - `gate-result` for valid gate result JSON
