@@ -77,6 +77,25 @@ class CompareTests(unittest.TestCase):
         self.assertIn("## Regressions", markdown)
         self.assertIn("backup_recent", markdown)
 
+    def test_render_comparison_markdown_escapes_untrusted_fields(self):
+        base = _report(_result("bad`id", "pass"))
+        current = _report(
+            {
+                **_result("bad`id", "fail"),
+                "title": "<script>alert(1)</script>",
+                "remediation": "[click](javascript:alert(1))",
+            }
+        )
+        comparison = compare_reports(base, current)
+
+        markdown = render_comparison_markdown(comparison)
+
+        self.assertNotIn("<script>", markdown)
+        self.assertNotIn("[click](javascript:alert(1))", markdown)
+        self.assertIn("&lt;script&gt;alert\\(1\\)&lt;/script&gt;", markdown)
+        self.assertIn("\\[click\\]\\(javascript:alert\\(1\\)\\)", markdown)
+        self.assertIn("``bad`id``", markdown)
+
     def test_cli_compare_fail_on_regression(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)

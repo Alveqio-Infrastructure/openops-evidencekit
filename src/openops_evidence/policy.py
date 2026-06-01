@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from functools import lru_cache
 from typing import Any
 
 from .pathquery import query
@@ -34,6 +35,7 @@ OPERATORS_REQUIRING_VALUE = {
     "within_days",
 }
 NUMERIC_VALUE_OPERATORS = {"at_least", "at_most", "within_days"}
+MAX_REGEX_PATTERN_LENGTH = 256
 
 
 @dataclass(frozen=True)
@@ -191,7 +193,7 @@ def _evaluate_one(value: Any, operator: str, expected: Any) -> bool:
     if operator == "at_most":
         return float(value) <= float(expected)
     if operator == "matches":
-        return re.search(str(expected), str(value)) is not None
+        return _compile_safe_regex(str(expected)).search(str(value)) is not None
     if operator == "within_days":
         age_days = _age_days(value)
         return age_days is not None and age_days <= float(expected)
@@ -260,3 +262,110 @@ def _validate_operator_value(
             float(item["value"])
         except (TypeError, ValueError):
             errors.append(f"{prefix}.value must be numeric for operator {operator}.")
+    if operator == "matches" and "value" in item:
+        if not isinstance(item["value"], str) or not item["value"]:
+            errors.append(f"{prefix}.value must be a non-empty string for operator matches.")
+            return
+        regex_error = _regex_safety_error(item["value"])
+        if regex_error:
+            errors.append(f"{prefix}.value contains an unsafe regex pattern: {regex_error}")
+
+
+@lru_cache(maxsize=128)
+def _compile_safe_regex(pattern: str) -> re.Pattern[str]:
+    error = _regex_safety_error(pattern)
+    if error:
+        raise ValueError(f"Unsafe regex pattern: {error}")
+    return re.compile(pattern)
+
+
+def _regex_safety_error(pattern: str) -> str | None:
+    if len(pattern) > MAX_REGEX_PATTERN_LENGTH:
+        return f"pattern exceeds {MAX_REGEX_PATTERN_LENGTH} characters"
+    try:
+        re.compile(pattern)
+    except re.error as exc:
+        return str(exc)
+    if _has_nested_or_ambiguous_repetition(pattern):
+        return "nested or ambiguous repetition is not allowed"
+    return None
+
+
+def _has_nested_or_ambiguous_repetition(pattern: str) -> bool:
+    stack = [{"has_repeat": False, "has_alternation": False}]
+    last_atom_is_risky = False
+    in_class = False
+    escaped = False
+    index = 0
+    while index < len(pattern):
+        char = pattern[index]
+        if escaped:
+            if char.isdigit():
+                return True
+            escaped = False
+            last_atom_is_risky = False
+            index += 1
+            continue
+        if char == "\\":
+            escaped = True
+            index += 1
+            continue
+        if in_class:
+            if char == "]":
+                in_class = False
+                last_atom_is_risky = False
+            index += 1
+            continue
+        if char == "[":
+            in_class = True
+            index += 1
+            continue
+        if char == "(":
+            stack.append({"has_repeat": False, "has_alternation": False})
+            last_atom_is_risky = False
+            index += 1
+            continue
+        if char == ")" and len(stack) > 1:
+            group = stack.pop()
+            stack[-1]["has_repeat"] = stack[-1]["has_repeat"] or group["has_repeat"]
+            stack[-1]["has_alternation"] = (
+                stack[-1]["has_alternation"] or group["has_alternation"]
+            )
+            last_atom_is_risky = group["has_repeat"] or group["has_alternation"]
+            index += 1
+            continue
+        if char == "|":
+            stack[-1]["has_alternation"] = True
+            last_atom_is_risky = False
+            index += 1
+            continue
+        quantifier_end = _quantifier_end(pattern, index)
+        if quantifier_end is not None:
+            if last_atom_is_risky:
+                return True
+            stack[-1]["has_repeat"] = True
+            last_atom_is_risky = True
+            index = quantifier_end
+            if index < len(pattern) and pattern[index] == "?":
+                index += 1
+            continue
+        last_atom_is_risky = False
+        index += 1
+    return False
+
+
+def _quantifier_end(pattern: str, index: int) -> int | None:
+    if pattern[index] in "*+?":
+        return index + 1
+    if pattern[index] != "{":
+        return None
+    end = pattern.find("}", index + 1)
+    if end == -1:
+        return None
+    body = pattern[index + 1 : end]
+    if not body:
+        return None
+    parts = body.split(",", 1)
+    if not all(part.strip().isdigit() for part in parts if part.strip()):
+        return None
+    return end + 1

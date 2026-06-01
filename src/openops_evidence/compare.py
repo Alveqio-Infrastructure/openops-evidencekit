@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
+from .reports import escape_markdown_text, format_markdown_code
+
 
 STATUS_RANK = {
     "pass": 0,
@@ -88,10 +90,12 @@ def render_comparison_markdown(comparison: dict[str, Any]) -> str:
     lines = [
         "# OpenOps Report Comparison",
         "",
-        f"- Generated: `{comparison.get('generated_at', 'unknown')}`",
-        f"- Base: `{summary.get('base_status', 'unknown')}` score `{_display(summary.get('base_score'))}`",
-        f"- Current: `{summary.get('current_status', 'unknown')}` score `{_display(summary.get('current_score'))}`",
-        f"- Score delta: `{_display(summary.get('score_delta'))}`",
+        f"- Generated: {format_markdown_code(comparison.get('generated_at', 'unknown'))}",
+        f"- Base: {format_markdown_code(summary.get('base_status', 'unknown'))} "
+        f"score {format_markdown_code(_display(summary.get('base_score')))}",
+        f"- Current: {format_markdown_code(summary.get('current_status', 'unknown'))} "
+        f"score {format_markdown_code(_display(summary.get('current_score')))}",
+        f"- Score delta: {format_markdown_code(_display(summary.get('score_delta')))}",
         f"- Regressions: **{summary.get('regressions_count', 0)}**",
         f"- Improvements: **{summary.get('improvements_count', 0)}**",
         f"- Added checks: {summary.get('added_count', 0)}",
@@ -155,14 +159,16 @@ def _change_section(title: str, items: list[dict[str, Any]]) -> list[str]:
         after = item.get("after", {})
         lines.extend(
             [
-                f"### `{item.get('id')}` {item.get('title')}",
+                f"### {format_markdown_code(item.get('id'))} {escape_markdown_text(item.get('title'))}",
                 "",
-                f"- Status: `{before.get('status')}` -> `{after.get('status')}`",
-                f"- Severity: `{before.get('severity')}` -> `{after.get('severity')}`",
-                f"- Observed values: `{before.get('observed_count')}` -> "
-                f"`{after.get('observed_count')}`",
+                f"- Status: {format_markdown_code(before.get('status'))} -> "
+                f"{format_markdown_code(after.get('status'))}",
+                f"- Severity: {format_markdown_code(before.get('severity'))} -> "
+                f"{format_markdown_code(after.get('severity'))}",
+                f"- Observed values: {format_markdown_code(before.get('observed_count'))} -> "
+                f"{format_markdown_code(after.get('observed_count'))}",
                 "- Remediation: "
-                f"{after.get('remediation') or before.get('remediation') or 'No remediation text provided.'}",
+                f"{escape_markdown_text(after.get('remediation') or before.get('remediation') or 'No remediation text provided.')}",
                 "",
             ]
         )
@@ -176,8 +182,8 @@ def _result_section(title: str, items: list[dict[str, Any]]) -> list[str]:
         return lines
     for item in items:
         lines.append(
-            f"- `{item.get('id')}` {item.get('title')} "
-            f"({item.get('status')}, {item.get('severity')})"
+            f"- {format_markdown_code(item.get('id'))} {escape_markdown_text(item.get('title'))} "
+            f"({escape_markdown_text(item.get('status'))}, {escape_markdown_text(item.get('severity'))})"
         )
     lines.append("")
     return lines

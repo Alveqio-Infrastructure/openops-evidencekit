@@ -1,7 +1,25 @@
 from __future__ import annotations
 
 import html
+import re
 from typing import Any
+
+
+_MARKDOWN_TEXT_RE = re.compile(r"([\\`*_{}\[\]()#+\-.!|>])")
+
+
+def escape_markdown_text(value: Any) -> str:
+    escaped = html.escape(str(value), quote=False)
+    return _MARKDOWN_TEXT_RE.sub(r"\\\1", escaped)
+
+
+def format_markdown_code(value: Any) -> str:
+    escaped = html.escape(str(value), quote=False)
+    runs = re.findall(r"`+", escaped)
+    delimiter = "`" * (max((len(run) for run in runs), default=0) + 1)
+    if escaped.startswith("`") or escaped.endswith("`"):
+        escaped = f" {escaped} "
+    return f"{delimiter}{escaped}{delimiter}"
 
 
 def render_markdown(report: dict[str, Any]) -> str:
@@ -9,9 +27,9 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines = [
         "# OpenOps Evidence Report",
         "",
-        f"- Generated: `{report.get('generated_at', 'unknown')}`",
-        f"- Status: **{summary.get('status', 'unknown').upper()}**",
-        f"- Score: **{summary.get('score', 'n/a')}**",
+        f"- Generated: {format_markdown_code(report.get('generated_at', 'unknown'))}",
+        f"- Status: **{escape_markdown_text(str(summary.get('status', 'unknown')).upper())}**",
+        f"- Score: **{escape_markdown_text(summary.get('score', 'n/a'))}**",
         f"- Checks: {summary.get('checks_passed', 0)} passed, "
         f"{summary.get('checks_failed', 0)} failed, {summary.get('checks_warn', 0)} warnings",
         "",
@@ -22,19 +40,19 @@ def render_markdown(report: dict[str, Any]) -> str:
         icon = {"pass": "PASS", "fail": "FAIL", "warn": "WARN"}.get(item["status"], item["status"])
         lines.extend(
             [
-                f"### {icon}: {item['title']}",
+                f"### {escape_markdown_text(icon)}: {escape_markdown_text(item['title'])}",
                 "",
-                f"- ID: `{item['id']}`",
-                f"- Severity: `{item['severity']}`",
-                f"- Path: `{item['path']}`",
-                f"- Operator: `{item['operator']}`",
-                f"- Observed values: `{item.get('observed_count', 0)}`",
+                f"- ID: {format_markdown_code(item['id'])}",
+                f"- Severity: {format_markdown_code(item['severity'])}",
+                f"- Path: {format_markdown_code(item['path'])}",
+                f"- Operator: {format_markdown_code(item['operator'])}",
+                f"- Observed values: {format_markdown_code(item.get('observed_count', 0))}",
             ]
         )
         if item.get("remediation"):
-            lines.append(f"- Remediation: {item['remediation']}")
+            lines.append(f"- Remediation: {escape_markdown_text(item['remediation'])}")
         if item.get("error"):
-            lines.append(f"- Error: `{item['error']}`")
+            lines.append(f"- Error: {format_markdown_code(item['error'])}")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -51,12 +69,12 @@ def render_bookstack_markdown(report: dict[str, Any]) -> str:
         "",
         f"| Field | Value |",
         "| --- | --- |",
-        f"| Generated | `{report.get('generated_at', 'unknown')}` |",
-        f"| Status | **{str(summary.get('status', 'unknown')).upper()}** |",
-        f"| Score | **{summary.get('score', 'n/a')}** |",
-        f"| Passed | {summary.get('checks_passed', 0)} |",
-        f"| Failed | {summary.get('checks_failed', 0)} |",
-        f"| Warnings | {summary.get('checks_warn', 0)} |",
+        f"| Generated | {format_markdown_code(report.get('generated_at', 'unknown'))} |",
+        f"| Status | **{escape_markdown_text(str(summary.get('status', 'unknown')).upper())}** |",
+        f"| Score | **{escape_markdown_text(summary.get('score', 'n/a'))}** |",
+        f"| Passed | {escape_markdown_text(summary.get('checks_passed', 0))} |",
+        f"| Failed | {escape_markdown_text(summary.get('checks_failed', 0))} |",
+        f"| Warnings | {escape_markdown_text(summary.get('checks_warn', 0))} |",
         "",
         "## Required Action",
         "",
@@ -74,7 +92,7 @@ def render_bookstack_markdown(report: dict[str, Any]) -> str:
         ]
     )
     for item in passed:
-        lines.append(f"- `{item['id']}`: {item['title']}")
+        lines.append(f"- {format_markdown_code(item['id'])}: {escape_markdown_text(item['title'])}")
     lines.extend(
         [
             "",
@@ -88,13 +106,13 @@ def render_bookstack_markdown(report: dict[str, Any]) -> str:
 
 def _bookstack_finding(item: dict[str, Any]) -> list[str]:
     return [
-        f"### {item['title']}",
+        f"### {escape_markdown_text(item['title'])}",
         "",
-        f"- Status: `{item['status']}`",
-        f"- Severity: `{item['severity']}`",
-        f"- Check ID: `{item['id']}`",
-        f"- Evidence path: `{item['path']}`",
-        f"- Remediation: {item.get('remediation') or 'No remediation text provided.'}",
+        f"- Status: {format_markdown_code(item['status'])}",
+        f"- Severity: {format_markdown_code(item['severity'])}",
+        f"- Check ID: {format_markdown_code(item['id'])}",
+        f"- Evidence path: {format_markdown_code(item['path'])}",
+        f"- Remediation: {escape_markdown_text(item.get('remediation') or 'No remediation text provided.')}",
         "",
     ]
 

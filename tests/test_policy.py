@@ -97,6 +97,52 @@ class PolicyTests(unittest.TestCase):
         self.assertIn("checks[1].value must not be empty for operator one_of.", errors)
         self.assertIn("checks[2].value must be numeric for operator within_days.", errors)
 
+    def test_validate_policy_document_rejects_unsafe_matches_regex(self):
+        errors = validate_policy_document(
+            {
+                "checks": [
+                    {
+                        "id": "unsafe_regex",
+                        "path": "signals.name",
+                        "operator": "matches",
+                        "value": r"(a+)+$",
+                    }
+                ]
+            }
+        )
+        self.assertIn(
+            "checks[0].value contains an unsafe regex pattern: "
+            "nested or ambiguous repetition is not allowed",
+            errors,
+        )
+
+    def test_matches_rejects_unsafe_regex_when_check_is_constructed_directly(self):
+        result = evaluate_check(
+            {"signals": {"name": "a" * 24 + "!"}},
+            Check(
+                id="unsafe_regex",
+                title="Unsafe regex",
+                path="signals.name",
+                operator="matches",
+                value=r"(a+)+$",
+            ),
+        )
+        self.assertEqual(result["status"], "fail")
+        self.assertIn("Unsafe regex pattern", result["error"])
+
+    def test_matches_allows_simple_regex(self):
+        result = evaluate_check(
+            {"signals": {"name": "web-01"}},
+            Check(
+                id="simple_regex",
+                title="Simple regex",
+                path="signals.name",
+                operator="matches",
+                value=r"^web-[0-9]+$",
+            ),
+        )
+        self.assertEqual(result["status"], "pass")
+
 
 if __name__ == "__main__":
     unittest.main()
