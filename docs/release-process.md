@@ -37,6 +37,9 @@ python -m openops_evidence init init-demo --github-actions
 python -m openops_evidence validate -i examples/evidence.sample.json
 python -m openops_evidence collect docs examples/docs-sample --required inventory.md --required runbooks/backup-restore.md --max-age-days 365 -o docs.evidence.json
 python -m openops_evidence check -i docs.evidence.json -p examples/policy.documentation.toml -o report.docs.json
+python -m openops_evidence inventory evidence -i examples/evidence.sample.json -f json -o inventory.json
+python -m openops_evidence validate -i inventory.json -t inventory
+python -m openops_evidence inventory evidence -i examples/evidence.sample.json -f markdown -o inventory.md
 python -m openops_evidence check -i examples/evidence.sample.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence gate report -i report.local.json --min-score 100 --max-warnings 0 -o gate-result.json
 python -m openops_evidence validate -i gate-result.json -t gate-result
@@ -63,7 +66,7 @@ python -m openops_evidence report -i report.local.json -f prometheus -o report.l
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
 python -m openops_evidence privacy scan evidence.redacted.json report.local.md -o privacy-scan.json
 python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
-python -m openops_evidence bundle manifest evidence.redacted.json report.local.json gate-result.json readiness-badge.json executive-brief.json readiness-history.json report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.redacted.json inventory.json report.local.json gate-result.json readiness-badge.json executive-brief.json readiness-history.json report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
@@ -89,6 +92,7 @@ Then inspect:
    `schemas/executive-brief.schema.json`,
    `schemas/action-plan.schema.json`, `schemas/gate-result.schema.json`,
    `schemas/badge.schema.json`, `schemas/policy-matrix.schema.json`,
+   `schemas/inventory.schema.json`,
    `schemas/privacy-scan.schema.json`, `schemas/waivers.schema.json`,
    `schemas/bundle-manifest.schema.json`,
    `schemas/bundle-signature.schema.json`, `schemas/bundle-verification.schema.json`,

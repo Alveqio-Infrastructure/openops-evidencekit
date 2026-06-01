@@ -34,6 +34,7 @@ from .collectors import (
 )
 from .gates import evaluate_report_gate, render_gate_markdown
 from .history import append_report_history, render_history_csv, render_history_markdown
+from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .merge import merge_evidence
 from .policy import (
@@ -65,6 +66,7 @@ from .schema import (
     validate_evidence,
     validate_executive_brief,
     validate_gate_result,
+    validate_inventory,
     validate_policy_matrix,
     validate_privacy_scan,
     validate_report,
@@ -174,6 +176,14 @@ def build_parser() -> argparse.ArgumentParser:
     waiver_validate = waiver_sub.add_parser("validate", help="Validate a waiver TOML or JSON file")
     waiver_validate.add_argument("path")
     waiver_validate.set_defaults(func=cmd_waiver_validate)
+
+    inventory = sub.add_parser("inventory", help="Create inventory views from evidence")
+    inventory_sub = inventory.add_subparsers(required=True)
+    inventory_evidence = inventory_sub.add_parser("evidence", help="Render assets and signal domains from evidence JSON")
+    inventory_evidence.add_argument("-i", "--input", required=True)
+    inventory_evidence.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    inventory_evidence.add_argument("-o", "--output", default="-")
+    inventory_evidence.set_defaults(func=cmd_inventory_evidence)
 
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
@@ -300,6 +310,7 @@ def build_parser() -> argparse.ArgumentParser:
             "gate-result",
             "badge",
             "policy-matrix",
+            "inventory",
             "privacy-scan",
             "history",
             "bundle",
@@ -466,6 +477,22 @@ def cmd_waiver_validate(args: argparse.Namespace) -> int:
             print(f"- {error}")
         return 1
     print("valid")
+    return 0
+
+
+def cmd_inventory_evidence(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    inventory = create_evidence_inventory(evidence)
+    if args.format == "json":
+        rendered = dump_json(inventory)
+    elif args.format == "csv":
+        rendered = render_inventory_csv(inventory)
+    else:
+        rendered = render_inventory_markdown(inventory)
+    write_text(args.output, rendered)
     return 0
 
 
@@ -713,6 +740,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_badge(document)
     elif args.type == "policy-matrix":
         errors = validate_policy_matrix(document)
+    elif args.type == "inventory":
+        errors = validate_inventory(document)
     elif args.type == "privacy-scan":
         errors = validate_privacy_scan(document)
     elif args.type == "history":

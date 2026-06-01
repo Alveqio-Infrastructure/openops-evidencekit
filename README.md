@@ -44,6 +44,7 @@ Run from a checkout:
 python -m openops_evidence --version
 python -m openops_evidence collect fixture examples/evidence.sample.json -o evidence.local.json
 python -m openops_evidence validate -i evidence.local.json
+python -m openops_evidence inventory evidence -i evidence.local.json -o inventory.md
 python -m openops_evidence check -i evidence.local.json -p examples/policy.baseline.toml -o report.local.json
 python -m openops_evidence gate report -i report.local.json --min-score 90 --max-warnings 0 -o gate-result.json
 python -m openops_evidence badge report -i report.local.json -o readiness-badge.json
@@ -189,6 +190,8 @@ EvidenceKit uses three files:
 
 Use `merge` when evidence comes from multiple collectors or manually reviewed
 sources.
+Use `inventory evidence` when raw evidence should become a Wiki- or
+spreadsheet-friendly asset and signal-domain inventory.
 
 Action plans can also consume risk waiver TOML/JSON. Waivers require an owner,
 reason, check ID, and expiry date, so accepted risks stay explicit and expire
@@ -204,6 +207,7 @@ Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest
 Report comparisons are described in [docs/report-comparison.md](docs/report-comparison.md).
 Report history tracking is described in [docs/report-history.md](docs/report-history.md).
 Executive briefs are described in [docs/executive-brief.md](docs/executive-brief.md).
+Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence-inventory.md).
 Action plans are described in [docs/action-plan.md](docs/action-plan.md).
 CI gates are described in [docs/gates.md](docs/gates.md).
 Status badges are emitted as Shields-compatible endpoint JSON and can be used

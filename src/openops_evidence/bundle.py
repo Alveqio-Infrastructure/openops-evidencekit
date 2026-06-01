@@ -18,6 +18,7 @@ from .schema import (
     validate_evidence,
     validate_executive_brief,
     validate_gate_result,
+    validate_inventory,
     validate_report,
     validate_report_comparison,
     validate_report_history,
@@ -238,6 +239,8 @@ def classify_artifact(path: Path) -> str:
             return "json"
         if validate_evidence(document) == []:
             return "evidence"
+        if validate_inventory(document) == []:
+            return "inventory"
         if validate_report(document) == []:
             return "report"
         if _looks_like_sarif(document):

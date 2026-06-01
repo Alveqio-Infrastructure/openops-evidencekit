@@ -118,6 +118,7 @@ manifest hash matches, and the HMAC matches.
 EvidenceKit infers a simple role for each artifact:
 
 - `evidence` for valid evidence JSON
+- `inventory` for valid inventory JSON
 - `report` for valid report JSON
 - `report-history` for valid report history JSON
 - `executive-brief` for valid executive brief JSON

@@ -146,6 +146,49 @@ def validate_policy_matrix(document: Any) -> list[str]:
     return errors
 
 
+def validate_inventory(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Inventory must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "assets", errors)
+    _require_list(document, "signal_domains", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        for key in (
+            "assets_total",
+            "asset_type_count",
+            "hostnames_total",
+            "role_count",
+            "tag_count",
+            "signal_domain_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, asset in enumerate(document.get("assets", [])):
+        if not isinstance(asset, dict):
+            errors.append(f"assets[{index}] must be an object.")
+            continue
+        prefix = f"assets[{index}]."
+        _require_string(asset, "id", errors, prefix=prefix)
+        _require_string(asset, "type", errors, prefix=prefix)
+        _require_string_type(asset, "hostname", errors, prefix=prefix)
+        _require_list(asset, "roles", errors, prefix=prefix)
+        _require_list(asset, "tags", errors, prefix=prefix)
+    for index, signal in enumerate(document.get("signal_domains", [])):
+        if not isinstance(signal, dict):
+            errors.append(f"signal_domains[{index}] must be an object.")
+            continue
+        prefix = f"signal_domains[{index}]."
+        _require_string(signal, "name", errors, prefix=prefix)
+        _require_enum(signal, "kind", {"object", "array", "scalar"}, errors, prefix=prefix)
+        _require_int_range(signal, "item_count", errors, minimum=0, prefix=prefix)
+        _require_list(signal, "fields", errors, prefix=prefix)
+    return errors
+
+
 def validate_privacy_scan(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

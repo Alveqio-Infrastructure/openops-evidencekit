@@ -37,6 +37,9 @@ init-demo/
 borg.evidence.json
 docker.evidence.json
 docs.evidence.json
+inventory.json
+inventory.md
+inventory.csv
 report.local.json
 report.local.md
 report.local.html

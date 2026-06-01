@@ -30,6 +30,7 @@ having to deploy a platform first.
 - Privacy scan for reviewed sharing artifacts.
 - Bundle manifest validation.
 - Local documentation directory collector.
+- Evidence inventory export for assets and signal domains.
 - Wiki seed pages for public project documentation.
 
 ## 0.4 Assurance Pack

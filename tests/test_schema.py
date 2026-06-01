@@ -9,6 +9,7 @@ from openops_evidence.schema import (
     validate_evidence,
     validate_executive_brief,
     validate_gate_result,
+    validate_inventory,
     validate_policy_matrix,
     validate_privacy_scan,
     validate_report,
@@ -375,6 +376,82 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("checks[0].mode must be one of: all, any, none.", errors)
         self.assertIn("checks[0].required must be a boolean.", errors)
         self.assertIn("checks[0].remediation must be a string.", errors)
+
+    def test_valid_inventory(self):
+        errors = validate_inventory(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "assets_total": 1,
+                    "asset_type_count": 1,
+                    "hostnames_total": 1,
+                    "role_count": 1,
+                    "tag_count": 1,
+                    "signal_domain_count": 1,
+                },
+                "assets": [
+                    {
+                        "id": "web-01",
+                        "type": "host",
+                        "hostname": "web-01.example.invalid",
+                        "roles": ["web"],
+                        "tags": ["linux"],
+                    }
+                ],
+                "signal_domains": [
+                    {
+                        "name": "backup",
+                        "kind": "object",
+                        "item_count": 2,
+                        "fields": ["tool", "last_success_at"],
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_invalid_inventory_is_reported(self):
+        errors = validate_inventory(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "assets_total": -1,
+                    "asset_type_count": 0,
+                    "hostnames_total": 0,
+                    "role_count": 0,
+                    "tag_count": 0,
+                    "signal_domain_count": 0,
+                },
+                "assets": [
+                    {
+                        "id": "",
+                        "type": "",
+                        "hostname": 123,
+                        "roles": "web",
+                        "tags": "linux",
+                    }
+                ],
+                "signal_domains": [
+                    {
+                        "name": "",
+                        "kind": "table",
+                        "item_count": -1,
+                        "fields": "tool",
+                    }
+                ],
+            }
+        )
+        self.assertIn("summary.assets_total must be at least 0.", errors)
+        self.assertIn("assets[0].id must be a non-empty string.", errors)
+        self.assertIn("assets[0].hostname must be a string.", errors)
+        self.assertIn("assets[0].roles must be a list.", errors)
+        self.assertIn("signal_domains[0].name must be a non-empty string.", errors)
+        self.assertIn("signal_domains[0].kind must be one of: array, object, scalar.", errors)
+        self.assertIn("signal_domains[0].item_count must be at least 0.", errors)
 
     def test_valid_privacy_scan(self):
         errors = validate_privacy_scan(

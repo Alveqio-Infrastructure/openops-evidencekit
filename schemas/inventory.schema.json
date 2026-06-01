@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/inventory.schema.json",
+  "title": "OpenOps Inventory",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "assets", "signal_domains"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "assets_total",
+        "asset_type_count",
+        "hostnames_total",
+        "role_count",
+        "tag_count",
+        "signal_domain_count"
+      ],
+      "properties": {
+        "assets_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "asset_type_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hostnames_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "role_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tag_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "signal_domain_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "signal_domains": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/signal_domain"
+      }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "type", "hostname", "roles", "tags"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "signal_domain": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name", "kind", "item_count", "fields"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": ["object", "array", "scalar"]
+        },
+        "item_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

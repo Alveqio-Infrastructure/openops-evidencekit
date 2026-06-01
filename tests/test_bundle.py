@@ -196,6 +196,7 @@ class BundleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)
             report = temp / "report.json"
+            inventory = temp / "inventory.json"
             gate = temp / "gate.json"
             badge = temp / "badge.json"
             brief = temp / "executive-brief.json"
@@ -218,6 +219,41 @@ class BundleTests(unittest.TestCase):
                             "checks_warn": 0,
                         },
                         "results": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inventory.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "assets_total": 1,
+                            "asset_type_count": 1,
+                            "hostnames_total": 1,
+                            "role_count": 1,
+                            "tag_count": 1,
+                            "signal_domain_count": 1,
+                        },
+                        "assets": [
+                            {
+                                "id": "web-01",
+                                "type": "host",
+                                "hostname": "web-01.example.invalid",
+                                "roles": ["web"],
+                                "tags": ["linux"],
+                            }
+                        ],
+                        "signal_domains": [
+                            {
+                                "name": "backup",
+                                "kind": "object",
+                                "item_count": 1,
+                                "fields": ["tool"],
+                            }
+                        ],
                     }
                 ),
                 encoding="utf-8",
@@ -374,6 +410,7 @@ class BundleTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertEqual(classify_artifact(report), "report")
+            self.assertEqual(classify_artifact(inventory), "inventory")
             self.assertEqual(classify_artifact(gate), "gate-result")
             self.assertEqual(classify_artifact(badge), "badge")
             self.assertEqual(classify_artifact(brief), "executive-brief")
