@@ -22,6 +22,15 @@ themselves are plain rules that can be audited and run in CI.
 
 Automation exit codes are documented in [docs/exit-codes.md](docs/exit-codes.md).
 
+## Example Output
+
+![OpenOps EvidenceKit report preview](docs/assets/openops-report-preview.svg)
+
+The same report can be rendered for people, CI systems, dashboards, and
+handoff bundles: Markdown or BookStack pages, HTML, JUnit XML, SARIF JSON,
+Prometheus text metrics, a Shields-compatible badge, action plans, tickets, and
+signed evidence bundles.
+
 ## Status
 
 This project is in early alpha. The first release focuses on a stable evidence

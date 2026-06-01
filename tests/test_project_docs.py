@@ -1,4 +1,5 @@
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -23,6 +24,13 @@ class ProjectDocsTests(unittest.TestCase):
         visual = ROOT / "docs" / "assets" / "openops-evidencekit-flow.svg"
         self.assertIn("docs/assets/openops-evidencekit-flow.svg", readme)
         self.assertTrue(visual.is_file())
+
+    def test_readme_links_existing_report_preview_visual(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        visual = ROOT / "docs" / "assets" / "openops-report-preview.svg"
+        self.assertIn("docs/assets/openops-report-preview.svg", readme)
+        self.assertTrue(visual.is_file())
+        ET.parse(visual)
 
 
 if __name__ == "__main__":

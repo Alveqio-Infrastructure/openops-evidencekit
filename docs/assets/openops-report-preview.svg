@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">OpenOps EvidenceKit report preview</title>
+  <desc id="desc">A visual preview of generated OpenOps EvidenceKit report artifacts, including score, findings, badge, CI outputs, and bundle files.</desc>
+  <defs>
+    <linearGradient id="pageBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef2ff"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      .window { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; filter: url(#softShadow); }
+      .panel { fill: #f8fafc; stroke: #dbe4ee; stroke-width: 1; }
+      .ink { font: 700 28px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .h2 { font: 700 20px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .body { font: 500 16px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+      .small { font: 600 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; }
+      .mono { font: 600 14px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: #334155; }
+      .muted { fill: #e2e8f0; }
+      .pass { fill: #0f766e; }
+      .warn { fill: #b45309; }
+      .fail { fill: #dc2626; }
+      .blue { fill: #2563eb; }
+      .purple { fill: #7c3aed; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="700" fill="url(#pageBg)"/>
+  <text x="70" y="72" class="ink">Example Output</text>
+  <text x="70" y="102" class="body">A readiness report that works for humans, CI systems, dashboards, and handoff bundles.</text>
+
+  <rect x="70" y="140" width="720" height="485" rx="14" class="window"/>
+  <rect x="70" y="140" width="720" height="48" rx="14" fill="#0f172a"/>
+  <circle cx="103" cy="164" r="7" fill="#ef4444"/>
+  <circle cx="126" cy="164" r="7" fill="#f59e0b"/>
+  <circle cx="149" cy="164" r="7" fill="#22c55e"/>
+  <text x="180" y="169" class="small" fill="#cbd5e1">report.local.md</text>
+
+  <text x="105" y="238" class="ink">OpenOps Evidence Report</text>
+  <rect x="105" y="270" width="160" height="94" rx="10" fill="#ecfdf5" stroke="#99f6e4"/>
+  <text x="128" y="304" class="small" fill="#0f766e">STATUS</text>
+  <text x="128" y="340" style="font: 800 34px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #0f766e;">PASS</text>
+
+  <rect x="285" y="270" width="160" height="94" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="308" y="304" class="small" fill="#2563eb">SCORE</text>
+  <text x="308" y="340" style="font: 800 34px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #2563eb;">100</text>
+
+  <rect x="465" y="270" width="260" height="94" rx="10" fill="#faf5ff" stroke="#ddd6fe"/>
+  <text x="488" y="304" class="small" fill="#7c3aed">CHECKS</text>
+  <text x="488" y="337" class="h2">10 passed, 0 failed</text>
+  <text x="488" y="358" class="small">0 warnings</text>
+
+  <text x="105" y="410" class="h2">Findings</text>
+  <rect x="105" y="432" width="620" height="50" rx="8" class="panel"/>
+  <circle cx="130" cy="457" r="9" class="pass"/>
+  <text x="150" y="462" class="mono">backup_recent</text>
+  <text x="320" y="462" class="body">Recent successful backup exists</text>
+  <text x="655" y="462" class="small" fill="#0f766e">PASS</text>
+
+  <rect x="105" y="492" width="620" height="50" rx="8" class="panel"/>
+  <circle cx="130" cy="517" r="9" class="pass"/>
+  <text x="150" y="522" class="mono">restore_drill</text>
+  <text x="320" y="522" class="body">Restore drill evidence is documented</text>
+  <text x="655" y="522" class="small" fill="#0f766e">PASS</text>
+
+  <rect x="105" y="552" width="620" height="50" rx="8" class="panel"/>
+  <circle cx="130" cy="577" r="9" class="pass"/>
+  <text x="150" y="582" class="mono">monitoring_targets</text>
+  <text x="320" y="582" class="body">Monitoring targets are present</text>
+  <text x="655" y="582" class="small" fill="#0f766e">PASS</text>
+
+  <rect x="825" y="140" width="305" height="485" rx="14" class="window"/>
+  <text x="855" y="188" class="h2">Machine Outputs</text>
+  <text x="855" y="215" class="body">Same source report, many consumers.</text>
+
+  <rect x="855" y="250" width="245" height="44" rx="8" fill="#ecfdf5" stroke="#99f6e4"/>
+  <text x="875" y="278" class="mono">badge: pass 100</text>
+  <circle cx="1075" cy="272" r="8" class="pass"/>
+
+  <rect x="855" y="310" width="245" height="44" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="875" y="338" class="mono">JUnit XML</text>
+  <text x="1018" y="338" class="small" fill="#2563eb">CI tests</text>
+
+  <rect x="855" y="370" width="245" height="44" rx="8" fill="#fef2f2" stroke="#fecaca"/>
+  <text x="875" y="398" class="mono">SARIF JSON</text>
+  <text x="1014" y="398" class="small" fill="#dc2626">review</text>
+
+  <rect x="855" y="430" width="245" height="44" rx="8" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="875" y="458" class="mono">Prometheus</text>
+  <text x="1006" y="458" class="small" fill="#b45309">metrics</text>
+
+  <rect x="855" y="490" width="245" height="84" rx="8" fill="#faf5ff" stroke="#ddd6fe"/>
+  <text x="875" y="520" class="mono">Bundle manifest</text>
+  <text x="875" y="548" class="body">hashes, signatures,</text>
+  <text x="875" y="570" class="body">verified handoff ZIP</text>
+</svg>
