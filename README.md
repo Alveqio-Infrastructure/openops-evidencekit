@@ -1,5 +1,7 @@
 # OpenOps EvidenceKit
 
+![OpenOps EvidenceKit workflow](docs/assets/openops-evidencekit-flow.svg)
+
 OpenOps EvidenceKit is a vendor-neutral command line toolkit for collecting,
 checking, redacting, and reporting infrastructure operations evidence.
 

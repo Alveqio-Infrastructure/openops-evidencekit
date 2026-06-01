@@ -18,6 +18,12 @@ class ProjectDocsTests(unittest.TestCase):
         self.assertIn("GOVERNANCE.md", readme)
         self.assertIn("docs/release-process.md", readme)
 
+    def test_readme_links_existing_workflow_visual(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        visual = ROOT / "docs" / "assets" / "openops-evidencekit-flow.svg"
+        self.assertIn("docs/assets/openops-evidencekit-flow.svg", readme)
+        self.assertTrue(visual.is_file())
+
 
 if __name__ == "__main__":
     unittest.main()

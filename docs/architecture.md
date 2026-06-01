@@ -1,5 +1,7 @@
 # Architecture
 
+![OpenOps EvidenceKit workflow](assets/openops-evidencekit-flow.svg)
+
 OpenOps EvidenceKit has four layers:
 
 1. Collectors produce evidence JSON.
