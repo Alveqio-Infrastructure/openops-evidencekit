@@ -44,6 +44,9 @@ readiness-badge.json
 /restore-report.json
 /restore-report.md
 /restore-report.csv
+/mail-report.json
+/mail-report.md
+/mail-report.csv
 /questionnaire.*
 /evidence-questionnaire.*
 /executive-brief.json

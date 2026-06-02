@@ -51,6 +51,8 @@
         "invalid_timestamps",
         "restore_failures",
         "restore_warnings",
+        "mail_failures",
+        "mail_warnings",
         "privacy_findings",
         "scope_warnings",
         "drift_changes",
@@ -102,6 +104,14 @@
           "minimum": 0
         },
         "restore_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mail_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mail_warnings": {
           "type": "integer",
           "minimum": 0
         },

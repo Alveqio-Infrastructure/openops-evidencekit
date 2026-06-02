@@ -686,6 +686,52 @@ def validate_restore_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_mail_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Mail report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "domains", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in (
+            "domains_total",
+            "domains_passed",
+            "domains_warn",
+            "domains_failed",
+            "spf_passed",
+            "spf_missing",
+            "dkim_passed",
+            "dkim_missing",
+            "dmarc_enforced",
+            "dmarc_monitoring",
+            "dmarc_missing",
+            "dmarc_unknown",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, domain in enumerate(document.get("domains", [])):
+        if not isinstance(domain, dict):
+            errors.append(f"domains[{index}] must be an object.")
+            continue
+        prefix = f"domains[{index}]."
+        _require_string(domain, "domain", errors, prefix=prefix)
+        _require_enum(domain, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        if domain.get("spf") is not None and not isinstance(domain.get("spf"), bool):
+            errors.append(f"{prefix}spf must be a boolean or null.")
+        if domain.get("dkim") is not None and not isinstance(domain.get("dkim"), bool):
+            errors.append(f"{prefix}dkim must be a boolean or null.")
+        _require_string_type(domain, "dmarc", errors, prefix=prefix)
+        _require_string(domain, "dmarc_policy", errors, prefix=prefix)
+        _require_enum(domain, "dmarc_status", {"enforced", "monitoring", "missing", "unknown"}, errors, prefix=prefix)
+        for key in ("reason", "recommended_action"):
+            _require_string(domain, key, errors, prefix=prefix)
+    return errors
+
+
 def _validate_drift_change(change: Any, errors: list[str], prefix: str, name_key: str) -> None:
     if not isinstance(change, dict):
         errors.append(f"{prefix[:-1]} must be an object.")

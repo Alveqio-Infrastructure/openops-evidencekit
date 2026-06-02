@@ -46,6 +46,7 @@ from .gates import evaluate_report_gate, render_gate_markdown
 from .history import append_report_history, render_history_csv, render_history_markdown, render_history_svg
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
+from .mail import create_mail_report, render_mail_csv, render_mail_markdown
 from .merge import merge_evidence
 from .policy import (
     create_policy_matrix,
@@ -85,6 +86,7 @@ from .schema import (
     validate_freshness_report,
     validate_gate_result,
     validate_inventory,
+    validate_mail_report,
     validate_policy_matrix,
     validate_privacy_scan,
     validate_policy_coverage,
@@ -310,6 +312,15 @@ def build_parser() -> argparse.ArgumentParser:
     restore_report.add_argument("-o", "--output", default="-")
     restore_report.set_defaults(func=cmd_restore_report)
 
+    mail = sub.add_parser("mail", help="Inspect mail domain authentication evidence")
+    mail_sub = mail.add_subparsers(required=True)
+    mail_report = mail_sub.add_parser("report", help="Render SPF, DKIM, and DMARC evidence")
+    mail_report.add_argument("-i", "--input", required=True)
+    mail_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    mail_report.add_argument("--fail-on-warn", action="store_true")
+    mail_report.add_argument("-o", "--output", default="-")
+    mail_report.set_defaults(func=cmd_mail_report)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -412,6 +423,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-runbook-warn", action="store_true")
     review_create.add_argument("--fail-on-freshness-warn", action="store_true")
     review_create.add_argument("--fail-on-restore-warn", action="store_true")
+    review_create.add_argument("--fail-on-mail-warn", action="store_true")
     review_create.add_argument("--fail-on-open-risk", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
@@ -506,6 +518,7 @@ def build_parser() -> argparse.ArgumentParser:
             "review-attestation",
             "review-summary",
             "restore-report",
+            "mail-report",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -898,6 +911,24 @@ def cmd_restore_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_mail_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    report = create_mail_report(evidence)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_mail_csv(report)
+    else:
+        rendered = render_mail_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
 def cmd_evidence_diff(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -1202,6 +1233,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         return 1
     if args.fail_on_restore_warn and pack["restore_report"]["summary"]["status"] != "pass":
         return 1
+    if (
+        args.fail_on_mail_warn
+        and pack.get("mail_report") is not None
+        and pack["mail_report"]["summary"]["status"] != "pass"
+    ):
+        return 1
     if args.fail_on_open_risk and pack["risk_register"]["summary"]["open_count"] > 0:
         return 1
     return 0
@@ -1376,6 +1413,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_review_summary(document)
     elif args.type == "restore-report":
         errors = validate_restore_report(document)
+    elif args.type == "mail-report":
+        errors = validate_mail_report(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

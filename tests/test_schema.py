@@ -12,6 +12,7 @@ from openops_evidence.schema import (
     validate_freshness_report,
     validate_gate_result,
     validate_inventory,
+    validate_mail_report,
     validate_policy_coverage,
     validate_policy_matrix,
     validate_privacy_scan,
@@ -711,6 +712,8 @@ class SchemaTests(unittest.TestCase):
                     "invalid_timestamps": 0,
                     "restore_failures": 0,
                     "restore_warnings": 0,
+                    "mail_failures": 0,
+                    "mail_warnings": 0,
                     "privacy_findings": 0,
                     "scope_warnings": 0,
                     "drift_changes": 0,
@@ -997,6 +1000,44 @@ class SchemaTests(unittest.TestCase):
                         "verifier": "",
                         "path": "signals.backup.restore_test_at",
                         "reason": "Restore drill is current and successful.",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_mail_report(self):
+        errors = validate_mail_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "domains_total": 1,
+                    "domains_passed": 1,
+                    "domains_warn": 0,
+                    "domains_failed": 0,
+                    "spf_passed": 1,
+                    "spf_missing": 0,
+                    "dkim_passed": 1,
+                    "dkim_missing": 0,
+                    "dmarc_enforced": 1,
+                    "dmarc_monitoring": 0,
+                    "dmarc_missing": 0,
+                    "dmarc_unknown": 0,
+                },
+                "domains": [
+                    {
+                        "domain": "example.invalid",
+                        "status": "pass",
+                        "spf": True,
+                        "dkim": True,
+                        "dmarc": "reject",
+                        "dmarc_policy": "reject",
+                        "dmarc_status": "enforced",
+                        "reason": "SPF, DKIM, and enforced DMARC evidence are present.",
+                        "recommended_action": "Keep mail authentication evidence current.",
                     }
                 ],
             }

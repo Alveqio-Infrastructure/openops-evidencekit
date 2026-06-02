@@ -50,6 +50,10 @@ Backup evidence can use `signals.backup.restore_test_at` for a single reviewed
 restore timestamp or `signals.backup.restore_tests` for recurring drill rows
 with `id`, `target`, `tested_at`, `outcome`, and `verifier`.
 
+Mail evidence uses `signals.mail.domains` with `domain`, `spf`, `dkim`, and
+`dmarc` fields. `dmarc` may be a compact policy such as `reject` or a full
+DMARC record containing `p=reject`.
+
 ## Validation
 
 Run:

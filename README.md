@@ -38,8 +38,8 @@ domain scorecards, tickets, and signed evidence bundles.
 
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
-risk registers, restore assurance reports, plus review packs with one-page
-summaries, manifests, and attestations.
+risk registers, restore assurance reports, mail domain reports, plus review
+packs with one-page summaries, manifests, and attestations.
 
 ## Status
 
@@ -59,6 +59,7 @@ python -m openops_evidence questionnaire policy examples/policy.baseline.toml -o
 python -m openops_evidence inventory evidence -i evidence.local.json -o inventory.md
 python -m openops_evidence freshness report -i evidence.local.json --max-age-days 30 -o freshness-report.md
 python -m openops_evidence restore report -i evidence.local.json --max-drill-age-days 90 -o restore-report.md
+python -m openops_evidence mail report -i evidence.local.json -o mail-report.md
 python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i evidence.local.json -s examples/scope.sample.toml -o scope-report.md
 python -m openops_evidence catalog validate examples/service-catalog.sample.toml
@@ -225,6 +226,8 @@ Use `freshness report` when timestamp-like evidence fields should be checked for
 stale, future, or invalid values before a handoff.
 Use `restore report` when backup recency and restore drill proof should become
 a standalone operational assurance artifact.
+Use `mail report` when SPF, DKIM, and DMARC evidence should become a standalone
+mail-domain hygiene artifact.
 Use `scope report` when the assessment needs explicit in-scope, out-of-scope,
 missing, and unclassified evidence boundaries.
 Use `catalog report` when service ownership, criticality, assets, evidence
@@ -255,6 +258,7 @@ Evidence scaffolds are described in [docs/evidence-scaffold.md](docs/evidence-sc
 Evidence drift reports are described in [docs/evidence-drift.md](docs/evidence-drift.md).
 Evidence freshness reports are described in [docs/freshness-report.md](docs/freshness-report.md).
 Restore assurance reports are described in [docs/restore-report.md](docs/restore-report.md).
+Mail domain reports are described in [docs/mail-report.md](docs/mail-report.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
 Service catalog reports are described in [docs/service-catalog.md](docs/service-catalog.md).
 Runbook coverage reports are described in [docs/runbook-report.md](docs/runbook-report.md).

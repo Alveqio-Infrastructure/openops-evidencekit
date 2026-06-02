@@ -20,7 +20,9 @@ from .freshness import create_freshness_report, render_freshness_csv, render_fre
 from .gates import evaluate_report_gate, render_gate_markdown
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import dump_json, write_text
+from .mail import create_mail_report, render_mail_csv, render_mail_markdown
 from .policy import (
+    Check,
     create_policy_matrix,
     evaluate_policy,
     parse_policy,
@@ -76,6 +78,7 @@ def create_review_pack(
         max_drill_age_days=restore_max_drill_age_days,
         max_backup_age_days=restore_max_backup_age_days,
     )
+    mail_report = create_mail_report(evidence) if _has_mail_context(evidence, checks) else None
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
     service_catalog = create_service_catalog_report(evidence, catalog_document) if catalog_document is not None else None
@@ -120,6 +123,10 @@ def create_review_pack(
     add_artifact("restore-report.json", dump_json(restore_report), "Restore assurance", "Machine-readable backup and restore drill assurance report.")
     add_artifact("restore-report.md", render_restore_markdown(restore_report), "Restore assurance", "Human-readable backup and restore drill assurance report.")
     add_artifact("restore-report.csv", render_restore_csv(restore_report), "Restore assurance", "Spreadsheet-friendly restore assurance export.")
+    if mail_report is not None:
+        add_artifact("mail-report.json", dump_json(mail_report), "Mail domain report", "Machine-readable SPF, DKIM, and DMARC report.")
+        add_artifact("mail-report.md", render_mail_markdown(mail_report), "Mail domain report", "Human-readable SPF, DKIM, and DMARC report.")
+        add_artifact("mail-report.csv", render_mail_csv(mail_report), "Mail domain report", "Spreadsheet-friendly mail domain report.")
     if evidence_drift is not None:
         add_artifact("evidence-drift.json", dump_json(evidence_drift), "Evidence drift", "Machine-readable evidence drift report.")
         add_artifact("evidence-drift.md", render_evidence_diff_markdown(evidence_drift), "Evidence drift", "Human-readable evidence drift report.")
@@ -188,6 +195,7 @@ def create_review_pack(
         privacy_scan=privacy_scan,
         freshness_report=freshness_report,
         restore_report=restore_report,
+        mail_report=mail_report,
         risk_register=risk_register,
         scope_report=scope_report,
         evidence_drift=evidence_drift,
@@ -226,6 +234,7 @@ def create_review_pack(
         "gate": gate,
         "freshness_report": freshness_report,
         "restore_report": restore_report,
+        "mail_report": mail_report,
         "risk_register": risk_register,
         "review_summary": review_summary,
         "evidence_drift": evidence_drift,
@@ -258,6 +267,8 @@ def render_review_pack_readme(
         suggested_steps.append("Check `freshness-report.md` before relying on old evidence timestamps.")
     if any(artifact.get("filename") == "restore-report.md" for artifact in artifacts):
         suggested_steps.append("Use `restore-report.md` to confirm backup recency and restore drill proof.")
+    if any(artifact.get("filename") == "mail-report.md" for artifact in artifacts):
+        suggested_steps.append("Check `mail-report.md` for SPF, DKIM, and DMARC evidence.")
     if any(artifact.get("filename") == "service-catalog.md" for artifact in artifacts):
         suggested_steps.append("Review `service-catalog.md` for service ownership, criticality, assets, and runbook gaps.")
     if any(artifact.get("filename") == "runbook-report.md" for artifact in artifacts):
@@ -481,6 +492,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("scorecard.html", "Scorecard"),
         ("freshness-report.md", "Freshness"),
         ("restore-report.md", "Restore"),
+        ("mail-report.md", "Mail"),
         ("scope-report.md", "Scope Report"),
         ("service-catalog.md", "Service Catalog"),
         ("runbook-report.md", "Runbook Report"),
@@ -497,6 +509,13 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
     ]
     lines.append("      <a href=\"manifest.json\">Manifest</a>")
     return "\n".join(lines)
+
+
+def _has_mail_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
+    signals = evidence.get("signals")
+    if isinstance(signals, dict) and isinstance(signals.get("mail"), dict):
+        return True
+    return any(check.path.startswith("signals.mail") for check in checks)
 
 
 def _status_class(value: Any) -> str:

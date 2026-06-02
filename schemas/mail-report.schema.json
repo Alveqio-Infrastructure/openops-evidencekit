@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/mail-report.schema.json",
+  "title": "OpenOps Mail Domain Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "domains"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "domains_total",
+        "domains_passed",
+        "domains_warn",
+        "domains_failed",
+        "spf_passed",
+        "spf_missing",
+        "dkim_passed",
+        "dkim_missing",
+        "dmarc_enforced",
+        "dmarc_monitoring",
+        "dmarc_missing",
+        "dmarc_unknown"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "domains_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domains_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domains_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domains_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spf_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spf_missing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dkim_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dkim_missing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dmarc_enforced": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dmarc_monitoring": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dmarc_missing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dmarc_unknown": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "domain",
+          "status",
+          "spf",
+          "dkim",
+          "dmarc",
+          "dmarc_policy",
+          "dmarc_status",
+          "reason",
+          "recommended_action"
+        ],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["pass", "warn", "fail"]
+          },
+          "spf": {
+            "type": ["boolean", "null"]
+          },
+          "dkim": {
+            "type": ["boolean", "null"]
+          },
+          "dmarc": {
+            "type": "string"
+          },
+          "dmarc_policy": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dmarc_status": {
+            "enum": ["enforced", "monitoring", "missing", "unknown"]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommended_action": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

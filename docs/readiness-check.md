@@ -60,6 +60,7 @@ Review the redacted file manually before sending it to anyone else.
 python -m openops_evidence check -i evidence.redacted.json -p examples/policy.baseline.toml -o report.json
 python -m openops_evidence gate report -i report.json --min-score 90 --max-warnings 0 -o gate-result.json
 python -m openops_evidence restore report -i evidence.redacted.json --max-drill-age-days 90 -o restore-report.md
+python -m openops_evidence mail report -i evidence.redacted.json -o mail-report.md
 ```
 
 ## 4. Render Report

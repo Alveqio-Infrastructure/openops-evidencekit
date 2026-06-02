@@ -206,6 +206,7 @@ class BundleTests(unittest.TestCase):
             attestation = temp / "review-attestation.json"
             review_summary = temp / "review-summary.json"
             restore_report = temp / "restore-report.json"
+            mail_report = temp / "mail-report.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             service_catalog = temp / "service-catalog.json"
@@ -511,6 +512,8 @@ class BundleTests(unittest.TestCase):
                             "invalid_timestamps": 0,
                             "restore_failures": 0,
                             "restore_warnings": 0,
+                            "mail_failures": 0,
+                            "mail_warnings": 0,
                             "privacy_findings": 0,
                             "scope_warnings": 0,
                             "drift_changes": 0,
@@ -575,6 +578,44 @@ class BundleTests(unittest.TestCase):
                                 "verifier": "",
                                 "path": "signals.backup.restore_test_at",
                                 "reason": "Restore drill is current and successful.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            mail_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "domains_total": 1,
+                            "domains_passed": 1,
+                            "domains_warn": 0,
+                            "domains_failed": 0,
+                            "spf_passed": 1,
+                            "spf_missing": 0,
+                            "dkim_passed": 1,
+                            "dkim_missing": 0,
+                            "dmarc_enforced": 1,
+                            "dmarc_monitoring": 0,
+                            "dmarc_missing": 0,
+                            "dmarc_unknown": 0,
+                        },
+                        "domains": [
+                            {
+                                "domain": "example.invalid",
+                                "status": "pass",
+                                "spf": True,
+                                "dkim": True,
+                                "dmarc": "reject",
+                                "dmarc_policy": "reject",
+                                "dmarc_status": "enforced",
+                                "reason": "SPF, DKIM, and enforced DMARC evidence are present.",
+                                "recommended_action": "Keep mail authentication evidence current.",
                             }
                         ],
                     }
@@ -936,6 +977,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(attestation), "review-attestation")
             self.assertEqual(classify_artifact(review_summary), "review-summary")
             self.assertEqual(classify_artifact(restore_report), "restore-report")
+            self.assertEqual(classify_artifact(mail_report), "mail-report")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(service_catalog), "service-catalog")

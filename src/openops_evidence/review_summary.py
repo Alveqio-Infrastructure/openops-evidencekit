@@ -13,6 +13,7 @@ def create_review_summary(
     privacy_scan: dict[str, Any],
     freshness_report: dict[str, Any] | None = None,
     restore_report: dict[str, Any] | None = None,
+    mail_report: dict[str, Any] | None = None,
     risk_register: dict[str, Any] | None = None,
     scope_report: dict[str, Any] | None = None,
     evidence_drift: dict[str, Any] | None = None,
@@ -24,6 +25,7 @@ def create_review_summary(
     privacy_summary = privacy_scan.get("summary", {})
     freshness_summary = (freshness_report or {}).get("summary", {})
     restore_summary = (restore_report or {}).get("summary", {})
+    mail_summary = (mail_report or {}).get("summary", {})
     risk_summary = (risk_register or {}).get("summary", {})
     scope_summary = (scope_report or {}).get("summary", {})
     drift_summary = (evidence_drift or {}).get("summary", {})
@@ -42,6 +44,8 @@ def create_review_summary(
         "invalid_timestamps": _int_or_zero(freshness_summary.get("invalid_count")),
         "restore_failures": _int_or_zero(restore_summary.get("checks_failed")),
         "restore_warnings": _int_or_zero(restore_summary.get("checks_warn")),
+        "mail_failures": _int_or_zero(mail_summary.get("domains_failed")),
+        "mail_warnings": _int_or_zero(mail_summary.get("domains_warn")),
         "privacy_findings": _int_or_zero(privacy_summary.get("findings_count")),
         "scope_warnings": 1 if scope_summary.get("status") == "warn" else 0,
         "drift_changes": _int_or_zero(drift_summary.get("asset_changes_count"))
@@ -93,6 +97,8 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "invalid_timestamps",
         "restore_failures",
         "restore_warnings",
+        "mail_failures",
+        "mail_warnings",
         "privacy_findings",
         "drift_changes",
         "catalog_warnings",
@@ -123,6 +129,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("privacy findings exist")
     if metrics["restore_failures"] > 0:
         blockers.append("restore assurance failed")
+    if metrics["mail_failures"] > 0:
+        blockers.append("mail domain checks failed")
     if blockers:
         return {
             "status": "fail",
@@ -136,6 +144,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("evidence freshness needs review")
     if metrics["restore_warnings"] > 0:
         warnings.append("restore assurance warnings exist")
+    if metrics["mail_warnings"] > 0:
+        warnings.append("mail domain warnings exist")
     if metrics["scope_warnings"] > 0:
         warnings.append("scope warnings exist")
     if metrics["drift_changes"] > 0:
@@ -170,6 +180,10 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['restore_failures']} restore assurance check(s) failed.")
     if metrics["restore_warnings"]:
         highlights.append(f"{metrics['restore_warnings']} restore assurance warning(s) need review.")
+    if metrics["mail_failures"]:
+        highlights.append(f"{metrics['mail_failures']} mail domain(s) failed authentication evidence checks.")
+    if metrics["mail_warnings"]:
+        highlights.append(f"{metrics['mail_warnings']} mail domain warning(s) need review.")
     if metrics["drift_changes"]:
         highlights.append(f"{metrics['drift_changes']} evidence drift change(s) were detected.")
     return highlights
@@ -188,6 +202,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Review `privacy-scan.md` before sending the pack outside the operating team.")
     if metrics["restore_failures"] > 0 or metrics["restore_warnings"] > 0:
         steps.append("Review `restore-report.md` and refresh backup or restore drill evidence.")
+    if metrics["mail_failures"] > 0 or metrics["mail_warnings"] > 0:
+        steps.append("Review `mail-report.md` and fix SPF, DKIM, or DMARC evidence gaps.")
     if metrics["stale_timestamps"] > 0 or metrics["invalid_timestamps"] > 0:
         steps.append("Refresh stale or invalid evidence timestamps before relying on the handoff.")
     if metrics["catalog_warnings"] > 0 or metrics["runbook_warnings"] > 0:
