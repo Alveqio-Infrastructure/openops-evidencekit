@@ -92,6 +92,7 @@ from .schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_review_summary,
     validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
@@ -487,6 +488,7 @@ def build_parser() -> argparse.ArgumentParser:
             "executive-brief",
             "evidence-drift",
             "review-attestation",
+            "review-summary",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -1319,6 +1321,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_evidence_drift(document)
     elif args.type == "review-attestation":
         errors = validate_review_attestation(document)
+    elif args.type == "review-summary":
+        errors = validate_review_summary(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

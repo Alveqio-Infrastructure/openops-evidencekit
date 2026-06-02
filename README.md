@@ -38,7 +38,8 @@ domain scorecards, tickets, and signed evidence bundles.
 
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
-risk registers, and review packs with manifests and attestations.
+risk registers, plus review packs with one-page summaries, manifests, and
+attestations.
 
 ## Status
 
@@ -254,6 +255,7 @@ Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
 Service catalog reports are described in [docs/service-catalog.md](docs/service-catalog.md).
 Runbook coverage reports are described in [docs/runbook-report.md](docs/runbook-report.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
+Review summaries are described in [docs/review-summary.md](docs/review-summary.md).
 Review attestations are described in [docs/review-attestation.md](docs/review-attestation.md).
 Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).
 Policy coverage reports are described in [docs/policy-coverage.md](docs/policy-coverage.md).

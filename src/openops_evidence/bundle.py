@@ -27,6 +27,7 @@ from .schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_review_summary,
     validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
@@ -281,6 +282,8 @@ def classify_artifact(path: Path) -> str:
             return "report-history"
         if validate_review_attestation(document) == []:
             return "review-attestation"
+        if validate_review_summary(document) == []:
+            return "review-summary"
         if validate_executive_brief(document) == []:
             return "executive-brief"
         if validate_scorecard(document) == []:

@@ -56,6 +56,7 @@ having to deploy a platform first.
 - Runbook coverage reports for freshness and service references.
 - Review-pack generation for complete readiness handoff folders.
 - Review attestation export for manifest-bound sign-off records.
+- Review summary export for one-page review-pack decisions.
 - Domain scorecard export for operational area summaries.
 - Action plan ticket export.
 - Risk register export for open and accepted operational risks.

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/review-summary.schema.json",
+  "title": "OpenOps Review Summary",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "decision", "metrics", "highlights", "next_steps"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["status", "recommendation", "reason"],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "recommendation": {
+          "enum": ["ready_for_handoff", "review_required", "blocked"]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "readiness_score",
+        "report_status",
+        "gate_status",
+        "checks_failed",
+        "checks_warn",
+        "open_risks",
+        "accepted_risks",
+        "expired_acceptances",
+        "stale_timestamps",
+        "invalid_timestamps",
+        "privacy_findings",
+        "scope_warnings",
+        "drift_changes",
+        "catalog_warnings",
+        "runbook_warnings"
+      ],
+      "properties": {
+        "readiness_score": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "report_status": {
+          "type": "string"
+        },
+        "gate_status": {
+          "type": "string"
+        },
+        "checks_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open_risks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accepted_risks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expired_acceptances": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stale_timestamps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "invalid_timestamps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "privacy_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scope_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "drift_changes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "catalog_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runbook_warnings": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "highlights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -151,6 +151,37 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(report["summary"]["status"], "fail")
         self.assertEqual(report["summary"]["score"], 0)
 
+    def test_time_operators_use_evidence_generated_at_reference(self):
+        evidence = {
+            "generated_at": "2026-01-03T00:00:00+00:00",
+            "signals": {
+                "backup": {"last_success_at": "2026-01-02T00:00:00+00:00"},
+                "tls": {"not_after": "2026-02-01T00:00:00+00:00"},
+            },
+        }
+        report = evaluate_policy(
+            evidence,
+            [
+                Check(
+                    id="backup_recent",
+                    title="Recent backup",
+                    path="signals.backup.last_success_at",
+                    operator="within_days",
+                    value=2,
+                    severity="critical",
+                ),
+                Check(
+                    id="tls_valid",
+                    title="TLS valid",
+                    path="signals.tls.not_after",
+                    operator="after_now",
+                    severity="high",
+                ),
+            ],
+        )
+        self.assertEqual(report["summary"]["status"], "pass")
+        self.assertEqual([item["status"] for item in report["results"]], ["pass", "pass"])
+
     def test_validate_policy_document_accepts_valid_policy(self):
         errors = validate_policy_document(
             {

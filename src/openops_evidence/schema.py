@@ -321,6 +321,54 @@ def validate_review_attestation(document: Any) -> list[str]:
     return errors
 
 
+def validate_review_summary(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Review summary must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "decision", errors)
+    _require_mapping(document, "metrics", errors)
+    _require_list(document, "highlights", errors)
+    _require_list(document, "next_steps", errors)
+    decision = document.get("decision")
+    if isinstance(decision, dict):
+        _require_enum(decision, "status", {"pass", "warn", "fail"}, errors, prefix="decision.")
+        _require_enum(
+            decision,
+            "recommendation",
+            {"ready_for_handoff", "review_required", "blocked"},
+            errors,
+            prefix="decision.",
+        )
+        _require_string(decision, "reason", errors, prefix="decision.")
+    metrics = document.get("metrics")
+    if isinstance(metrics, dict):
+        for key in ("report_status", "gate_status"):
+            _require_string(metrics, key, errors, prefix="metrics.")
+        if "readiness_score" not in metrics:
+            errors.append("metrics.readiness_score is required.")
+        elif metrics["readiness_score"] is not None:
+            _require_int_range(metrics, "readiness_score", errors, minimum=0, maximum=100, prefix="metrics.")
+        for key in (
+            "checks_failed",
+            "checks_warn",
+            "open_risks",
+            "accepted_risks",
+            "expired_acceptances",
+            "stale_timestamps",
+            "invalid_timestamps",
+            "privacy_findings",
+            "scope_warnings",
+            "drift_changes",
+            "catalog_warnings",
+            "runbook_warnings",
+        ):
+            _require_int_range(metrics, key, errors, minimum=0, prefix="metrics.")
+    return errors
+
+
 def validate_scope_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

@@ -20,6 +20,7 @@ from openops_evidence.schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_review_summary,
     validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
@@ -681,6 +682,40 @@ class SchemaTests(unittest.TestCase):
                         "observed": "Manifest path, size, artifact count, and SHA-256 are recorded.",
                     }
                 ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_review_summary(self):
+        errors = validate_review_summary(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "decision": {
+                    "status": "warn",
+                    "recommendation": "review_required",
+                    "reason": "Accepted risks need review.",
+                },
+                "metrics": {
+                    "readiness_score": 90,
+                    "report_status": "pass",
+                    "gate_status": "pass",
+                    "checks_failed": 0,
+                    "checks_warn": 1,
+                    "open_risks": 0,
+                    "accepted_risks": 1,
+                    "expired_acceptances": 0,
+                    "stale_timestamps": 0,
+                    "invalid_timestamps": 0,
+                    "privacy_findings": 0,
+                    "scope_warnings": 0,
+                    "drift_changes": 0,
+                    "catalog_warnings": 0,
+                    "runbook_warnings": 0,
+                },
+                "highlights": ["One accepted risk needs expiry tracking."],
+                "next_steps": ["Review accepted risks."],
             }
         )
         self.assertEqual(errors, [])

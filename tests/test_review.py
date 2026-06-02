@@ -66,6 +66,8 @@ class ReviewPackTests(unittest.TestCase):
                 "report.md",
                 "report.prom",
                 "report.sarif.json",
+                "review-summary.json",
+                "review-summary.md",
                 "risk-register.csv",
                 "risk-register.json",
                 "risk-register.md",
@@ -89,18 +91,23 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(pack / "readiness-badge.json"), "-t", "badge"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "gate-result.json"), "-t", "gate-result"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "privacy-scan.json"), "-t", "privacy-scan"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "review-summary.json"), "-t", "review-summary"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "manifest.json"), "-t", "bundle"]), 0)
 
             manifest = json.loads((pack / "manifest.json").read_text(encoding="utf-8"))
+            review_summary = json.loads((pack / "review-summary.json").read_text(encoding="utf-8"))
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             self.assertEqual(manifest["metadata"]["artifact_count"], len(expected) - 1)
+            self.assertEqual(review_summary["decision"]["status"], "pass")
             self.assertIn("does not include raw evidence by default", readme)
+            self.assertIn("review-summary.md", readme)
             self.assertIn("executive-brief.md", readme)
             self.assertIn("freshness-report.md", readme)
             self.assertIn("risk-register.md", readme)
             self.assertIn("privacy-scan.md", readme)
             self.assertIn("<title>OpenOps Review Pack</title>", index)
+            self.assertIn("Review Summary", index)
             self.assertIn("Freshness", index)
             self.assertIn("Risk Register", index)
             self.assertIn("scorecard.html", index)
@@ -138,7 +145,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             scope_report = json.loads((pack / "scope-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 39)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 41)
             self.assertEqual(scope_report["summary"]["status"], "warn")
             self.assertIn("scope-report.md", readme)
             self.assertIn("Scope Report", index)
@@ -201,7 +208,7 @@ class ReviewPackTests(unittest.TestCase):
             index = (pack / "index.html").read_text(encoding="utf-8")
             service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
             runbook_report = json.loads((pack / "runbook-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 42)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 44)
             self.assertEqual(service_catalog["summary"]["status"], "warn")
             self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(runbook_report["summary"]["missing_runbooks_count"], 1)
@@ -284,7 +291,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             drift = json.loads((pack / "evidence-drift.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 39)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 41)
             self.assertEqual(drift["summary"]["status"], "warn")
             self.assertIn("evidence-drift.md", readme)
             self.assertIn("Evidence Drift", index)
@@ -346,7 +353,9 @@ remediation = "Add the missing operational signal to evidence."
             )
 
             gate = json.loads((pack / "gate-result.json").read_text(encoding="utf-8"))
+            review_summary = json.loads((pack / "review-summary.json").read_text(encoding="utf-8"))
             self.assertEqual(gate["summary"]["status"], "fail")
+            self.assertEqual(review_summary["decision"]["status"], "fail")
             self.assertTrue((pack / "manifest.json").is_file())
 
     def test_review_create_can_fail_on_freshness_after_writing_pack(self):
@@ -446,6 +455,7 @@ remediation = "Add the missing operational signal to evidence."
             self.assertIn("manifest.json", names)
             self.assertIn("index.html", names)
             self.assertIn("README.md", names)
+            self.assertIn("review-summary.md", names)
             self.assertIn("report.json", names)
             self.assertIn("scorecard.html", names)
 

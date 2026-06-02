@@ -37,6 +37,7 @@ from .reports import (
     render_sarif,
 )
 from .risk import create_risk_register, render_risk_register_csv, render_risk_register_markdown
+from .review_summary import create_review_summary, render_review_summary_markdown
 from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown
@@ -170,6 +171,19 @@ def create_review_pack(
     _relativize_privacy_paths(privacy_scan, output)
     add_artifact("privacy-scan.json", dump_json(privacy_scan), "Privacy scan", "Machine-readable scan of generated artifacts.")
     add_artifact("privacy-scan.md", render_privacy_scan_markdown(privacy_scan), "Privacy scan", "Human-readable scan of generated artifacts.")
+    review_summary = create_review_summary(
+        report=report,
+        gate=gate,
+        privacy_scan=privacy_scan,
+        freshness_report=freshness_report,
+        risk_register=risk_register,
+        scope_report=scope_report,
+        evidence_drift=evidence_drift,
+        service_catalog=service_catalog,
+        runbook_report=runbook_report,
+    )
+    add_artifact("review-summary.json", dump_json(review_summary), "Review summary", "Machine-readable review decision summary.")
+    add_artifact("review-summary.md", render_review_summary_markdown(review_summary), "Review summary", "One-page handoff decision summary.")
     index_html = render_review_pack_html(
         report=report,
         gate=gate,
@@ -200,6 +214,7 @@ def create_review_pack(
         "gate": gate,
         "freshness_report": freshness_report,
         "risk_register": risk_register,
+        "review_summary": review_summary,
         "evidence_drift": evidence_drift,
         "scope_report": scope_report,
         "service_catalog": service_catalog,
@@ -220,6 +235,7 @@ def render_review_pack_readme(
     gate_summary = gate.get("summary", {})
     privacy_summary = privacy_scan.get("summary", {})
     suggested_steps = [
+        "Read `review-summary.md` for the handoff decision.",
         "Read `executive-brief.md` for the management summary.",
         "Use `scorecard.md` to see which operational domains need attention.",
     ]
@@ -446,6 +462,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
     filenames = {str(artifact.get("filename") or "") for artifact in artifacts}
     links = [
         ("executive-brief.md", "Executive Brief"),
+        ("review-summary.md", "Review Summary"),
         ("scorecard.html", "Scorecard"),
         ("freshness-report.md", "Freshness"),
         ("scope-report.md", "Scope Report"),

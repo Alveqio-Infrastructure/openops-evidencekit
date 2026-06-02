@@ -204,6 +204,7 @@ class BundleTests(unittest.TestCase):
             brief = temp / "executive-brief.json"
             evidence_drift = temp / "evidence-drift.json"
             attestation = temp / "review-attestation.json"
+            review_summary = temp / "review-summary.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             service_catalog = temp / "service-catalog.json"
@@ -481,6 +482,40 @@ class BundleTests(unittest.TestCase):
                                 "observed": "Manifest path, size, artifact count, and SHA-256 are recorded.",
                             }
                         ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            review_summary.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "decision": {
+                            "status": "pass",
+                            "recommendation": "ready_for_handoff",
+                            "reason": "No blocking review conditions were found.",
+                        },
+                        "metrics": {
+                            "readiness_score": 100,
+                            "report_status": "pass",
+                            "gate_status": "pass",
+                            "checks_failed": 0,
+                            "checks_warn": 0,
+                            "open_risks": 0,
+                            "accepted_risks": 0,
+                            "expired_acceptances": 0,
+                            "stale_timestamps": 0,
+                            "invalid_timestamps": 0,
+                            "privacy_findings": 0,
+                            "scope_warnings": 0,
+                            "drift_changes": 0,
+                            "catalog_warnings": 0,
+                            "runbook_warnings": 0,
+                        },
+                        "highlights": [],
+                        "next_steps": ["Share the review pack."],
                     }
                 ),
                 encoding="utf-8",
@@ -838,6 +873,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(brief), "executive-brief")
             self.assertEqual(classify_artifact(evidence_drift), "evidence-drift")
             self.assertEqual(classify_artifact(attestation), "review-attestation")
+            self.assertEqual(classify_artifact(review_summary), "review-summary")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(service_catalog), "service-catalog")

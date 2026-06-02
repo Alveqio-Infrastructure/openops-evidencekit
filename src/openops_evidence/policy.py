@@ -258,7 +258,8 @@ def validate_policy_document(raw: Any) -> list[str]:
 
 
 def evaluate_policy(evidence: dict[str, Any], checks: list[Check]) -> dict[str, Any]:
-    results = [evaluate_check(evidence, check) for check in checks]
+    reference_time = _parse_datetime(evidence.get("generated_at")) or datetime.now(UTC)
+    results = [evaluate_check(evidence, check, reference_time=reference_time) for check in checks]
     failed_required = [r for r in results if r["status"] == "fail" and r["required"]]
     warnings = [r for r in results if r["status"] == "warn"]
     passed = [r for r in results if r["status"] == "pass"]
@@ -280,10 +281,11 @@ def evaluate_policy(evidence: dict[str, Any], checks: list[Check]) -> dict[str, 
     }
 
 
-def evaluate_check(evidence: dict[str, Any], check: Check) -> dict[str, Any]:
+def evaluate_check(evidence: dict[str, Any], check: Check, *, reference_time: datetime | None = None) -> dict[str, Any]:
     values = query(evidence, check.path)
+    current_time = reference_time or _parse_datetime(evidence.get("generated_at")) or datetime.now(UTC)
     try:
-        passed = _evaluate_values(values, check)
+        passed = _evaluate_values(values, check, reference_time=current_time)
         error = None
     except Exception as exc:  # noqa: BLE001 - user-authored policies should not crash the CLI.
         passed = False
@@ -306,12 +308,12 @@ def evaluate_check(evidence: dict[str, Any], check: Check) -> dict[str, Any]:
     }
 
 
-def _evaluate_values(values: list[Any], check: Check) -> bool:
+def _evaluate_values(values: list[Any], check: Check, *, reference_time: datetime) -> bool:
     if check.operator == "missing":
         return not values
     if not values:
         return False
-    evaluated = [_evaluate_one(value, check.operator, check.value) for value in values]
+    evaluated = [_evaluate_one(value, check.operator, check.value, reference_time=reference_time) for value in values]
     if check.mode == "all":
         return all(evaluated)
     if check.mode == "none":
@@ -319,7 +321,7 @@ def _evaluate_values(values: list[Any], check: Check) -> bool:
     return any(evaluated)
 
 
-def _evaluate_one(value: Any, operator: str, expected: Any) -> bool:
+def _evaluate_one(value: Any, operator: str, expected: Any, *, reference_time: datetime) -> bool:
     if operator == "exists":
         return value is not None and value != ""
     if operator == "equals":
@@ -337,11 +339,11 @@ def _evaluate_one(value: Any, operator: str, expected: Any) -> bool:
     if operator == "matches":
         return _compile_safe_regex(str(expected)).search(str(value)) is not None
     if operator == "within_days":
-        age_days = _age_days(value)
+        age_days = _age_days(value, reference_time)
         return age_days is not None and age_days <= float(expected)
     if operator == "after_now":
         parsed = _parse_datetime(value)
-        return parsed is not None and parsed > datetime.now(UTC)
+        return parsed is not None and parsed > reference_time
     raise ValueError(f"Unsupported operator: {operator}")
 
 
@@ -358,11 +360,11 @@ def _parse_datetime(value: Any) -> datetime | None:
     return parsed.astimezone(UTC)
 
 
-def _age_days(value: Any) -> float | None:
+def _age_days(value: Any, now: datetime) -> float | None:
     parsed = _parse_datetime(value)
     if parsed is None:
         return None
-    return (datetime.now(UTC) - parsed).total_seconds() / 86400
+    return (now - parsed).total_seconds() / 86400
 
 
 def _severity_weight(severity: str) -> int:

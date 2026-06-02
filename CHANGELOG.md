@@ -65,3 +65,4 @@
 - Add runbook coverage reports for freshness and service references.
 - Add evidence freshness reports for timestamp recency review.
 - Add risk register export for open and accepted operational risks.
+- Add review summary artifacts for one-page review-pack decisions.

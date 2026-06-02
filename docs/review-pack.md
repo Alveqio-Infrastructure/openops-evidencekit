@@ -14,6 +14,7 @@ audiences need:
 | --- | --- |
 | `index.html` | Browser-friendly review dashboard and artifact index. |
 | `README.md` | Entry point and suggested review order. |
+| `review-summary.json` / `review-summary.md` | One-page handoff decision summary. |
 | `report.json` / `report.md` | Canonical check results and a human-readable report. |
 | `executive-brief.json` / `executive-brief.md` | Stakeholder summary with top findings and next steps. |
 | `action-plan.json` / `action-plan.md` / `action-plan.csv` | Prioritized remediation queue. |
@@ -36,8 +37,8 @@ audiences need:
 | `manifest.json` | Hash manifest for generated artifacts. |
 
 Raw evidence is not copied into the review pack by default. For external
-sharing, create the pack from redacted evidence, inspect `privacy-scan.md`, and
-verify the manifest:
+sharing, create the pack from redacted evidence, read `review-summary.md`,
+inspect `privacy-scan.md`, and verify the manifest:
 
 ```powershell
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
