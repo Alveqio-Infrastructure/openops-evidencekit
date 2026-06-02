@@ -56,7 +56,7 @@ is available.
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
 evidence scaffolds, scope reports, service catalog reports, runbook coverage
-reports, evidence freshness reports, executive briefs, scorecards, history timelines, evidence drift
+reports, evidence freshness reports, restore assurance reports, executive briefs, scorecards, history timelines, evidence drift
 reports, comparisons, action plans, risk registers, ticket drafts, review packs, review summaries, review
 attestations, and bundle manifests.
 Reports can also be rendered as JUnit XML for CI systems. Generated files are

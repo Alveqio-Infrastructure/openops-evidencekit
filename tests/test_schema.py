@@ -21,6 +21,7 @@ from openops_evidence.schema import (
     validate_report_history,
     validate_review_attestation,
     validate_review_summary,
+    validate_restore_report,
     validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
@@ -708,6 +709,8 @@ class SchemaTests(unittest.TestCase):
                     "expired_acceptances": 0,
                     "stale_timestamps": 0,
                     "invalid_timestamps": 0,
+                    "restore_failures": 0,
+                    "restore_warnings": 0,
                     "privacy_findings": 0,
                     "scope_warnings": 0,
                     "drift_changes": 0,
@@ -936,6 +939,64 @@ class SchemaTests(unittest.TestCase):
                         "max_age_days": 30,
                         "timestamp_valid": True,
                         "reason": "Timestamp is older than 30 day(s).",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_restore_report(self):
+        errors = validate_restore_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "tool": "restic",
+                    "repository_count": 1,
+                    "last_success_at": "2026-06-01T01:00:00+00:00",
+                    "last_success_age_days": 0,
+                    "restore_tests_total": 1,
+                    "successful_restore_tests": 1,
+                    "failed_restore_tests": 0,
+                    "stale_restore_tests": 0,
+                    "unknown_restore_tests": 0,
+                    "invalid_timestamp_count": 0,
+                    "future_restore_tests": 0,
+                    "latest_restore_test_at": "2026-05-18T13:30:00+00:00",
+                    "latest_restore_test_age_days": 14,
+                    "protected_hosts_count": 1,
+                    "protected_paths_count": 0,
+                    "checks_total": 1,
+                    "checks_passed": 1,
+                    "checks_warn": 0,
+                    "checks_failed": 0,
+                },
+                "checks": [
+                    {
+                        "id": "restore_drill_recorded",
+                        "title": "Restore drill evidence is recorded",
+                        "status": "pass",
+                        "severity": "critical",
+                        "path": "signals.backup.restore_test_at",
+                        "reason": "Restore drill evidence is present.",
+                        "recommended_action": "Keep restore drill evidence current.",
+                    }
+                ],
+                "restore_tests": [
+                    {
+                        "id": "restore_test_at",
+                        "status": "current",
+                        "outcome": "pass",
+                        "target": "",
+                        "tested_at": "2026-05-18T13:30:00+00:00",
+                        "age_days": 14,
+                        "max_age_days": 90,
+                        "timestamp_valid": True,
+                        "verifier": "",
+                        "path": "signals.backup.restore_test_at",
+                        "reason": "Restore drill is current and successful.",
                     }
                 ],
             }

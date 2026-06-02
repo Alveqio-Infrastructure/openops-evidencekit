@@ -69,6 +69,7 @@ from .reports import (
     render_sarif,
 )
 from .review import create_review_pack
+from .restore import create_restore_report, render_restore_csv, render_restore_markdown
 from .risk import create_risk_register, render_risk_register_csv, render_risk_register_markdown
 from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scaffold import create_evidence_scaffold
@@ -93,6 +94,7 @@ from .schema import (
     validate_report_history,
     validate_review_attestation,
     validate_review_summary,
+    validate_restore_report,
     validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
@@ -297,6 +299,17 @@ def build_parser() -> argparse.ArgumentParser:
     freshness_report.add_argument("-o", "--output", default="-")
     freshness_report.set_defaults(func=cmd_freshness_report)
 
+    restore = sub.add_parser("restore", help="Inspect backup and restore drill assurance")
+    restore_sub = restore.add_subparsers(required=True)
+    restore_report = restore_sub.add_parser("report", help="Render restore drill and backup recency evidence")
+    restore_report.add_argument("-i", "--input", required=True)
+    restore_report.add_argument("--max-drill-age-days", type=int, default=90)
+    restore_report.add_argument("--max-backup-age-days", type=int, default=2)
+    restore_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    restore_report.add_argument("--fail-on-warn", action="store_true")
+    restore_report.add_argument("-o", "--output", default="-")
+    restore_report.set_defaults(func=cmd_restore_report)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -389,6 +402,8 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--max-critical", type=int)
     review_create.add_argument("--max-high", type=int)
     review_create.add_argument("--freshness-max-age-days", type=int, default=30)
+    review_create.add_argument("--restore-max-drill-age-days", type=int, default=90)
+    review_create.add_argument("--restore-max-backup-age-days", type=int, default=2)
     review_create.add_argument("--ignore-report-status", action="store_true")
     review_create.add_argument("--fail-on-gate", action="store_true")
     review_create.add_argument("--fail-on-drift", action="store_true")
@@ -396,6 +411,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-catalog-warn", action="store_true")
     review_create.add_argument("--fail-on-runbook-warn", action="store_true")
     review_create.add_argument("--fail-on-freshness-warn", action="store_true")
+    review_create.add_argument("--fail-on-restore-warn", action="store_true")
     review_create.add_argument("--fail-on-open-risk", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
@@ -489,6 +505,7 @@ def build_parser() -> argparse.ArgumentParser:
             "evidence-drift",
             "review-attestation",
             "review-summary",
+            "restore-report",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -855,6 +872,32 @@ def cmd_freshness_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_restore_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    if args.max_drill_age_days is not None and args.max_drill_age_days < 0:
+        raise UserFacingError("--max-drill-age-days must be at least 0")
+    if args.max_backup_age_days is not None and args.max_backup_age_days < 0:
+        raise UserFacingError("--max-backup-age-days must be at least 0")
+    report = create_restore_report(
+        evidence,
+        max_drill_age_days=args.max_drill_age_days,
+        max_backup_age_days=args.max_backup_age_days,
+    )
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_restore_csv(report)
+    else:
+        rendered = render_restore_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
 def cmd_evidence_diff(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -1089,6 +1132,10 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         raise UserFacingError("--max-findings must be at least 0")
     if args.freshness_max_age_days is not None and args.freshness_max_age_days < 0:
         raise UserFacingError("--freshness-max-age-days must be at least 0")
+    if args.restore_max_drill_age_days is not None and args.restore_max_drill_age_days < 0:
+        raise UserFacingError("--restore-max-drill-age-days must be at least 0")
+    if args.restore_max_backup_age_days is not None and args.restore_max_backup_age_days < 0:
+        raise UserFacingError("--restore-max-backup-age-days must be at least 0")
     _validate_gate_args(args)
     pack = create_review_pack(
         evidence,
@@ -1107,6 +1154,8 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         max_high=args.max_high,
         ignore_report_status=args.ignore_report_status,
         freshness_max_age_days=args.freshness_max_age_days,
+        restore_max_drill_age_days=args.restore_max_drill_age_days,
+        restore_max_backup_age_days=args.restore_max_backup_age_days,
     )
     print(
         f"created review pack in {pack['output_dir']} "
@@ -1150,6 +1199,8 @@ def cmd_review_create(args: argparse.Namespace) -> int:
     ):
         return 1
     if args.fail_on_freshness_warn and pack["freshness_report"]["summary"]["status"] == "warn":
+        return 1
+    if args.fail_on_restore_warn and pack["restore_report"]["summary"]["status"] != "pass":
         return 1
     if args.fail_on_open_risk and pack["risk_register"]["summary"]["open_count"] > 0:
         return 1
@@ -1323,6 +1374,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_review_attestation(document)
     elif args.type == "review-summary":
         errors = validate_review_summary(document)
+    elif args.type == "restore-report":
+        errors = validate_restore_report(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

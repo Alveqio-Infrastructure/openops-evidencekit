@@ -38,6 +38,9 @@ jobs:
           openops-evidence freshness report -i evidence.sample.json --max-age-days 30 -f json -o freshness-report.json
           openops-evidence validate -i freshness-report.json -t freshness-report
           openops-evidence freshness report -i evidence.sample.json --max-age-days 30 -o freshness-report.md
+          openops-evidence restore report -i evidence.sample.json --max-drill-age-days 90 -f json -o restore-report.json
+          openops-evidence validate -i restore-report.json -t restore-report
+          openops-evidence restore report -i evidence.sample.json --max-drill-age-days 90 -o restore-report.md
           openops-evidence coverage report -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o policy-coverage.md
           openops-evidence check -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o report.openops.json || true
           openops-evidence validate -i report.openops.json -t report
@@ -72,6 +75,8 @@ jobs:
             runbook-report.md
             freshness-report.json
             freshness-report.md
+            restore-report.json
+            restore-report.md
             policy-coverage.md
             report.openops.md
             report.openops.junit.xml

@@ -205,6 +205,7 @@ class BundleTests(unittest.TestCase):
             evidence_drift = temp / "evidence-drift.json"
             attestation = temp / "review-attestation.json"
             review_summary = temp / "review-summary.json"
+            restore_report = temp / "restore-report.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             service_catalog = temp / "service-catalog.json"
@@ -508,6 +509,8 @@ class BundleTests(unittest.TestCase):
                             "expired_acceptances": 0,
                             "stale_timestamps": 0,
                             "invalid_timestamps": 0,
+                            "restore_failures": 0,
+                            "restore_warnings": 0,
                             "privacy_findings": 0,
                             "scope_warnings": 0,
                             "drift_changes": 0,
@@ -516,6 +519,64 @@ class BundleTests(unittest.TestCase):
                         },
                         "highlights": [],
                         "next_steps": ["Share the review pack."],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            restore_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "tool": "restic",
+                            "repository_count": 1,
+                            "last_success_at": "2026-06-01T01:00:00+00:00",
+                            "last_success_age_days": 0,
+                            "restore_tests_total": 1,
+                            "successful_restore_tests": 1,
+                            "failed_restore_tests": 0,
+                            "stale_restore_tests": 0,
+                            "unknown_restore_tests": 0,
+                            "invalid_timestamp_count": 0,
+                            "future_restore_tests": 0,
+                            "latest_restore_test_at": "2026-05-18T13:30:00+00:00",
+                            "latest_restore_test_age_days": 14,
+                            "protected_hosts_count": 1,
+                            "protected_paths_count": 0,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "restore_drill_recorded",
+                                "title": "Restore drill evidence is recorded",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals.backup.restore_test_at",
+                                "reason": "Restore drill evidence is present.",
+                                "recommended_action": "Keep restore drill evidence current.",
+                            }
+                        ],
+                        "restore_tests": [
+                            {
+                                "id": "restore_test_at",
+                                "status": "current",
+                                "outcome": "pass",
+                                "target": "",
+                                "tested_at": "2026-05-18T13:30:00+00:00",
+                                "age_days": 14,
+                                "max_age_days": 90,
+                                "timestamp_valid": True,
+                                "verifier": "",
+                                "path": "signals.backup.restore_test_at",
+                                "reason": "Restore drill is current and successful.",
+                            }
+                        ],
                     }
                 ),
                 encoding="utf-8",
@@ -874,6 +935,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(evidence_drift), "evidence-drift")
             self.assertEqual(classify_artifact(attestation), "review-attestation")
             self.assertEqual(classify_artifact(review_summary), "review-summary")
+            self.assertEqual(classify_artifact(restore_report), "restore-report")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(service_catalog), "service-catalog")

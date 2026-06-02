@@ -21,6 +21,7 @@ audiences need:
 | `risk-register.json` / `risk-register.md` / `risk-register.csv` | Open, accepted, expired, and closed risk register. |
 | `inventory.json` / `inventory.md` / `inventory.csv` | Asset and signal-domain inventory from evidence. |
 | `freshness-report.json` / `freshness-report.md` / `freshness-report.csv` | Evidence timestamp freshness report. |
+| `restore-report.json` / `restore-report.md` / `restore-report.csv` | Backup recency and restore drill assurance report. |
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
 | `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
 | `service-catalog.json` / `service-catalog.md` / `service-catalog.csv` | Optional service ownership and evidence coverage report when `--catalog` is provided. |
@@ -77,6 +78,11 @@ written.
 Add `--fail-on-freshness-warn` when stale or invalid evidence timestamps should
 fail the review pack command after the pack has been written. Use
 `--freshness-max-age-days` to tune the default 30-day freshness window.
+
+Add `--fail-on-restore-warn` when missing, stale, unknown, or failed restore
+evidence should fail the review pack command after the pack has been written.
+Use `--restore-max-drill-age-days` and `--restore-max-backup-age-days` to tune
+the default restore drill and backup recency windows.
 
 Add `--fail-on-open-risk` when open, non-accepted risks in the generated risk
 register should fail the review pack command after the pack has been written.

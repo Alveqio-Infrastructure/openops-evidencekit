@@ -41,6 +41,9 @@ readiness-badge.json
 /freshness-report.json
 /freshness-report.md
 /freshness-report.csv
+/restore-report.json
+/restore-report.md
+/restore-report.csv
 /questionnaire.*
 /evidence-questionnaire.*
 /executive-brief.json

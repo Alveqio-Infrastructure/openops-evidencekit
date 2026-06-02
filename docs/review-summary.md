@@ -3,7 +3,7 @@
 Review summaries are generated inside review packs as `review-summary.json` and
 `review-summary.md`. They condense the technical report, gate result, risk
 register, evidence freshness, privacy scan, scope, drift, service catalog, and
-runbook signals into one handoff decision.
+runbook and restore assurance signals into one handoff decision.
 
 Decision statuses are:
 
@@ -13,7 +13,8 @@ Decision statuses are:
 
 The Markdown version is meant to be the first file a reviewer reads. It points
 to the specific artifact that needs attention, such as `risk-register.md`,
-`privacy-scan.md`, `freshness-report.md`, or service/runbook reports.
+`privacy-scan.md`, `freshness-report.md`, `restore-report.md`, or
+service/runbook reports.
 
 Review summaries are deliberately deterministic. They summarize generated
 artifacts and do not replace human approval or `attest review` sign-off.

@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/restore-report.schema.json",
+  "title": "OpenOps Restore Assurance Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "checks", "restore_tests"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "tool",
+        "repository_count",
+        "last_success_at",
+        "last_success_age_days",
+        "restore_tests_total",
+        "successful_restore_tests",
+        "failed_restore_tests",
+        "stale_restore_tests",
+        "unknown_restore_tests",
+        "invalid_timestamp_count",
+        "future_restore_tests",
+        "latest_restore_test_at",
+        "latest_restore_test_age_days",
+        "protected_hosts_count",
+        "protected_paths_count",
+        "checks_total",
+        "checks_passed",
+        "checks_warn",
+        "checks_failed"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "tool": {
+          "type": "string"
+        },
+        "repository_count": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "last_success_at": {
+          "type": "string"
+        },
+        "last_success_age_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "latest_restore_test_at": {
+          "type": "string"
+        },
+        "latest_restore_test_age_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "restore_tests_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "successful_restore_tests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed_restore_tests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stale_restore_tests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown_restore_tests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "invalid_timestamp_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "future_restore_tests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "protected_hosts_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "protected_paths_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_failed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "title", "status", "severity", "path", "reason", "recommended_action"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["pass", "warn", "fail"]
+          },
+          "severity": {
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "path": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "recommended_action": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "restore_tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "status",
+          "outcome",
+          "target",
+          "tested_at",
+          "age_days",
+          "max_age_days",
+          "timestamp_valid",
+          "verifier",
+          "path",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["current", "stale", "future", "invalid", "failed", "unknown"]
+          },
+          "outcome": {
+            "enum": ["pass", "fail", "unknown"]
+          },
+          "target": {
+            "type": "string"
+          },
+          "tested_at": {
+            "type": "string"
+          },
+          "age_days": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "max_age_days": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "timestamp_valid": {
+            "type": "boolean"
+          },
+          "verifier": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

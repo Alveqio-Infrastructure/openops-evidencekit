@@ -36,6 +36,19 @@ class ReviewSummaryTests(unittest.TestCase):
         self.assertEqual(summary["metrics"]["accepted_risks"], 1)
         self.assertEqual(summary["metrics"]["drift_changes"], 1)
 
+    def test_review_summary_blocks_on_restore_failures(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            restore_report={"summary": {"checks_failed": 1, "checks_warn": 0}},
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "fail")
+        self.assertEqual(summary["metrics"]["restore_failures"], 1)
+        self.assertIn("restore assurance failed", summary["decision"]["reason"])
+
     def test_review_summary_passes_clean_pack(self):
         summary = create_review_summary(
             report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},

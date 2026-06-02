@@ -38,8 +38,8 @@ domain scorecards, tickets, and signed evidence bundles.
 
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
-risk registers, plus review packs with one-page summaries, manifests, and
-attestations.
+risk registers, restore assurance reports, plus review packs with one-page
+summaries, manifests, and attestations.
 
 ## Status
 
@@ -58,6 +58,7 @@ python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence questionnaire policy examples/policy.baseline.toml -o questionnaire.md
 python -m openops_evidence inventory evidence -i evidence.local.json -o inventory.md
 python -m openops_evidence freshness report -i evidence.local.json --max-age-days 30 -o freshness-report.md
+python -m openops_evidence restore report -i evidence.local.json --max-drill-age-days 90 -o restore-report.md
 python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i evidence.local.json -s examples/scope.sample.toml -o scope-report.md
 python -m openops_evidence catalog validate examples/service-catalog.sample.toml
@@ -222,6 +223,8 @@ Use `inventory evidence` when raw evidence should become a Wiki- or
 spreadsheet-friendly asset and signal-domain inventory.
 Use `freshness report` when timestamp-like evidence fields should be checked for
 stale, future, or invalid values before a handoff.
+Use `restore report` when backup recency and restore drill proof should become
+a standalone operational assurance artifact.
 Use `scope report` when the assessment needs explicit in-scope, out-of-scope,
 missing, and unclassified evidence boundaries.
 Use `catalog report` when service ownership, criticality, assets, evidence
@@ -251,6 +254,7 @@ Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence
 Evidence scaffolds are described in [docs/evidence-scaffold.md](docs/evidence-scaffold.md).
 Evidence drift reports are described in [docs/evidence-drift.md](docs/evidence-drift.md).
 Evidence freshness reports are described in [docs/freshness-report.md](docs/freshness-report.md).
+Restore assurance reports are described in [docs/restore-report.md](docs/restore-report.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
 Service catalog reports are described in [docs/service-catalog.md](docs/service-catalog.md).
 Runbook coverage reports are described in [docs/runbook-report.md](docs/runbook-report.md).

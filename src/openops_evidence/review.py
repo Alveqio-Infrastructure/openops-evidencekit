@@ -38,6 +38,7 @@ from .reports import (
 )
 from .risk import create_risk_register, render_risk_register_csv, render_risk_register_markdown
 from .review_summary import create_review_summary, render_review_summary_markdown
+from .restore import create_restore_report, render_restore_csv, render_restore_markdown
 from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown
@@ -61,6 +62,8 @@ def create_review_pack(
     max_high: int | None = None,
     ignore_report_status: bool = False,
     freshness_max_age_days: int | None = 30,
+    restore_max_drill_age_days: int | None = 90,
+    restore_max_backup_age_days: int | None = 2,
 ) -> dict[str, Any]:
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
@@ -68,6 +71,11 @@ def create_review_pack(
     report = evaluate_policy(evidence, checks)
     inventory = create_evidence_inventory(evidence)
     freshness_report = create_freshness_report(evidence, max_age_days=freshness_max_age_days)
+    restore_report = create_restore_report(
+        evidence,
+        max_drill_age_days=restore_max_drill_age_days,
+        max_backup_age_days=restore_max_backup_age_days,
+    )
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
     service_catalog = create_service_catalog_report(evidence, catalog_document) if catalog_document is not None else None
@@ -109,6 +117,9 @@ def create_review_pack(
     add_artifact("freshness-report.json", dump_json(freshness_report), "Evidence freshness", "Machine-readable evidence timestamp freshness report.")
     add_artifact("freshness-report.md", render_freshness_markdown(freshness_report), "Evidence freshness", "Human-readable evidence timestamp freshness report.")
     add_artifact("freshness-report.csv", render_freshness_csv(freshness_report), "Evidence freshness", "Spreadsheet-friendly timestamp freshness export.")
+    add_artifact("restore-report.json", dump_json(restore_report), "Restore assurance", "Machine-readable backup and restore drill assurance report.")
+    add_artifact("restore-report.md", render_restore_markdown(restore_report), "Restore assurance", "Human-readable backup and restore drill assurance report.")
+    add_artifact("restore-report.csv", render_restore_csv(restore_report), "Restore assurance", "Spreadsheet-friendly restore assurance export.")
     if evidence_drift is not None:
         add_artifact("evidence-drift.json", dump_json(evidence_drift), "Evidence drift", "Machine-readable evidence drift report.")
         add_artifact("evidence-drift.md", render_evidence_diff_markdown(evidence_drift), "Evidence drift", "Human-readable evidence drift report.")
@@ -176,6 +187,7 @@ def create_review_pack(
         gate=gate,
         privacy_scan=privacy_scan,
         freshness_report=freshness_report,
+        restore_report=restore_report,
         risk_register=risk_register,
         scope_report=scope_report,
         evidence_drift=evidence_drift,
@@ -213,6 +225,7 @@ def create_review_pack(
         "report": report,
         "gate": gate,
         "freshness_report": freshness_report,
+        "restore_report": restore_report,
         "risk_register": risk_register,
         "review_summary": review_summary,
         "evidence_drift": evidence_drift,
@@ -243,6 +256,8 @@ def render_review_pack_readme(
         suggested_steps.append("Check `scope-report.md` for in-scope, out-of-scope, and unclassified evidence.")
     if any(artifact.get("filename") == "freshness-report.md" for artifact in artifacts):
         suggested_steps.append("Check `freshness-report.md` before relying on old evidence timestamps.")
+    if any(artifact.get("filename") == "restore-report.md" for artifact in artifacts):
+        suggested_steps.append("Use `restore-report.md` to confirm backup recency and restore drill proof.")
     if any(artifact.get("filename") == "service-catalog.md" for artifact in artifacts):
         suggested_steps.append("Review `service-catalog.md` for service ownership, criticality, assets, and runbook gaps.")
     if any(artifact.get("filename") == "runbook-report.md" for artifact in artifacts):
@@ -465,6 +480,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("review-summary.md", "Review Summary"),
         ("scorecard.html", "Scorecard"),
         ("freshness-report.md", "Freshness"),
+        ("restore-report.md", "Restore"),
         ("scope-report.md", "Scope Report"),
         ("service-catalog.md", "Service Catalog"),
         ("runbook-report.md", "Runbook Report"),

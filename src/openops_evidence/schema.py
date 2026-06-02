@@ -359,6 +359,8 @@ def validate_review_summary(document: Any) -> list[str]:
             "expired_acceptances",
             "stale_timestamps",
             "invalid_timestamps",
+            "restore_failures",
+            "restore_warnings",
             "privacy_findings",
             "scope_warnings",
             "drift_changes",
@@ -608,6 +610,73 @@ def validate_freshness_report(document: Any) -> list[str]:
         _require_string_type(item, "value", errors, prefix=prefix)
         _require_string(item, "reason", errors, prefix=prefix)
         for key in ("age_days", "future_days", "max_age_days"):
+            if key not in item:
+                errors.append(f"{prefix}{key} is required.")
+            elif item[key] is not None:
+                _require_int_range(item, key, errors, minimum=0, prefix=prefix)
+        if not isinstance(item.get("timestamp_valid"), bool):
+            errors.append(f"{prefix}timestamp_valid must be a boolean.")
+    return errors
+
+
+def validate_restore_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Restore report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    _require_list(document, "restore_tests", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in ("tool", "last_success_at", "latest_restore_test_at"):
+            _require_string_type(summary, key, errors, prefix="summary.")
+        for key in ("repository_count", "last_success_age_days", "latest_restore_test_age_days"):
+            if key not in summary:
+                errors.append(f"summary.{key} is required.")
+            elif summary[key] is not None:
+                _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+        for key in (
+            "restore_tests_total",
+            "successful_restore_tests",
+            "failed_restore_tests",
+            "stale_restore_tests",
+            "unknown_restore_tests",
+            "invalid_timestamp_count",
+            "future_restore_tests",
+            "protected_hosts_count",
+            "protected_paths_count",
+            "checks_total",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        if not isinstance(check, dict):
+            errors.append(f"checks[{index}] must be an object.")
+            continue
+        prefix = f"checks[{index}]."
+        _require_string(check, "id", errors, prefix=prefix)
+        _require_string(check, "title", errors, prefix=prefix)
+        _require_enum(check, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        _require_enum(check, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        for key in ("path", "reason", "recommended_action"):
+            _require_string_type(check, key, errors, prefix=prefix)
+    for index, item in enumerate(document.get("restore_tests", [])):
+        if not isinstance(item, dict):
+            errors.append(f"restore_tests[{index}] must be an object.")
+            continue
+        prefix = f"restore_tests[{index}]."
+        _require_string(item, "id", errors, prefix=prefix)
+        _require_enum(item, "status", {"current", "stale", "future", "invalid", "failed", "unknown"}, errors, prefix=prefix)
+        _require_enum(item, "outcome", {"pass", "fail", "unknown"}, errors, prefix=prefix)
+        for key in ("target", "tested_at", "verifier", "path", "reason"):
+            _require_string_type(item, key, errors, prefix=prefix)
+        for key in ("age_days", "max_age_days"):
             if key not in item:
                 errors.append(f"{prefix}{key} is required.")
             elif item[key] is not None:

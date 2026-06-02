@@ -49,6 +49,8 @@
         "expired_acceptances",
         "stale_timestamps",
         "invalid_timestamps",
+        "restore_failures",
+        "restore_warnings",
         "privacy_findings",
         "scope_warnings",
         "drift_changes",
@@ -92,6 +94,14 @@
           "minimum": 0
         },
         "invalid_timestamps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "restore_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "restore_warnings": {
           "type": "integer",
           "minimum": 0
         },

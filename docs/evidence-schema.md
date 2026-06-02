@@ -46,6 +46,10 @@ Documentation collectors use `signals.docs.documents`,
 `signals.docs.missing_required`, `signals.docs.stale_documents`,
 `signals.docs.inventory_updated_at`, and `signals.docs.runbooks`.
 
+Backup evidence can use `signals.backup.restore_test_at` for a single reviewed
+restore timestamp or `signals.backup.restore_tests` for recurring drill rows
+with `id`, `target`, `tested_at`, `outcome`, and `verifier`.
+
 ## Validation
 
 Run:
