@@ -66,6 +66,7 @@
 - Add evidence freshness reports for timestamp recency review.
 - Add risk register export for open and accepted operational risks.
 - Add review summary artifacts for one-page review-pack decisions.
+- Add review checklist artifacts for reviewer handoff tasks.
 - Add restore assurance reports for backup recency and restore drill proof.
 - Add mail domain reports for SPF, DKIM, and DMARC evidence review.
 - Add TLS certificate reports for expiry and renewal-risk review.

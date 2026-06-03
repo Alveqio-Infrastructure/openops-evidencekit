@@ -31,6 +31,7 @@ from .schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_review_checklist,
     validate_review_summary,
     validate_restore_report,
     validate_risk_register,
@@ -290,6 +291,8 @@ def classify_artifact(path: Path) -> str:
             return "review-attestation"
         if validate_review_summary(document) == []:
             return "review-summary"
+        if validate_review_checklist(document) == []:
+            return "review-checklist"
         if validate_restore_report(document) == []:
             return "restore-report"
         if validate_mail_report(document) == []:

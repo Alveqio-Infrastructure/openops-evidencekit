@@ -103,6 +103,7 @@ python -m openops_evidence report -i report.local.json -f prometheus -o report.l
 python -m openops_evidence report -i report.local.json -f bookstack -o readiness.bookstack.md
 python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --catalog examples/service-catalog.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
 python -m openops_evidence validate -i review-pack/review-summary.json -t review-summary
+python -m openops_evidence validate -i review-pack/review-checklist.json -t review-checklist
 python -m openops_evidence validate -i review-pack/restore-report.json -t restore-report
 python -m openops_evidence validate -i review-pack/mail-report.json -t mail-report
 python -m openops_evidence validate -i review-pack/tls-report.json -t tls-report

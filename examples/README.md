@@ -61,7 +61,9 @@ reports, TLS certificate reports, monitoring reports, incident readiness
 reports, executive briefs, scorecards, history timelines, evidence drift
 reports, mail domain reports, comparisons, action plans, risk registers, ticket
 drafts, review packs, review summaries, review attestations, and bundle
-manifests.
+manifests. Review packs also include review checklists as Markdown, CSV, and
+JSON so human handoff tasks can be tracked separately from the generated
+decision summary.
 Reports can also be rendered as JUnit XML for CI systems. Generated files are
 ignored by git so they can be reviewed without polluting commits.
 SARIF output is available for review tools that understand static-analysis

@@ -20,7 +20,7 @@ coverage, runbook coverage, evidence freshness, restore assurance, mail domain
 reports, TLS certificate reports, access exposure reports, monitoring reports,
 incident readiness reports, JUnit, SARIF, badge, executive brief, risk register,
 scorecard, history Markdown/SVG, Prometheus, and review-pack artifacts including
-a review summary, then
+a review summary and reviewer checklist, then
 enforces a configurable gate:
 
 ```yaml

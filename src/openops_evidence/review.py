@@ -15,6 +15,7 @@ from .catalog import (
     render_service_catalog_csv,
     render_service_catalog_markdown,
 )
+from .checklist import create_review_checklist, render_review_checklist_csv, render_review_checklist_markdown
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .freshness import create_freshness_report, render_freshness_csv, render_freshness_markdown
@@ -232,6 +233,10 @@ def create_review_pack(
     )
     add_artifact("review-summary.json", dump_json(review_summary), "Review summary", "Machine-readable review decision summary.")
     add_artifact("review-summary.md", render_review_summary_markdown(review_summary), "Review summary", "One-page handoff decision summary.")
+    review_checklist = create_review_checklist(review_summary, artifacts)
+    add_artifact("review-checklist.json", dump_json(review_checklist), "Review checklist", "Machine-readable reviewer handoff checklist.")
+    add_artifact("review-checklist.md", render_review_checklist_markdown(review_checklist), "Review checklist", "Human-readable reviewer handoff checklist.")
+    add_artifact("review-checklist.csv", render_review_checklist_csv(review_checklist), "Review checklist", "Spreadsheet-friendly reviewer checklist.")
     index_html = render_review_pack_html(
         report=report,
         gate=gate,
@@ -269,6 +274,7 @@ def create_review_pack(
         "incident_report": incident_report,
         "risk_register": risk_register,
         "review_summary": review_summary,
+        "review_checklist": review_checklist,
         "evidence_drift": evidence_drift,
         "scope_report": scope_report,
         "service_catalog": service_catalog,
@@ -290,6 +296,7 @@ def render_review_pack_readme(
     privacy_summary = privacy_scan.get("summary", {})
     suggested_steps = [
         "Read `review-summary.md` for the handoff decision.",
+        "Use `review-checklist.md` to track reviewer sign-off tasks.",
         "Read `executive-brief.md` for the management summary.",
         "Use `scorecard.md` to see which operational domains need attention.",
     ]
@@ -529,6 +536,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
     links = [
         ("executive-brief.md", "Executive Brief"),
         ("review-summary.md", "Review Summary"),
+        ("review-checklist.md", "Checklist"),
         ("scorecard.html", "Scorecard"),
         ("freshness-report.md", "Freshness"),
         ("restore-report.md", "Restore"),

@@ -24,6 +24,7 @@ from openops_evidence.schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_review_checklist,
     validate_review_summary,
     validate_restore_report,
     validate_risk_register,
@@ -1522,6 +1523,34 @@ class SchemaTests(unittest.TestCase):
                 "neutral_changes": [],
                 "added": [],
                 "removed": [],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_review_checklist(self):
+        errors = validate_review_checklist(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "items_total": 1,
+                    "required_items": 1,
+                    "pass_count": 0,
+                    "warn_count": 1,
+                    "fail_count": 0,
+                },
+                "items": [
+                    {
+                        "id": "review_access",
+                        "title": "Review administrative access exposure",
+                        "status": "warn",
+                        "required": True,
+                        "artifact": "access-report.md",
+                        "reason": "1 related warning or failure metric(s) need review.",
+                    }
+                ],
             }
         )
         self.assertEqual(errors, [])

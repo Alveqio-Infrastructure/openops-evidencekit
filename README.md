@@ -278,6 +278,7 @@ Service catalog reports are described in [docs/service-catalog.md](docs/service-
 Runbook coverage reports are described in [docs/runbook-report.md](docs/runbook-report.md).
 Review packs are described in [docs/review-pack.md](docs/review-pack.md).
 Review summaries are described in [docs/review-summary.md](docs/review-summary.md).
+Review checklists are described in [docs/review-checklist.md](docs/review-checklist.md).
 Review attestations are described in [docs/review-attestation.md](docs/review-attestation.md).
 Domain scorecards are described in [docs/scorecard.md](docs/scorecard.md).
 Policy coverage reports are described in [docs/policy-coverage.md](docs/policy-coverage.md).

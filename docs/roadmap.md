@@ -63,6 +63,7 @@ having to deploy a platform first.
 - Review-pack generation for complete readiness handoff folders.
 - Review attestation export for manifest-bound sign-off records.
 - Review summary export for one-page review-pack decisions.
+- Review checklist export for reviewer handoff tasks.
 - Domain scorecard export for operational area summaries.
 - Action plan ticket export.
 - Risk register export for open and accepted operational risks.

@@ -381,6 +381,35 @@ def validate_review_summary(document: Any) -> list[str]:
     return errors
 
 
+def validate_review_checklist(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Review checklist must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "items", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in ("items_total", "required_items", "pass_count", "warn_count", "fail_count"):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, item in enumerate(document.get("items", [])):
+        if not isinstance(item, dict):
+            errors.append(f"items[{index}] must be an object.")
+            continue
+        prefix = f"items[{index}]."
+        _require_string(item, "id", errors, prefix=prefix)
+        _require_string(item, "title", errors, prefix=prefix)
+        _require_enum(item, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        if not isinstance(item.get("required"), bool):
+            errors.append(f"{prefix}required must be a boolean.")
+        _require_string_type(item, "artifact", errors, prefix=prefix)
+        _require_string_type(item, "reason", errors, prefix=prefix)
+    return errors
+
+
 def validate_scope_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

@@ -101,6 +101,7 @@ from .schema import (
     validate_report_comparison,
     validate_report_history,
     validate_review_attestation,
+    validate_review_checklist,
     validate_review_summary,
     validate_restore_report,
     validate_risk_register,
@@ -568,6 +569,7 @@ def build_parser() -> argparse.ArgumentParser:
             "evidence-drift",
             "review-attestation",
             "review-summary",
+            "review-checklist",
             "restore-report",
             "mail-report",
             "tls-report",
@@ -1572,6 +1574,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_review_attestation(document)
     elif args.type == "review-summary":
         errors = validate_review_summary(document)
+    elif args.type == "review-checklist":
+        errors = validate_review_checklist(document)
     elif args.type == "restore-report":
         errors = validate_restore_report(document)
     elif args.type == "mail-report":

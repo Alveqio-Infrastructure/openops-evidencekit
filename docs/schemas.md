@@ -17,6 +17,7 @@ machine-readable artifacts:
 - `schemas/incident-report.schema.json`
 - `schemas/review-attestation.schema.json`
 - `schemas/review-summary.schema.json`
+- `schemas/review-checklist.schema.json`
 - `schemas/scorecard.schema.json`
 - `schemas/scope-report.schema.json`
 - `schemas/service-catalog.schema.json`
@@ -152,6 +153,17 @@ Review summaries contain:
 They are generated inside review packs and condense report, gate, risk,
 freshness, privacy, scope, drift, catalog, runbook, monitoring, and incident
 readiness signals into one deterministic handoff decision.
+
+## Review Checklists
+
+Review checklists contain:
+
+- `summary`
+- `items`
+
+They are generated inside review packs and turn review summary metrics plus
+available report artifacts into a reviewer task list with pass, warning, and
+failure status per item.
 
 ## Restore Assurance Reports
 

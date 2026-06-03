@@ -119,6 +119,7 @@ python -m openops_evidence privacy scan evidence.redacted.json report.local.md -
 python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
 python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --catalog examples/service-catalog.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
 python -m openops_evidence validate -i review-pack/review-summary.json -t review-summary
+python -m openops_evidence validate -i review-pack/review-checklist.json -t review-checklist
 python -m openops_evidence validate -i review-pack/restore-report.json -t restore-report
 python -m openops_evidence validate -i review-pack/mail-report.json -t mail-report
 python -m openops_evidence validate -i review-pack/tls-report.json -t tls-report
@@ -161,6 +162,7 @@ Then inspect:
    `schemas/incident-report.schema.json`,
    `schemas/review-attestation.schema.json`,
    `schemas/review-summary.schema.json`,
+   `schemas/review-checklist.schema.json`,
    `schemas/scorecard.schema.json`,
    `schemas/scope-report.schema.json`,
    `schemas/service-catalog.schema.json`,

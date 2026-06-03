@@ -125,6 +125,7 @@ EvidenceKit infers a simple role for each artifact:
 - `report-history` for valid report history JSON
 - `review-attestation` for valid review attestation JSON
 - `review-summary` for valid review summary JSON
+- `review-checklist` for valid review checklist JSON
 - `restore-report` for valid restore assurance report JSON
 - `mail-report` for valid mail domain report JSON
 - `tls-report` for valid TLS certificate report JSON

@@ -15,6 +15,7 @@ audiences need:
 | `index.html` | Browser-friendly review dashboard and artifact index. |
 | `README.md` | Entry point and suggested review order. |
 | `review-summary.json` / `review-summary.md` | One-page handoff decision summary. |
+| `review-checklist.json` / `review-checklist.md` / `review-checklist.csv` | Reviewer task list derived from summary and generated report metrics. |
 | `report.json` / `report.md` | Canonical check results and a human-readable report. |
 | `executive-brief.json` / `executive-brief.md` | Stakeholder summary with top findings and next steps. |
 | `action-plan.json` / `action-plan.md` / `action-plan.csv` | Prioritized remediation queue. |
@@ -44,9 +45,11 @@ audiences need:
 
 Raw evidence is not copied into the review pack by default. For external
 sharing, create the pack from redacted evidence, read `review-summary.md`,
-inspect `privacy-scan.md`, and verify the manifest:
+work through `review-checklist.md`, inspect `privacy-scan.md`, and verify the
+manifest:
 
 ```powershell
+python -m openops_evidence validate -i review-pack/review-checklist.json -t review-checklist
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
 python -m openops_evidence bundle verify review-pack/manifest.json --base-dir review-pack -o review-pack/verification.json
 ```

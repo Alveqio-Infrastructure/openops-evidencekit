@@ -205,6 +205,7 @@ class BundleTests(unittest.TestCase):
             evidence_drift = temp / "evidence-drift.json"
             attestation = temp / "review-attestation.json"
             review_summary = temp / "review-summary.json"
+            review_checklist = temp / "review-checklist.json"
             restore_report = temp / "restore-report.json"
             mail_report = temp / "mail-report.json"
             tls_report = temp / "tls-report.json"
@@ -1140,6 +1141,34 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            review_checklist.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "items_total": 1,
+                            "required_items": 1,
+                            "pass_count": 1,
+                            "warn_count": 0,
+                            "fail_count": 0,
+                        },
+                        "items": [
+                            {
+                                "id": "read_review_summary",
+                                "title": "Read the review summary",
+                                "status": "pass",
+                                "required": True,
+                                "artifact": "review-summary.md",
+                                "reason": "Start with the generated one-page decision summary.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             policy = temp / "policy.toml"
             policy.write_text("[[checks]]\nid = \"x\"\n", encoding="utf-8")
             waivers = temp / "waivers.toml"
@@ -1165,6 +1194,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(evidence_drift), "evidence-drift")
             self.assertEqual(classify_artifact(attestation), "review-attestation")
             self.assertEqual(classify_artifact(review_summary), "review-summary")
+            self.assertEqual(classify_artifact(review_checklist), "review-checklist")
             self.assertEqual(classify_artifact(restore_report), "restore-report")
             self.assertEqual(classify_artifact(mail_report), "mail-report")
             self.assertEqual(classify_artifact(tls_report), "tls-report")

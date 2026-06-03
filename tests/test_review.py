@@ -81,6 +81,9 @@ class ReviewPackTests(unittest.TestCase):
                 "report.md",
                 "report.prom",
                 "report.sarif.json",
+                "review-checklist.csv",
+                "review-checklist.json",
+                "review-checklist.md",
                 "review-summary.json",
                 "review-summary.md",
                 "risk-register.csv",
@@ -107,6 +110,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(pack / "gate-result.json"), "-t", "gate-result"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "privacy-scan.json"), "-t", "privacy-scan"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "review-summary.json"), "-t", "review-summary"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "review-checklist.json"), "-t", "review-checklist"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "restore-report.json"), "-t", "restore-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "mail-report.json"), "-t", "mail-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "tls-report.json"), "-t", "tls-report"]), 0)
@@ -122,6 +126,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(review_summary["decision"]["status"], "pass")
             self.assertIn("does not include raw evidence by default", readme)
             self.assertIn("review-summary.md", readme)
+            self.assertIn("review-checklist.md", readme)
             self.assertIn("executive-brief.md", readme)
             self.assertIn("freshness-report.md", readme)
             self.assertIn("restore-report.md", readme)
@@ -133,6 +138,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertIn("privacy-scan.md", readme)
             self.assertIn("<title>OpenOps Review Pack</title>", index)
             self.assertIn("Review Summary", index)
+            self.assertIn("Checklist", index)
             self.assertIn("Freshness", index)
             self.assertIn("Restore", index)
             self.assertIn("Mail", index)
@@ -175,7 +181,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             scope_report = json.loads((pack / "scope-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 56)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 59)
             self.assertEqual(scope_report["summary"]["status"], "warn")
             self.assertIn("scope-report.md", readme)
             self.assertIn("Scope Report", index)
@@ -239,7 +245,7 @@ class ReviewPackTests(unittest.TestCase):
             service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
             runbook_report = json.loads((pack / "runbook-report.json").read_text(encoding="utf-8"))
             incident_report = json.loads((pack / "incident-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 62)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 65)
             self.assertEqual(service_catalog["summary"]["status"], "warn")
             self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(runbook_report["summary"]["missing_runbooks_count"], 1)
@@ -325,7 +331,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             drift = json.loads((pack / "evidence-drift.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 56)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 59)
             self.assertEqual(drift["summary"]["status"], "warn")
             self.assertIn("evidence-drift.md", readme)
             self.assertIn("Evidence Drift", index)
@@ -907,6 +913,7 @@ remediation = "Add the missing operational signal to evidence."
             self.assertIn("index.html", names)
             self.assertIn("README.md", names)
             self.assertIn("review-summary.md", names)
+            self.assertIn("review-checklist.md", names)
             self.assertIn("restore-report.md", names)
             self.assertIn("mail-report.md", names)
             self.assertIn("tls-report.md", names)
