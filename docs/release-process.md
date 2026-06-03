@@ -117,9 +117,12 @@ python -m openops_evidence report -i report.local.json -f prometheus -o report.l
 python -m openops_evidence redact -i examples/evidence.sample.json --redact-hostnames -o evidence.redacted.json
 python -m openops_evidence privacy scan evidence.redacted.json report.local.md -o privacy-scan.json
 python -m openops_evidence validate -i privacy-scan.json -t privacy-scan
+python -m openops_evidence evidence quality -i evidence.redacted.json -f json -o quality-report.json
+python -m openops_evidence validate -i quality-report.json -t quality-report
 python -m openops_evidence review create -i evidence.redacted.json -p examples/policy.baseline.toml --scope examples/scope.sample.toml --catalog examples/service-catalog.sample.toml --base-evidence examples/evidence.previous.json -o review-pack --archive review-pack.zip --min-score 100 --max-warnings 0
 python -m openops_evidence validate -i review-pack/review-summary.json -t review-summary
 python -m openops_evidence validate -i review-pack/review-checklist.json -t review-checklist
+python -m openops_evidence validate -i review-pack/quality-report.json -t quality-report
 python -m openops_evidence validate -i review-pack/restore-report.json -t restore-report
 python -m openops_evidence validate -i review-pack/mail-report.json -t mail-report
 python -m openops_evidence validate -i review-pack/tls-report.json -t tls-report
@@ -127,7 +130,7 @@ python -m openops_evidence validate -i review-pack/access-report.json -t access-
 python -m openops_evidence validate -i review-pack/monitoring-report.json -t monitoring-report
 python -m openops_evidence validate -i review-pack/incident-report.json -t incident-report
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
-python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json freshness-report.json restore-report.json mail-report.json tls-report.json access-report.json monitoring-report.json incident-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json quality-report.json freshness-report.json restore-report.json mail-report.json tls-report.json access-report.json monitoring-report.json incident-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
@@ -174,6 +177,7 @@ Then inspect:
    `schemas/policy-coverage.schema.json`,
    `schemas/questionnaire.schema.json`,
    `schemas/inventory.schema.json`,
+   `schemas/quality-report.schema.json`,
    `schemas/privacy-scan.schema.json`, `schemas/waivers.schema.json`,
    `schemas/bundle-manifest.schema.json`,
    `schemas/bundle-signature.schema.json`, `schemas/bundle-verification.schema.json`,

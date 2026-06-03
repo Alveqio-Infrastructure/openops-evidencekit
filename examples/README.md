@@ -55,7 +55,7 @@ is available.
 
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
-evidence scaffolds, scope reports, service catalog reports, runbook coverage
+evidence scaffolds, evidence quality reports, scope reports, service catalog reports, runbook coverage
 reports, evidence freshness reports, restore assurance reports, access exposure
 reports, TLS certificate reports, monitoring reports, incident readiness
 reports, executive briefs, scorecards, history timelines, evidence drift

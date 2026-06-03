@@ -223,6 +223,7 @@ class BundleTests(unittest.TestCase):
             comparison = temp / "comparison.json"
             history = temp / "history.json"
             questionnaire = temp / "questionnaire.json"
+            quality_report = temp / "quality-report.json"
             signature = temp / "signature.json"
             report.write_text(
                 json.dumps(
@@ -528,6 +529,8 @@ class BundleTests(unittest.TestCase):
                             "incident_failures": 0,
                             "incident_warnings": 0,
                             "privacy_findings": 0,
+                            "quality_failures": 0,
+                            "quality_warnings": 0,
                             "scope_warnings": 0,
                             "drift_changes": 0,
                             "catalog_warnings": 0,
@@ -1122,6 +1125,36 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            quality_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                            "assets_total": 1,
+                            "signals_total": 1,
+                        },
+                        "checks": [
+                            {
+                                "id": "signals_present",
+                                "title": "Evidence contains signal domains",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals",
+                                "reason": "1 signal domain(s) recorded.",
+                                "recommended_action": "Keep evidence current.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             signature.write_text(
                 json.dumps(
                     {
@@ -1212,6 +1245,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(comparison), "report-comparison")
             self.assertEqual(classify_artifact(history), "report-history")
             self.assertEqual(classify_artifact(questionnaire), "questionnaire")
+            self.assertEqual(classify_artifact(quality_report), "quality-report")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
             self.assertEqual(classify_artifact(policy), "policy")
             self.assertEqual(classify_artifact(waivers), "waivers")

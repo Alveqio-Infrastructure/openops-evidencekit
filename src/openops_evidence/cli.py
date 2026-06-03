@@ -62,6 +62,7 @@ from .policy import (
 )
 from .policypacks import get_policy_pack, render_policy_pack_list, read_policy_pack
 from .privacy import render_privacy_scan_markdown, scan_privacy
+from .quality import create_evidence_quality_report, render_quality_csv, render_quality_markdown
 from .redact import redact_document
 from .questionnaire import create_policy_questionnaire, render_questionnaire_csv, render_questionnaire_markdown
 from .reports import (
@@ -97,6 +98,7 @@ from .schema import (
     validate_privacy_scan,
     validate_policy_coverage,
     validate_questionnaire,
+    validate_quality_report,
     validate_report,
     validate_report_comparison,
     validate_report_history,
@@ -262,6 +264,12 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_diff.add_argument("--fail-on-drift", action="store_true")
     evidence_diff.add_argument("-o", "--output", default="-")
     evidence_diff.set_defaults(func=cmd_evidence_diff)
+    evidence_quality = evidence_sub.add_parser("quality", help="Render evidence hygiene checks")
+    evidence_quality.add_argument("-i", "--input", required=True)
+    evidence_quality.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    evidence_quality.add_argument("--fail-on-warn", action="store_true")
+    evidence_quality.add_argument("-o", "--output", default="-")
+    evidence_quality.set_defaults(func=cmd_evidence_quality)
 
     scope = sub.add_parser("scope", help="Check review scope against evidence")
     scope_sub = scope.add_subparsers(required=True)
@@ -581,6 +589,7 @@ def build_parser() -> argparse.ArgumentParser:
             "policy-matrix",
             "policy-coverage",
             "questionnaire",
+            "quality-report",
             "inventory",
             "privacy-scan",
             "history",
@@ -1243,6 +1252,25 @@ def cmd_risk_register(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_evidence_quality(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    report = create_evidence_quality_report(evidence)
+    if args.format == "markdown":
+        write_text(args.output, render_quality_markdown(report))
+    elif args.format == "csv":
+        write_text(args.output, render_quality_csv(report))
+    else:
+        write_text(args.output, dump_json(report))
+    if report["summary"]["status"] == "fail":
+        return 1
+    if args.fail_on_warn and report["summary"]["status"] == "warn":
+        return 1
+    return 0
+
+
 def cmd_gate_report(args: argparse.Namespace) -> int:
     report = load_json(args.input)
     errors = validate_report(report)
@@ -1598,6 +1626,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_policy_coverage(document)
     elif args.type == "questionnaire":
         errors = validate_questionnaire(document)
+    elif args.type == "quality-report":
+        errors = validate_quality_report(document)
     elif args.type == "inventory":
         errors = validate_inventory(document)
     elif args.type == "privacy-scan":

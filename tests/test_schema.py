@@ -20,6 +20,7 @@ from openops_evidence.schema import (
     validate_policy_matrix,
     validate_privacy_scan,
     validate_questionnaire,
+    validate_quality_report,
     validate_report,
     validate_report_comparison,
     validate_report_history,
@@ -497,6 +498,36 @@ class SchemaTests(unittest.TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_valid_quality_report(self):
+        errors = validate_quality_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "checks_total": 1,
+                    "checks_passed": 0,
+                    "checks_warn": 1,
+                    "checks_failed": 0,
+                    "assets_total": 1,
+                    "signals_total": 1,
+                },
+                "checks": [
+                    {
+                        "id": "metadata_organization_present",
+                        "title": "Metadata organization is recorded",
+                        "status": "warn",
+                        "severity": "medium",
+                        "path": "metadata.organization",
+                        "reason": "Metadata organization is missing.",
+                        "recommended_action": "Record metadata.organization.",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
     def test_valid_evidence_drift(self):
         errors = validate_evidence_drift(
             {
@@ -728,6 +759,8 @@ class SchemaTests(unittest.TestCase):
                     "incident_failures": 0,
                     "incident_warnings": 0,
                     "privacy_findings": 0,
+                    "quality_failures": 0,
+                    "quality_warnings": 0,
                     "scope_warnings": 0,
                     "drift_changes": 0,
                     "catalog_warnings": 0,

@@ -75,6 +75,9 @@ class ReviewPackTests(unittest.TestCase):
                 "policy-coverage.md",
                 "privacy-scan.json",
                 "privacy-scan.md",
+                "quality-report.csv",
+                "quality-report.json",
+                "quality-report.md",
                 "readiness-badge.json",
                 "report.junit.xml",
                 "report.json",
@@ -102,6 +105,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(pack / "freshness-report.json"), "-t", "freshness-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "policy-matrix.json"), "-t", "policy-matrix"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "policy-coverage.json"), "-t", "policy-coverage"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "quality-report.json"), "-t", "quality-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "scorecard.json"), "-t", "scorecard"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "executive-brief.json"), "-t", "executive-brief"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "action-plan.json"), "-t", "action-plan"]), 0)
@@ -136,9 +140,11 @@ class ReviewPackTests(unittest.TestCase):
             self.assertIn("monitoring-report.md", readme)
             self.assertIn("risk-register.md", readme)
             self.assertIn("privacy-scan.md", readme)
+            self.assertIn("quality-report.md", readme)
             self.assertIn("<title>OpenOps Review Pack</title>", index)
             self.assertIn("Review Summary", index)
             self.assertIn("Checklist", index)
+            self.assertIn("Quality", index)
             self.assertIn("Freshness", index)
             self.assertIn("Restore", index)
             self.assertIn("Mail", index)
@@ -181,7 +187,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             scope_report = json.loads((pack / "scope-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 59)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 62)
             self.assertEqual(scope_report["summary"]["status"], "warn")
             self.assertIn("scope-report.md", readme)
             self.assertIn("Scope Report", index)
@@ -245,7 +251,7 @@ class ReviewPackTests(unittest.TestCase):
             service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
             runbook_report = json.loads((pack / "runbook-report.json").read_text(encoding="utf-8"))
             incident_report = json.loads((pack / "incident-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 65)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 68)
             self.assertEqual(service_catalog["summary"]["status"], "warn")
             self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(runbook_report["summary"]["missing_runbooks_count"], 1)
@@ -331,7 +337,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             drift = json.loads((pack / "evidence-drift.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 59)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 62)
             self.assertEqual(drift["summary"]["status"], "warn")
             self.assertIn("evidence-drift.md", readme)
             self.assertIn("Evidence Drift", index)
@@ -914,6 +920,7 @@ remediation = "Add the missing operational signal to evidence."
             self.assertIn("README.md", names)
             self.assertIn("review-summary.md", names)
             self.assertIn("review-checklist.md", names)
+            self.assertIn("quality-report.md", names)
             self.assertIn("restore-report.md", names)
             self.assertIn("mail-report.md", names)
             self.assertIn("tls-report.md", names)

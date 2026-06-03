@@ -73,6 +73,7 @@ having to deploy a platform first.
 - Policy coverage gap reports for evidence-domain review.
 - Policy questionnaire export for pre-assessment evidence requests.
 - Evidence scaffold generation from policy signal paths.
+- Evidence quality report for input hygiene checks.
 - Bundle manifest verification.
 - Policy validation and authoring guardrails.
 

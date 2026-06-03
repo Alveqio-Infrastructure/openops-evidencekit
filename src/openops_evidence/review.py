@@ -34,6 +34,7 @@ from .policy import (
     render_policy_matrix_markdown,
 )
 from .privacy import render_privacy_scan_markdown, scan_privacy
+from .quality import create_evidence_quality_report, render_quality_csv, render_quality_markdown
 from .reports import (
     escape_markdown_text,
     format_markdown_code,
@@ -76,6 +77,7 @@ def create_review_pack(
     output.mkdir(parents=True, exist_ok=True)
     checks = parse_policy(policy_document)
     report = evaluate_policy(evidence, checks)
+    quality_report = create_evidence_quality_report(evidence)
     inventory = create_evidence_inventory(evidence)
     freshness_report = create_freshness_report(evidence, max_age_days=freshness_max_age_days)
     restore_report = create_restore_report(
@@ -126,6 +128,9 @@ def create_review_pack(
     add_artifact("inventory.json", dump_json(inventory), "Evidence inventory", "Machine-readable asset and signal inventory.")
     add_artifact("inventory.md", render_inventory_markdown(inventory), "Evidence inventory", "Wiki-friendly asset and signal inventory.")
     add_artifact("inventory.csv", render_inventory_csv(inventory), "Evidence inventory", "Spreadsheet-friendly inventory export.")
+    add_artifact("quality-report.json", dump_json(quality_report), "Evidence quality", "Machine-readable evidence hygiene report.")
+    add_artifact("quality-report.md", render_quality_markdown(quality_report), "Evidence quality", "Human-readable evidence hygiene report.")
+    add_artifact("quality-report.csv", render_quality_csv(quality_report), "Evidence quality", "Spreadsheet-friendly evidence hygiene report.")
     add_artifact("freshness-report.json", dump_json(freshness_report), "Evidence freshness", "Machine-readable evidence timestamp freshness report.")
     add_artifact("freshness-report.md", render_freshness_markdown(freshness_report), "Evidence freshness", "Human-readable evidence timestamp freshness report.")
     add_artifact("freshness-report.csv", render_freshness_csv(freshness_report), "Evidence freshness", "Spreadsheet-friendly timestamp freshness export.")
@@ -218,6 +223,7 @@ def create_review_pack(
         report=report,
         gate=gate,
         privacy_scan=privacy_scan,
+        quality_report=quality_report,
         freshness_report=freshness_report,
         restore_report=restore_report,
         mail_report=mail_report,
@@ -265,6 +271,7 @@ def create_review_pack(
         "artifact_count": len(artifacts) + 1,
         "report": report,
         "gate": gate,
+        "quality_report": quality_report,
         "freshness_report": freshness_report,
         "restore_report": restore_report,
         "mail_report": mail_report,
@@ -299,6 +306,7 @@ def render_review_pack_readme(
         "Use `review-checklist.md` to track reviewer sign-off tasks.",
         "Read `executive-brief.md` for the management summary.",
         "Use `scorecard.md` to see which operational domains need attention.",
+        "Use `quality-report.md` to catch evidence hygiene problems before sharing.",
     ]
     if any(artifact.get("filename") == "scope-report.md" for artifact in artifacts):
         suggested_steps.append("Check `scope-report.md` for in-scope, out-of-scope, and unclassified evidence.")
@@ -538,6 +546,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("review-summary.md", "Review Summary"),
         ("review-checklist.md", "Checklist"),
         ("scorecard.html", "Scorecard"),
+        ("quality-report.md", "Quality"),
         ("freshness-report.md", "Freshness"),
         ("restore-report.md", "Restore"),
         ("mail-report.md", "Mail"),

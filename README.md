@@ -59,6 +59,7 @@ python -m openops_evidence collect fixture examples/evidence.sample.json -o evid
 python -m openops_evidence validate -i evidence.local.json
 python -m openops_evidence questionnaire policy examples/policy.baseline.toml -o questionnaire.md
 python -m openops_evidence inventory evidence -i evidence.local.json -o inventory.md
+python -m openops_evidence evidence quality -i evidence.local.json -o quality-report.md
 python -m openops_evidence freshness report -i evidence.local.json --max-age-days 30 -o freshness-report.md
 python -m openops_evidence restore report -i evidence.local.json --max-drill-age-days 90 -o restore-report.md
 python -m openops_evidence mail report -i evidence.local.json -o mail-report.md
@@ -228,6 +229,9 @@ Use `scaffold evidence` when a policy should become a schema-valid starter
 Evidence JSON file with placeholders for every supported `signals.*` path.
 Use `inventory evidence` when raw evidence should become a Wiki- or
 spreadsheet-friendly asset and signal-domain inventory.
+Use `evidence quality` when input hygiene problems such as duplicate asset IDs,
+missing metadata, empty signals, or common evidence gaps should be fixed before
+a handoff relies on the data.
 Use `freshness report` when timestamp-like evidence fields should be checked for
 stale, future, or invalid values before a handoff.
 Use `restore report` when backup recency and restore drill proof should become
@@ -264,6 +268,7 @@ Report comparisons are described in [docs/report-comparison.md](docs/report-comp
 Report history tracking is described in [docs/report-history.md](docs/report-history.md).
 Executive briefs are described in [docs/executive-brief.md](docs/executive-brief.md).
 Evidence inventories are described in [docs/evidence-inventory.md](docs/evidence-inventory.md).
+Evidence quality reports are described in [docs/evidence-quality.md](docs/evidence-quality.md).
 Evidence scaffolds are described in [docs/evidence-scaffold.md](docs/evidence-scaffold.md).
 Evidence drift reports are described in [docs/evidence-drift.md](docs/evidence-drift.md).
 Evidence freshness reports are described in [docs/freshness-report.md](docs/freshness-report.md).

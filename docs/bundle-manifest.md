@@ -139,6 +139,7 @@ EvidenceKit infers a simple role for each artifact:
 - `runbook-report` for valid runbook coverage report JSON
 - `freshness-report` for valid evidence freshness report JSON
 - `questionnaire` for valid evidence questionnaire JSON
+- `quality-report` for valid evidence quality report JSON
 - `report-sarif` for SARIF report JSON
 - `gate-result` for valid gate result JSON
 - `badge` for Shields-compatible status badge JSON

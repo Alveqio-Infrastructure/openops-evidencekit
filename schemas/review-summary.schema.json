@@ -62,6 +62,8 @@
         "incident_failures",
         "incident_warnings",
         "privacy_findings",
+        "quality_failures",
+        "quality_warnings",
         "scope_warnings",
         "drift_changes",
         "catalog_warnings",
@@ -156,6 +158,14 @@
           "minimum": 0
         },
         "privacy_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quality_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quality_warnings": {
           "type": "integer",
           "minimum": 0
         },

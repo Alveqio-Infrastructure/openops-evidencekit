@@ -243,6 +243,32 @@ def validate_inventory(document: Any) -> list[str]:
     return errors
 
 
+def validate_quality_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Quality report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in (
+            "checks_total",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+            "assets_total",
+            "signals_total",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        _validate_operational_check(check, errors, f"checks[{index}].")
+    return errors
+
+
 def validate_evidence_drift(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
@@ -372,6 +398,8 @@ def validate_review_summary(document: Any) -> list[str]:
             "incident_failures",
             "incident_warnings",
             "privacy_findings",
+            "quality_failures",
+            "quality_warnings",
             "scope_warnings",
             "drift_changes",
             "catalog_warnings",

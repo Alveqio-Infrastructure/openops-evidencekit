@@ -28,6 +28,9 @@ jobs:
           openops-evidence questionnaire policy __OPENOPS_POLICY_FILE__ -o evidence-questionnaire.md
           openops-evidence validate -i evidence.sample.json
           openops-evidence inventory evidence -i evidence.sample.json -o inventory.md
+          openops-evidence evidence quality -i evidence.sample.json -f json -o quality-report.json
+          openops-evidence validate -i quality-report.json -t quality-report
+          openops-evidence evidence quality -i evidence.sample.json -o quality-report.md
           openops-evidence catalog validate service-catalog.sample.toml
           openops-evidence catalog report -i evidence.sample.json -c service-catalog.sample.toml -f json -o service-catalog.json || true
           openops-evidence validate -i service-catalog.json -t service-catalog
@@ -85,6 +88,8 @@ jobs:
             evidence-questionnaire.md
             report.openops.json
             inventory.md
+            quality-report.json
+            quality-report.md
             service-catalog.json
             service-catalog.md
             runbook-report.json
