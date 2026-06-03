@@ -45,6 +45,7 @@ from .restore import create_restore_report, render_restore_csv, render_restore_m
 from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown
+from .tls import create_tls_report, render_tls_csv, render_tls_markdown
 
 
 def create_review_pack(
@@ -80,6 +81,7 @@ def create_review_pack(
         max_backup_age_days=restore_max_backup_age_days,
     )
     mail_report = create_mail_report(evidence) if _has_mail_context(evidence, checks) else None
+    tls_report = create_tls_report(evidence) if _has_tls_context(evidence, checks) else None
     access_report = create_access_report(evidence) if _has_access_context(evidence, checks) else None
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
@@ -129,6 +131,10 @@ def create_review_pack(
         add_artifact("mail-report.json", dump_json(mail_report), "Mail domain report", "Machine-readable SPF, DKIM, and DMARC report.")
         add_artifact("mail-report.md", render_mail_markdown(mail_report), "Mail domain report", "Human-readable SPF, DKIM, and DMARC report.")
         add_artifact("mail-report.csv", render_mail_csv(mail_report), "Mail domain report", "Spreadsheet-friendly mail domain report.")
+    if tls_report is not None:
+        add_artifact("tls-report.json", dump_json(tls_report), "TLS certificate report", "Machine-readable TLS certificate expiry report.")
+        add_artifact("tls-report.md", render_tls_markdown(tls_report), "TLS certificate report", "Human-readable TLS certificate expiry report.")
+        add_artifact("tls-report.csv", render_tls_csv(tls_report), "TLS certificate report", "Spreadsheet-friendly TLS certificate report.")
     if access_report is not None:
         add_artifact("access-report.json", dump_json(access_report), "Access exposure report", "Machine-readable administrative access exposure report.")
         add_artifact("access-report.md", render_access_markdown(access_report), "Access exposure report", "Human-readable administrative access exposure report.")
@@ -202,6 +208,7 @@ def create_review_pack(
         freshness_report=freshness_report,
         restore_report=restore_report,
         mail_report=mail_report,
+        tls_report=tls_report,
         access_report=access_report,
         risk_register=risk_register,
         scope_report=scope_report,
@@ -242,6 +249,7 @@ def create_review_pack(
         "freshness_report": freshness_report,
         "restore_report": restore_report,
         "mail_report": mail_report,
+        "tls_report": tls_report,
         "access_report": access_report,
         "risk_register": risk_register,
         "review_summary": review_summary,
@@ -277,6 +285,8 @@ def render_review_pack_readme(
         suggested_steps.append("Use `restore-report.md` to confirm backup recency and restore drill proof.")
     if any(artifact.get("filename") == "mail-report.md" for artifact in artifacts):
         suggested_steps.append("Check `mail-report.md` for SPF, DKIM, and DMARC evidence.")
+    if any(artifact.get("filename") == "tls-report.md" for artifact in artifacts):
+        suggested_steps.append("Use `tls-report.md` to review certificate expiry and renewal risk.")
     if any(artifact.get("filename") == "access-report.md" for artifact in artifacts):
         suggested_steps.append("Use `access-report.md` to review public SSH, MFA, and admin entrypoints.")
     if any(artifact.get("filename") == "service-catalog.md" for artifact in artifacts):
@@ -503,6 +513,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("freshness-report.md", "Freshness"),
         ("restore-report.md", "Restore"),
         ("mail-report.md", "Mail"),
+        ("tls-report.md", "TLS"),
         ("access-report.md", "Access"),
         ("scope-report.md", "Scope Report"),
         ("service-catalog.md", "Service Catalog"),
@@ -527,6 +538,13 @@ def _has_mail_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
     if isinstance(signals, dict) and isinstance(signals.get("mail"), dict):
         return True
     return any(check.path.startswith("signals.mail") for check in checks)
+
+
+def _has_tls_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
+    signals = evidence.get("signals")
+    if isinstance(signals, dict) and isinstance(signals.get("tls"), dict):
+        return True
+    return any(check.path.startswith("signals.tls") for check in checks)
 
 
 def _has_access_context(evidence: dict[str, Any], checks: list[Check]) -> bool:

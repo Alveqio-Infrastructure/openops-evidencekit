@@ -54,6 +54,10 @@ Mail evidence uses `signals.mail.domains` with `domain`, `spf`, `dkim`, and
 `dmarc` fields. `dmarc` may be a compact policy such as `reject` or a full
 DMARC record containing `p=reject`.
 
+TLS evidence uses `signals.tls.certificates` with `hostname`, optional `port`,
+`not_after`, and optional `issuer` fields. `not_after` should be an ISO 8601
+timestamp.
+
 Access evidence uses `signals.access.ssh_public_exposed`,
 `signals.access.mfa_required`, and `signals.access.admin_entrypoints` to
 document whether administrative access is public, MFA-protected, and routed

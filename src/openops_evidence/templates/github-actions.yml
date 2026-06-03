@@ -44,6 +44,9 @@ jobs:
           openops-evidence mail report -i evidence.sample.json -f json -o mail-report.json
           openops-evidence validate -i mail-report.json -t mail-report
           openops-evidence mail report -i evidence.sample.json -o mail-report.md
+          openops-evidence tls report -i evidence.sample.json -f json -o tls-report.json
+          openops-evidence validate -i tls-report.json -t tls-report
+          openops-evidence tls report -i evidence.sample.json -o tls-report.md
           openops-evidence access report -i evidence.sample.json -f json -o access-report.json
           openops-evidence validate -i access-report.json -t access-report
           openops-evidence access report -i evidence.sample.json -o access-report.md
@@ -85,6 +88,8 @@ jobs:
             restore-report.md
             mail-report.json
             mail-report.md
+            tls-report.json
+            tls-report.md
             access-report.json
             access-report.md
             policy-coverage.md

@@ -36,6 +36,7 @@ produces the common CI artifacts below.
 | Freshness report | `openops-evidence freshness report -i evidence.json --max-age-days 30 -o freshness-report.md` | Show stale, future, and invalid timestamp-like evidence fields before review. |
 | Restore assurance | `openops-evidence restore report -i evidence.json --max-drill-age-days 90 -o restore-report.md` | Show backup recency and restore drill proof before review. |
 | Mail domain report | `openops-evidence mail report -i evidence.json -o mail-report.md` | Show SPF, DKIM, and DMARC evidence before review. |
+| TLS certificate report | `openops-evidence tls report -i evidence.json -o tls-report.md` | Show certificate expiry and renewal risk before review. |
 | Access exposure | `openops-evidence access report -i evidence.json -o access-report.md` | Show public SSH, MFA, and admin entrypoint evidence before review. |
 | Scope report | `openops-evidence scope report -i evidence.json -s scope.toml -o scope-report.md` | Show in-scope, out-of-scope, missing, and unclassified evidence boundaries. |
 | Service catalog | `openops-evidence catalog report -i evidence.json -c service-catalog.toml -o service-catalog.md` | Check service owners, criticality, assets, evidence domains, and runbooks against collected evidence. |
@@ -50,7 +51,7 @@ produces the common CI artifacts below.
 | Domain scorecard | `openops-evidence scorecard report -i report.json -o scorecard.md` | Summarize readiness by operational evidence area. |
 | History JSON | `openops-evidence history append -i report.json -o readiness-history.json` | Track score and finding changes across recurring reviews. |
 | History SVG | `openops-evidence history render -i readiness-history.json -f svg -o readiness-history.svg` | Publish a compact trend graphic for README, wiki, or portal dashboards. |
-| Review pack | `openops-evidence review create -i evidence.json -p policy.toml -o review-pack --archive review-pack.zip` | Generate a complete handoff folder and ZIP archive with browser index, review summary, restore assurance, mail report, access exposure, report, brief, inventory, gate, badge, action plan, privacy scan, and manifest. |
+| Review pack | `openops-evidence review create -i evidence.json -p policy.toml -o review-pack --archive review-pack.zip` | Generate a complete handoff folder and ZIP archive with browser index, review summary, restore assurance, mail report, TLS certificate report, access exposure, report, brief, inventory, gate, badge, action plan, privacy scan, and manifest. |
 | JUnit XML | `openops-evidence report -i report.json -f junit -o report.junit.xml` | Publish readiness checks as CI test results. |
 | SARIF JSON | `openops-evidence report -i report.json -f sarif -o report.sarif.json` | Import findings into SARIF-aware review tools. |
 | Prometheus text | `openops-evidence report -i report.json -f prometheus -o report.prom` | Export score, status, and check counts into monitoring pipelines. |

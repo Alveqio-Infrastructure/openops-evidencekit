@@ -36,6 +36,7 @@ from .schema import (
     validate_scorecard,
     validate_service_catalog_report,
     validate_scope_report,
+    validate_tls_report,
 )
 from .waivers import validate_waiver_document
 
@@ -291,6 +292,8 @@ def classify_artifact(path: Path) -> str:
             return "restore-report"
         if validate_mail_report(document) == []:
             return "mail-report"
+        if validate_tls_report(document) == []:
+            return "tls-report"
         if validate_access_report(document) == []:
             return "access-report"
         if validate_executive_brief(document) == []:

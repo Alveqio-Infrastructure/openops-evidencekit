@@ -53,6 +53,8 @@
         "restore_warnings",
         "mail_failures",
         "mail_warnings",
+        "tls_failures",
+        "tls_warnings",
         "access_failures",
         "access_warnings",
         "privacy_findings",
@@ -114,6 +116,14 @@
           "minimum": 0
         },
         "mail_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tls_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tls_warnings": {
           "type": "integer",
           "minimum": 0
         },

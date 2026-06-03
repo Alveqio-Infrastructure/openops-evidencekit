@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/tls-report.schema.json",
+  "title": "OpenOps TLS Certificate Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "certificates"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "certificates_total",
+        "certificates_passed",
+        "certificates_warn",
+        "certificates_failed",
+        "expired_count",
+        "expiring_soon_count",
+        "invalid_count",
+        "unknown_count"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "certificates_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "certificates_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "certificates_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "certificates_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expired_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expiring_soon_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "invalid_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "certificates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "hostname",
+          "port",
+          "status",
+          "certificate_status",
+          "not_after",
+          "days_remaining",
+          "issuer",
+          "reason",
+          "recommended_action"
+        ],
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "minLength": 1
+          },
+          "port": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "status": {
+            "enum": ["pass", "warn", "fail"]
+          },
+          "certificate_status": {
+            "enum": ["current", "expiring_soon", "expired", "invalid", "unknown"]
+          },
+          "not_after": {
+            "type": "string"
+          },
+          "days_remaining": {
+            "type": ["integer", "null"]
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "recommended_action": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

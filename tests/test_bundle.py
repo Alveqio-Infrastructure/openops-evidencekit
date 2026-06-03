@@ -207,6 +207,7 @@ class BundleTests(unittest.TestCase):
             review_summary = temp / "review-summary.json"
             restore_report = temp / "restore-report.json"
             mail_report = temp / "mail-report.json"
+            tls_report = temp / "tls-report.json"
             access_report = temp / "access-report.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
@@ -515,6 +516,8 @@ class BundleTests(unittest.TestCase):
                             "restore_warnings": 0,
                             "mail_failures": 0,
                             "mail_warnings": 0,
+                            "tls_failures": 0,
+                            "tls_warnings": 0,
                             "access_failures": 0,
                             "access_warnings": 0,
                             "privacy_findings": 0,
@@ -619,6 +622,40 @@ class BundleTests(unittest.TestCase):
                                 "dmarc_status": "enforced",
                                 "reason": "SPF, DKIM, and enforced DMARC evidence are present.",
                                 "recommended_action": "Keep mail authentication evidence current.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            tls_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "certificates_total": 1,
+                            "certificates_passed": 1,
+                            "certificates_warn": 0,
+                            "certificates_failed": 0,
+                            "expired_count": 0,
+                            "expiring_soon_count": 0,
+                            "invalid_count": 0,
+                            "unknown_count": 0,
+                        },
+                        "certificates": [
+                            {
+                                "hostname": "www.example.invalid",
+                                "port": 443,
+                                "status": "pass",
+                                "certificate_status": "current",
+                                "not_after": "2026-08-20T12:00:00+00:00",
+                                "days_remaining": 78,
+                                "issuer": "Example CA",
+                                "reason": "TLS certificate expiry is outside the warning window.",
+                                "recommended_action": "Keep certificate renewal automation and evidence current.",
                             }
                         ],
                     }
@@ -1027,6 +1064,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(review_summary), "review-summary")
             self.assertEqual(classify_artifact(restore_report), "restore-report")
             self.assertEqual(classify_artifact(mail_report), "mail-report")
+            self.assertEqual(classify_artifact(tls_report), "tls-report")
             self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")

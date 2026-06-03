@@ -57,8 +57,8 @@ Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
 evidence scaffolds, scope reports, service catalog reports, runbook coverage
 reports, evidence freshness reports, restore assurance reports, access exposure
-reports, executive briefs, scorecards, history timelines, evidence drift reports,
-mail domain reports, comparisons, action plans, risk registers, ticket drafts,
+reports, TLS certificate reports, executive briefs, scorecards, history timelines,
+evidence drift reports, mail domain reports, comparisons, action plans, risk registers, ticket drafts,
 review packs, review summaries, review attestations, and bundle manifests.
 Reports can also be rendered as JUnit XML for CI systems. Generated files are
 ignored by git so they can be reviewed without polluting commits.

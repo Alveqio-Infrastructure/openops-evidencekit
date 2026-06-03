@@ -47,6 +47,9 @@ readiness-badge.json
 /mail-report.json
 /mail-report.md
 /mail-report.csv
+/tls-report.json
+/tls-report.md
+/tls-report.csv
 /access-report.json
 /access-report.md
 /access-report.csv

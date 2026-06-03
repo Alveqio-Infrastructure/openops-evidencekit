@@ -29,6 +29,7 @@ from openops_evidence.schema import (
     validate_scorecard,
     validate_service_catalog_report,
     validate_scope_report,
+    validate_tls_report,
 )
 
 
@@ -715,6 +716,8 @@ class SchemaTests(unittest.TestCase):
                     "restore_warnings": 0,
                     "mail_failures": 0,
                     "mail_warnings": 0,
+                    "tls_failures": 0,
+                    "tls_warnings": 0,
                     "access_failures": 0,
                     "access_warnings": 0,
                     "privacy_findings": 0,
@@ -1088,6 +1091,40 @@ class SchemaTests(unittest.TestCase):
                         "status": "safe",
                         "reason": "Entrypoint is a controlled administrative access layer.",
                     },
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_tls_report(self):
+        errors = validate_tls_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "certificates_total": 1,
+                    "certificates_passed": 1,
+                    "certificates_warn": 0,
+                    "certificates_failed": 0,
+                    "expired_count": 0,
+                    "expiring_soon_count": 0,
+                    "invalid_count": 0,
+                    "unknown_count": 0,
+                },
+                "certificates": [
+                    {
+                        "hostname": "www.example.invalid",
+                        "port": 443,
+                        "status": "pass",
+                        "certificate_status": "current",
+                        "not_after": "2026-08-20T12:00:00+00:00",
+                        "days_remaining": 78,
+                        "issuer": "Example CA",
+                        "reason": "TLS certificate expiry is outside the warning window.",
+                        "recommended_action": "Keep certificate renewal automation and evidence current.",
+                    }
                 ],
             }
         )

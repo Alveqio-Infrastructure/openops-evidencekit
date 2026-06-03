@@ -363,6 +363,8 @@ def validate_review_summary(document: Any) -> list[str]:
             "restore_warnings",
             "mail_failures",
             "mail_warnings",
+            "tls_failures",
+            "tls_warnings",
             "access_failures",
             "access_warnings",
             "privacy_findings",
@@ -733,6 +735,57 @@ def validate_mail_report(document: Any) -> list[str]:
         _require_enum(domain, "dmarc_status", {"enforced", "monitoring", "missing", "unknown"}, errors, prefix=prefix)
         for key in ("reason", "recommended_action"):
             _require_string(domain, key, errors, prefix=prefix)
+    return errors
+
+
+def validate_tls_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["TLS report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "certificates", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in (
+            "certificates_total",
+            "certificates_passed",
+            "certificates_warn",
+            "certificates_failed",
+            "expired_count",
+            "expiring_soon_count",
+            "invalid_count",
+            "unknown_count",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, certificate in enumerate(document.get("certificates", [])):
+        if not isinstance(certificate, dict):
+            errors.append(f"certificates[{index}] must be an object.")
+            continue
+        prefix = f"certificates[{index}]."
+        _require_string(certificate, "hostname", errors, prefix=prefix)
+        if "port" not in certificate:
+            errors.append(f"{prefix}port is required.")
+        elif certificate["port"] is not None:
+            _require_int_range(certificate, "port", errors, minimum=1, prefix=prefix)
+        _require_enum(certificate, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        _require_enum(
+            certificate,
+            "certificate_status",
+            {"current", "expiring_soon", "expired", "invalid", "unknown"},
+            errors,
+            prefix=prefix,
+        )
+        _require_string_type(certificate, "not_after", errors, prefix=prefix)
+        if "days_remaining" not in certificate:
+            errors.append(f"{prefix}days_remaining is required.")
+        elif certificate["days_remaining"] is not None:
+            _require_int(certificate, "days_remaining", errors, prefix=prefix)
+        for key in ("issuer", "reason", "recommended_action"):
+            _require_string_type(certificate, key, errors, prefix=prefix)
     return errors
 
 

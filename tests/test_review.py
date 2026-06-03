@@ -57,6 +57,9 @@ class ReviewPackTests(unittest.TestCase):
                 "mail-report.csv",
                 "mail-report.json",
                 "mail-report.md",
+                "tls-report.csv",
+                "tls-report.json",
+                "tls-report.md",
                 "access-report.csv",
                 "access-report.json",
                 "access-report.md",
@@ -103,6 +106,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(pack / "review-summary.json"), "-t", "review-summary"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "restore-report.json"), "-t", "restore-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "mail-report.json"), "-t", "mail-report"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "tls-report.json"), "-t", "tls-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "access-report.json"), "-t", "access-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "manifest.json"), "-t", "bundle"]), 0)
 
@@ -118,6 +122,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertIn("freshness-report.md", readme)
             self.assertIn("restore-report.md", readme)
             self.assertIn("mail-report.md", readme)
+            self.assertIn("tls-report.md", readme)
             self.assertIn("access-report.md", readme)
             self.assertIn("risk-register.md", readme)
             self.assertIn("privacy-scan.md", readme)
@@ -126,6 +131,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertIn("Freshness", index)
             self.assertIn("Restore", index)
             self.assertIn("Mail", index)
+            self.assertIn("TLS", index)
             self.assertIn("Access", index)
             self.assertIn("Risk Register", index)
             self.assertIn("scorecard.html", index)
@@ -163,7 +169,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             scope_report = json.loads((pack / "scope-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 50)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 53)
             self.assertEqual(scope_report["summary"]["status"], "warn")
             self.assertIn("scope-report.md", readme)
             self.assertIn("Scope Report", index)
@@ -226,7 +232,7 @@ class ReviewPackTests(unittest.TestCase):
             index = (pack / "index.html").read_text(encoding="utf-8")
             service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
             runbook_report = json.loads((pack / "runbook-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 53)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 56)
             self.assertEqual(service_catalog["summary"]["status"], "warn")
             self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(runbook_report["summary"]["missing_runbooks_count"], 1)
@@ -309,7 +315,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             drift = json.loads((pack / "evidence-drift.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 50)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 53)
             self.assertEqual(drift["summary"]["status"], "warn")
             self.assertIn("evidence-drift.md", readme)
             self.assertIn("Evidence Drift", index)
@@ -605,6 +611,75 @@ remediation = "Require MFA for administrative entrypoints."
             self.assertEqual(review_summary["decision"]["status"], "fail")
             self.assertTrue((pack / "manifest.json").is_file())
 
+    def test_review_create_can_fail_on_tls_after_writing_pack(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            pack = temp / "review-pack"
+            policy = temp / "passing-policy.toml"
+            weak_tls = temp / "weak-tls.json"
+            policy.write_text(
+                """
+[[checks]]
+id = "tls_cert_recorded"
+title = "TLS certificate expiry is recorded"
+path = "signals.tls.certificates[*].not_after"
+operator = "exists"
+severity = "high"
+required = true
+remediation = "Record TLS certificate expiry evidence."
+""".lstrip(),
+                encoding="utf-8",
+            )
+            weak_tls.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T00:00:00+00:00",
+                        "metadata": {},
+                        "assets": [],
+                        "signals": {
+                            "backup": {
+                                "last_success_at": "2026-05-31T00:00:00+00:00",
+                                "repository_count": 1,
+                                "restore_test_at": "2026-05-20T00:00:00+00:00",
+                            },
+                            "tls": {
+                                "certificates": [
+                                    {
+                                        "hostname": "www.example.invalid",
+                                        "not_after": "2026-06-10T00:00:00+00:00",
+                                    }
+                                ]
+                            },
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(weak_tls),
+                        "-p",
+                        str(policy),
+                        "--fail-on-tls-warn",
+                        "-o",
+                        str(pack),
+                    ]
+                ),
+                1,
+            )
+
+            tls_report = json.loads((pack / "tls-report.json").read_text(encoding="utf-8"))
+            review_summary = json.loads((pack / "review-summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(tls_report["summary"]["status"], "warn")
+            self.assertEqual(review_summary["decision"]["status"], "warn")
+            self.assertTrue((pack / "manifest.json").is_file())
+
     def test_review_create_can_fail_on_open_risk_after_writing_pack(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)
@@ -678,6 +753,7 @@ remediation = "Add the missing operational signal to evidence."
             self.assertIn("review-summary.md", names)
             self.assertIn("restore-report.md", names)
             self.assertIn("mail-report.md", names)
+            self.assertIn("tls-report.md", names)
             self.assertIn("access-report.md", names)
             self.assertIn("report.json", names)
             self.assertIn("scorecard.html", names)

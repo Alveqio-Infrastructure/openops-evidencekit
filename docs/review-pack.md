@@ -23,6 +23,7 @@ audiences need:
 | `freshness-report.json` / `freshness-report.md` / `freshness-report.csv` | Evidence timestamp freshness report. |
 | `restore-report.json` / `restore-report.md` / `restore-report.csv` | Backup recency and restore drill assurance report. |
 | `mail-report.json` / `mail-report.md` / `mail-report.csv` | Optional SPF, DKIM, and DMARC report when mail evidence or policy paths exist. |
+| `tls-report.json` / `tls-report.md` / `tls-report.csv` | Optional TLS certificate expiry report when TLS evidence or policy paths exist. |
 | `access-report.json` / `access-report.md` / `access-report.csv` | Optional public SSH, MFA, and admin entrypoint report when access evidence or policy paths exist. |
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
 | `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
@@ -89,6 +90,10 @@ the default restore drill and backup recency windows.
 Add `--fail-on-mail-warn` when missing SPF, DKIM, missing DMARC, monitoring-only
 DMARC, or unknown DMARC policy evidence should fail the review pack command
 after the pack has been written.
+
+Add `--fail-on-tls-warn` when missing, invalid, expired, or soon expiring TLS
+certificate evidence should fail the review pack command after the pack has
+been written.
 
 Add `--fail-on-access-warn` when missing public SSH evidence, missing MFA
 evidence, public SSH exposure, missing entrypoints, risky entrypoints, or

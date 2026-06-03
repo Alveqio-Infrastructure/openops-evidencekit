@@ -104,10 +104,12 @@ from .schema import (
     validate_scorecard,
     validate_service_catalog_report,
     validate_scope_report,
+    validate_tls_report,
 )
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown, validate_scope_document
 from .tickets import export_action_plan_tickets
+from .tls import create_tls_report, render_tls_csv, render_tls_markdown
 from .waivers import validate_waiver_document
 
 
@@ -323,6 +325,16 @@ def build_parser() -> argparse.ArgumentParser:
     mail_report.add_argument("-o", "--output", default="-")
     mail_report.set_defaults(func=cmd_mail_report)
 
+    tls_report_root = sub.add_parser("tls", help="Inspect TLS certificate expiry evidence")
+    tls_sub = tls_report_root.add_subparsers(required=True)
+    tls_report = tls_sub.add_parser("report", help="Render TLS certificate expiry evidence")
+    tls_report.add_argument("-i", "--input", required=True)
+    tls_report.add_argument("--warn-days", type=int, default=30)
+    tls_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    tls_report.add_argument("--fail-on-warn", action="store_true")
+    tls_report.add_argument("-o", "--output", default="-")
+    tls_report.set_defaults(func=cmd_tls_report)
+
     access = sub.add_parser("access", help="Inspect administrative access exposure evidence")
     access_sub = access.add_subparsers(required=True)
     access_report = access_sub.add_parser("report", help="Render SSH, MFA, and admin entrypoint evidence")
@@ -435,6 +447,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-freshness-warn", action="store_true")
     review_create.add_argument("--fail-on-restore-warn", action="store_true")
     review_create.add_argument("--fail-on-mail-warn", action="store_true")
+    review_create.add_argument("--fail-on-tls-warn", action="store_true")
     review_create.add_argument("--fail-on-access-warn", action="store_true")
     review_create.add_argument("--fail-on-open-risk", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
@@ -531,6 +544,7 @@ def build_parser() -> argparse.ArgumentParser:
             "review-summary",
             "restore-report",
             "mail-report",
+            "tls-report",
             "access-report",
             "gate-result",
             "badge",
@@ -942,6 +956,26 @@ def cmd_mail_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_tls_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    if args.warn_days < 0:
+        raise UserFacingError("--warn-days must be at least 0")
+    report = create_tls_report(evidence, warn_days=args.warn_days)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_tls_csv(report)
+    else:
+        rendered = render_tls_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
 def cmd_access_report(args: argparse.Namespace) -> int:
     evidence = load_json(args.input)
     errors = validate_evidence(evidence)
@@ -1271,6 +1305,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
     ):
         return 1
     if (
+        args.fail_on_tls_warn
+        and pack.get("tls_report") is not None
+        and pack["tls_report"]["summary"]["status"] != "pass"
+    ):
+        return 1
+    if (
         args.fail_on_access_warn
         and pack.get("access_report") is not None
         and pack["access_report"]["summary"]["status"] != "pass"
@@ -1452,6 +1492,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_restore_report(document)
     elif args.type == "mail-report":
         errors = validate_mail_report(document)
+    elif args.type == "tls-report":
+        errors = validate_tls_report(document)
     elif args.type == "access-report":
         errors = validate_access_report(document)
     elif args.type == "gate-result":

@@ -14,6 +14,7 @@ def create_review_summary(
     freshness_report: dict[str, Any] | None = None,
     restore_report: dict[str, Any] | None = None,
     mail_report: dict[str, Any] | None = None,
+    tls_report: dict[str, Any] | None = None,
     access_report: dict[str, Any] | None = None,
     risk_register: dict[str, Any] | None = None,
     scope_report: dict[str, Any] | None = None,
@@ -27,6 +28,7 @@ def create_review_summary(
     freshness_summary = (freshness_report or {}).get("summary", {})
     restore_summary = (restore_report or {}).get("summary", {})
     mail_summary = (mail_report or {}).get("summary", {})
+    tls_summary = (tls_report or {}).get("summary", {})
     access_summary = (access_report or {}).get("summary", {})
     risk_summary = (risk_register or {}).get("summary", {})
     scope_summary = (scope_report or {}).get("summary", {})
@@ -48,6 +50,8 @@ def create_review_summary(
         "restore_warnings": _int_or_zero(restore_summary.get("checks_warn")),
         "mail_failures": _int_or_zero(mail_summary.get("domains_failed")),
         "mail_warnings": _int_or_zero(mail_summary.get("domains_warn")),
+        "tls_failures": _int_or_zero(tls_summary.get("certificates_failed")),
+        "tls_warnings": _int_or_zero(tls_summary.get("certificates_warn")),
         "access_failures": _int_or_zero(access_summary.get("checks_failed")),
         "access_warnings": _int_or_zero(access_summary.get("checks_warn")),
         "privacy_findings": _int_or_zero(privacy_summary.get("findings_count")),
@@ -103,6 +107,8 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "restore_warnings",
         "mail_failures",
         "mail_warnings",
+        "tls_failures",
+        "tls_warnings",
         "access_failures",
         "access_warnings",
         "privacy_findings",
@@ -137,6 +143,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("restore assurance failed")
     if metrics["mail_failures"] > 0:
         blockers.append("mail domain checks failed")
+    if metrics["tls_failures"] > 0:
+        blockers.append("TLS certificate checks failed")
     if metrics["access_failures"] > 0:
         blockers.append("access exposure checks failed")
     if blockers:
@@ -154,6 +162,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("restore assurance warnings exist")
     if metrics["mail_warnings"] > 0:
         warnings.append("mail domain warnings exist")
+    if metrics["tls_warnings"] > 0:
+        warnings.append("TLS certificate warnings exist")
     if metrics["access_warnings"] > 0:
         warnings.append("access exposure warnings exist")
     if metrics["scope_warnings"] > 0:
@@ -194,6 +204,10 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['mail_failures']} mail domain(s) failed authentication evidence checks.")
     if metrics["mail_warnings"]:
         highlights.append(f"{metrics['mail_warnings']} mail domain warning(s) need review.")
+    if metrics["tls_failures"]:
+        highlights.append(f"{metrics['tls_failures']} TLS certificate check(s) failed.")
+    if metrics["tls_warnings"]:
+        highlights.append(f"{metrics['tls_warnings']} TLS certificate warning(s) need review.")
     if metrics["access_failures"]:
         highlights.append(f"{metrics['access_failures']} access exposure check(s) failed.")
     if metrics["access_warnings"]:
@@ -218,6 +232,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Review `restore-report.md` and refresh backup or restore drill evidence.")
     if metrics["mail_failures"] > 0 or metrics["mail_warnings"] > 0:
         steps.append("Review `mail-report.md` and fix SPF, DKIM, or DMARC evidence gaps.")
+    if metrics["tls_failures"] > 0 or metrics["tls_warnings"] > 0:
+        steps.append("Review `tls-report.md` and renew or schedule certificates before expiry.")
     if metrics["access_failures"] > 0 or metrics["access_warnings"] > 0:
         steps.append("Review `access-report.md` and fix public SSH, MFA, or admin entrypoint gaps.")
     if metrics["stale_timestamps"] > 0 or metrics["invalid_timestamps"] > 0:

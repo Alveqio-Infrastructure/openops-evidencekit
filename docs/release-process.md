@@ -54,6 +54,9 @@ python -m openops_evidence restore report -i examples/evidence.sample.json --max
 python -m openops_evidence mail report -i examples/evidence.sample.json -f json -o mail-report.json
 python -m openops_evidence validate -i mail-report.json -t mail-report
 python -m openops_evidence mail report -i examples/evidence.sample.json -o mail-report.md
+python -m openops_evidence tls report -i examples/evidence.sample.json -f json -o tls-report.json
+python -m openops_evidence validate -i tls-report.json -t tls-report
+python -m openops_evidence tls report -i examples/evidence.sample.json -o tls-report.md
 python -m openops_evidence access report -i examples/evidence.sample.json -f json -o access-report.json
 python -m openops_evidence validate -i access-report.json -t access-report
 python -m openops_evidence access report -i examples/evidence.sample.json -o access-report.md
@@ -112,9 +115,10 @@ python -m openops_evidence review create -i evidence.redacted.json -p examples/p
 python -m openops_evidence validate -i review-pack/review-summary.json -t review-summary
 python -m openops_evidence validate -i review-pack/restore-report.json -t restore-report
 python -m openops_evidence validate -i review-pack/mail-report.json -t mail-report
+python -m openops_evidence validate -i review-pack/tls-report.json -t tls-report
 python -m openops_evidence validate -i review-pack/access-report.json -t access-report
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
-python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json freshness-report.json restore-report.json mail-report.json access-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json freshness-report.json restore-report.json mail-report.json tls-report.json access-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.comparison.json report.local.md report.local.sarif.json report.local.prom -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
@@ -143,6 +147,7 @@ Then inspect:
    `schemas/evidence-drift.schema.json`,
    `schemas/restore-report.schema.json`,
    `schemas/mail-report.schema.json`,
+   `schemas/tls-report.schema.json`,
    `schemas/access-report.schema.json`,
    `schemas/review-attestation.schema.json`,
    `schemas/review-summary.schema.json`,
