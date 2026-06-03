@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/incident-report.schema.json",
+  "title": "OpenOps Incident Readiness Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "checks", "services", "incident_runbooks"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "incident_runbooks_total",
+        "services_total",
+        "critical_services",
+        "high_services",
+        "services_missing_contacts",
+        "high_impact_services_missing_contacts",
+        "high_impact_services_missing_incident_runbooks",
+        "alert_channels_total",
+        "checks_total",
+        "checks_passed",
+        "checks_warn",
+        "checks_failed"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "incident_runbooks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_services": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_services": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_missing_contacts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_impact_services_missing_contacts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_impact_services_missing_incident_runbooks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "alert_channels_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_failed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "title", "status", "severity", "path", "reason", "recommended_action"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["pass", "warn", "fail"]
+          },
+          "severity": {
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "path": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "recommended_action": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "name", "owner", "criticality", "contacts_total", "contacts", "incident_runbooks", "status", "reason"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "criticality": {
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "contacts_total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "contacts": {
+            "type": "array"
+          },
+          "incident_runbooks": {
+            "type": "array"
+          },
+          "status": {
+            "enum": ["pass", "warn", "fail"]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "incident_runbooks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["name", "path", "updated_at"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

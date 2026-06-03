@@ -369,6 +369,8 @@ def validate_review_summary(document: Any) -> list[str]:
             "access_warnings",
             "monitoring_failures",
             "monitoring_warnings",
+            "incident_failures",
+            "incident_warnings",
             "privacy_findings",
             "scope_warnings",
             "drift_changes",
@@ -1141,6 +1143,62 @@ def validate_monitoring_report(document: Any) -> list[str]:
         _require_string(target, "target", errors, prefix=prefix)
         _require_string(target, "status", errors, prefix=prefix)
         _require_string_type(target, "reason", errors, prefix=prefix)
+    return errors
+
+
+def validate_incident_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Incident report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    _require_list(document, "services", errors)
+    _require_list(document, "incident_runbooks", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in (
+            "incident_runbooks_total",
+            "services_total",
+            "critical_services",
+            "high_services",
+            "services_missing_contacts",
+            "high_impact_services_missing_contacts",
+            "high_impact_services_missing_incident_runbooks",
+            "alert_channels_total",
+            "checks_total",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        _validate_operational_check(check, errors, f"checks[{index}].")
+    for index, service in enumerate(document.get("services", [])):
+        if not isinstance(service, dict):
+            errors.append(f"services[{index}] must be an object.")
+            continue
+        prefix = f"services[{index}]."
+        _require_string(service, "id", errors, prefix=prefix)
+        _require_string_type(service, "name", errors, prefix=prefix)
+        _require_string_type(service, "owner", errors, prefix=prefix)
+        _require_enum(service, "criticality", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        _require_enum(service, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        _require_int_range(service, "contacts_total", errors, minimum=0, prefix=prefix)
+        _require_list(service, "contacts", errors, prefix=prefix)
+        _require_list(service, "incident_runbooks", errors, prefix=prefix)
+        _require_string_type(service, "reason", errors, prefix=prefix)
+    for index, runbook in enumerate(document.get("incident_runbooks", [])):
+        if not isinstance(runbook, dict):
+            errors.append(f"incident_runbooks[{index}] must be an object.")
+            continue
+        prefix = f"incident_runbooks[{index}]."
+        _require_string(runbook, "name", errors, prefix=prefix)
+        _require_string_type(runbook, "path", errors, prefix=prefix)
+        _require_string_type(runbook, "updated_at", errors, prefix=prefix)
     return errors
 
 

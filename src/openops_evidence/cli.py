@@ -45,6 +45,7 @@ from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_ev
 from .freshness import create_freshness_report, render_freshness_csv, render_freshness_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .history import append_report_history, render_history_csv, render_history_markdown, render_history_svg
+from .incident import create_incident_report, render_incident_csv, render_incident_markdown
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .mail import create_mail_report, render_mail_csv, render_mail_markdown
@@ -88,6 +89,7 @@ from .schema import (
     validate_executive_brief,
     validate_freshness_report,
     validate_gate_result,
+    validate_incident_report,
     validate_inventory,
     validate_mail_report,
     validate_monitoring_report,
@@ -356,6 +358,16 @@ def build_parser() -> argparse.ArgumentParser:
     monitoring_report.add_argument("-o", "--output", default="-")
     monitoring_report.set_defaults(func=cmd_monitoring_report)
 
+    incident = sub.add_parser("incident", help="Inspect incident response readiness evidence")
+    incident_sub = incident.add_subparsers(required=True)
+    incident_report = incident_sub.add_parser("report", help="Render incident response readiness evidence")
+    incident_report.add_argument("-i", "--input", required=True)
+    incident_report.add_argument("-c", "--catalog")
+    incident_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    incident_report.add_argument("--fail-on-warn", action="store_true")
+    incident_report.add_argument("-o", "--output", default="-")
+    incident_report.set_defaults(func=cmd_incident_report)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -462,6 +474,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-tls-warn", action="store_true")
     review_create.add_argument("--fail-on-access-warn", action="store_true")
     review_create.add_argument("--fail-on-monitoring-warn", action="store_true")
+    review_create.add_argument("--fail-on-incident-warn", action="store_true")
     review_create.add_argument("--fail-on-open-risk", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
@@ -560,6 +573,7 @@ def build_parser() -> argparse.ArgumentParser:
             "tls-report",
             "access-report",
             "monitoring-report",
+            "incident-report",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -1028,6 +1042,30 @@ def cmd_monitoring_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_incident_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    catalog_document = None
+    if args.catalog:
+        catalog_document = load_structured(args.catalog)
+        catalog_errors = validate_catalog_document(catalog_document)
+        if catalog_errors:
+            raise UserFacingError("Service catalog validation failed:\n- " + "\n- ".join(catalog_errors))
+    report = create_incident_report(evidence, catalog_document=catalog_document)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_incident_csv(report)
+    else:
+        rendered = render_incident_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
 def cmd_evidence_diff(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -1356,6 +1394,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         and pack["monitoring_report"]["summary"]["status"] != "pass"
     ):
         return 1
+    if (
+        args.fail_on_incident_warn
+        and pack.get("incident_report") is not None
+        and pack["incident_report"]["summary"]["status"] != "pass"
+    ):
+        return 1
     if args.fail_on_open_risk and pack["risk_register"]["summary"]["open_count"] > 0:
         return 1
     return 0
@@ -1538,6 +1582,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_access_report(document)
     elif args.type == "monitoring-report":
         errors = validate_monitoring_report(document)
+    elif args.type == "incident-report":
+        errors = validate_incident_report(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

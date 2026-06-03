@@ -56,6 +56,9 @@ readiness-badge.json
 /monitoring-report.json
 /monitoring-report.md
 /monitoring-report.csv
+/incident-report.json
+/incident-report.md
+/incident-report.csv
 /questionnaire.*
 /evidence-questionnaire.*
 /executive-brief.json

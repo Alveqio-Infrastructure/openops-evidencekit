@@ -238,14 +238,18 @@ class ReviewPackTests(unittest.TestCase):
             index = (pack / "index.html").read_text(encoding="utf-8")
             service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
             runbook_report = json.loads((pack / "runbook-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 59)
+            incident_report = json.loads((pack / "incident-report.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["metadata"]["artifact_count"], 62)
             self.assertEqual(service_catalog["summary"]["status"], "warn")
             self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(runbook_report["summary"]["missing_runbooks_count"], 1)
+            self.assertEqual(incident_report["summary"]["status"], "fail")
             self.assertIn("service-catalog.md", readme)
             self.assertIn("runbook-report.md", readme)
+            self.assertIn("incident-report.md", readme)
             self.assertIn("Service Catalog", index)
             self.assertIn("Runbook Report", index)
+            self.assertIn("Incident", index)
 
             self.assertEqual(
                 main(
@@ -753,6 +757,82 @@ remediation = "Record monitoring targets."
             monitoring_report = json.loads((pack / "monitoring-report.json").read_text(encoding="utf-8"))
             review_summary = json.loads((pack / "review-summary.json").read_text(encoding="utf-8"))
             self.assertEqual(monitoring_report["summary"]["status"], "fail")
+            self.assertEqual(review_summary["decision"]["status"], "fail")
+            self.assertTrue((pack / "manifest.json").is_file())
+
+    def test_review_create_can_fail_on_incident_after_writing_pack(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            pack = temp / "review-pack"
+            policy = temp / "passing-policy.toml"
+            weak_incident = temp / "weak-incident.json"
+            catalog = temp / "catalog.toml"
+            policy.write_text(
+                """
+[[checks]]
+id = "backup_restore_recorded"
+title = "Restore drill is recorded"
+path = "signals.backup.restore_test_at"
+operator = "exists"
+severity = "high"
+required = true
+remediation = "Record restore drill evidence."
+""".lstrip(),
+                encoding="utf-8",
+            )
+            catalog.write_text(
+                """
+[[services]]
+id = "database"
+name = "Database"
+owner = "platform"
+criticality = "critical"
+assets = ["db-01"]
+runbooks = ["database-restore"]
+contacts = []
+""".lstrip(),
+                encoding="utf-8",
+            )
+            weak_incident.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T00:00:00+00:00",
+                        "metadata": {},
+                        "assets": [],
+                        "signals": {
+                            "backup": {"restore_test_at": "2026-05-20T00:00:00+00:00"},
+                            "monitoring": {"alert_channels": []},
+                            "access": {"ssh_public_exposed": False, "mfa_required": True},
+                            "docs": {"runbooks": []},
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(weak_incident),
+                        "-p",
+                        str(policy),
+                        "--catalog",
+                        str(catalog),
+                        "--fail-on-incident-warn",
+                        "-o",
+                        str(pack),
+                    ]
+                ),
+                1,
+            )
+
+            incident_report = json.loads((pack / "incident-report.json").read_text(encoding="utf-8"))
+            review_summary = json.loads((pack / "review-summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(incident_report["summary"]["status"], "fail")
             self.assertEqual(review_summary["decision"]["status"], "fail")
             self.assertTrue((pack / "manifest.json").is_file())
 

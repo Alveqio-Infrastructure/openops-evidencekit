@@ -12,6 +12,7 @@ from openops_evidence.schema import (
     validate_executive_brief,
     validate_freshness_report,
     validate_gate_result,
+    validate_incident_report,
     validate_inventory,
     validate_mail_report,
     validate_monitoring_report,
@@ -723,6 +724,8 @@ class SchemaTests(unittest.TestCase):
                     "access_warnings": 0,
                     "monitoring_failures": 0,
                     "monitoring_warnings": 0,
+                    "incident_failures": 0,
+                    "incident_warnings": 0,
                     "privacy_findings": 0,
                     "scope_warnings": 0,
                     "drift_changes": 0,
@@ -1136,6 +1139,62 @@ class SchemaTests(unittest.TestCase):
                     }
                 ],
                 "down_targets": [],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_incident_report(self):
+        errors = validate_incident_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "incident_runbooks_total": 1,
+                    "services_total": 1,
+                    "critical_services": 0,
+                    "high_services": 1,
+                    "services_missing_contacts": 0,
+                    "high_impact_services_missing_contacts": 0,
+                    "high_impact_services_missing_incident_runbooks": 0,
+                    "alert_channels_total": 1,
+                    "checks_total": 1,
+                    "checks_passed": 1,
+                    "checks_warn": 0,
+                    "checks_failed": 0,
+                },
+                "checks": [
+                    {
+                        "id": "incident_runbook_present",
+                        "title": "Incident response runbook is present",
+                        "status": "pass",
+                        "severity": "critical",
+                        "path": "signals.docs.runbooks",
+                        "reason": "1 incident runbook(s) found.",
+                        "recommended_action": "Keep incident runbooks current.",
+                    }
+                ],
+                "services": [
+                    {
+                        "id": "web",
+                        "name": "Website",
+                        "owner": "platform",
+                        "criticality": "high",
+                        "contacts_total": 1,
+                        "contacts": ["platform@example.invalid"],
+                        "incident_runbooks": ["incident-escalation"],
+                        "status": "pass",
+                        "reason": "Service has contacts and incident response runbook references.",
+                    }
+                ],
+                "incident_runbooks": [
+                    {
+                        "name": "incident-escalation",
+                        "path": "runbooks/incident.md",
+                        "updated_at": "2026-05-20T00:00:00+00:00",
+                    }
+                ],
             }
         )
         self.assertEqual(errors, [])

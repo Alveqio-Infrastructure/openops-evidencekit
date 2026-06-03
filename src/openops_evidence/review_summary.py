@@ -17,6 +17,7 @@ def create_review_summary(
     tls_report: dict[str, Any] | None = None,
     access_report: dict[str, Any] | None = None,
     monitoring_report: dict[str, Any] | None = None,
+    incident_report: dict[str, Any] | None = None,
     risk_register: dict[str, Any] | None = None,
     scope_report: dict[str, Any] | None = None,
     evidence_drift: dict[str, Any] | None = None,
@@ -32,6 +33,7 @@ def create_review_summary(
     tls_summary = (tls_report or {}).get("summary", {})
     access_summary = (access_report or {}).get("summary", {})
     monitoring_summary = (monitoring_report or {}).get("summary", {})
+    incident_summary = (incident_report or {}).get("summary", {})
     risk_summary = (risk_register or {}).get("summary", {})
     scope_summary = (scope_report or {}).get("summary", {})
     drift_summary = (evidence_drift or {}).get("summary", {})
@@ -58,6 +60,8 @@ def create_review_summary(
         "access_warnings": _int_or_zero(access_summary.get("checks_warn")),
         "monitoring_failures": _int_or_zero(monitoring_summary.get("checks_failed")),
         "monitoring_warnings": _int_or_zero(monitoring_summary.get("checks_warn")),
+        "incident_failures": _int_or_zero(incident_summary.get("checks_failed")),
+        "incident_warnings": _int_or_zero(incident_summary.get("checks_warn")),
         "privacy_findings": _int_or_zero(privacy_summary.get("findings_count")),
         "scope_warnings": 1 if scope_summary.get("status") == "warn" else 0,
         "drift_changes": _int_or_zero(drift_summary.get("asset_changes_count"))
@@ -117,6 +121,8 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "access_warnings",
         "monitoring_failures",
         "monitoring_warnings",
+        "incident_failures",
+        "incident_warnings",
         "privacy_findings",
         "drift_changes",
         "catalog_warnings",
@@ -155,6 +161,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("access exposure checks failed")
     if metrics["monitoring_failures"] > 0:
         blockers.append("monitoring checks failed")
+    if metrics["incident_failures"] > 0:
+        blockers.append("incident readiness checks failed")
     if blockers:
         return {
             "status": "fail",
@@ -176,6 +184,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("access exposure warnings exist")
     if metrics["monitoring_warnings"] > 0:
         warnings.append("monitoring warnings exist")
+    if metrics["incident_warnings"] > 0:
+        warnings.append("incident readiness warnings exist")
     if metrics["scope_warnings"] > 0:
         warnings.append("scope warnings exist")
     if metrics["drift_changes"] > 0:
@@ -226,6 +236,10 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['monitoring_failures']} monitoring check(s) failed.")
     if metrics["monitoring_warnings"]:
         highlights.append(f"{metrics['monitoring_warnings']} monitoring warning(s) need review.")
+    if metrics["incident_failures"]:
+        highlights.append(f"{metrics['incident_failures']} incident readiness check(s) failed.")
+    if metrics["incident_warnings"]:
+        highlights.append(f"{metrics['incident_warnings']} incident readiness warning(s) need review.")
     if metrics["drift_changes"]:
         highlights.append(f"{metrics['drift_changes']} evidence drift change(s) were detected.")
     return highlights
@@ -252,6 +266,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Review `access-report.md` and fix public SSH, MFA, or admin entrypoint gaps.")
     if metrics["monitoring_failures"] > 0 or metrics["monitoring_warnings"] > 0:
         steps.append("Review `monitoring-report.md` and fix down targets, alert routing, or alert test evidence.")
+    if metrics["incident_failures"] > 0 or metrics["incident_warnings"] > 0:
+        steps.append("Review `incident-report.md` and fix escalation contacts, incident runbooks, alerts, restore proof, or emergency access.")
     if metrics["stale_timestamps"] > 0 or metrics["invalid_timestamps"] > 0:
         steps.append("Refresh stale or invalid evidence timestamps before relying on the handoff.")
     if metrics["catalog_warnings"] > 0 or metrics["runbook_warnings"] > 0:

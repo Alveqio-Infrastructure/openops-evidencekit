@@ -53,6 +53,9 @@ jobs:
           openops-evidence monitoring report -i evidence.sample.json -f json -o monitoring-report.json
           openops-evidence validate -i monitoring-report.json -t monitoring-report
           openops-evidence monitoring report -i evidence.sample.json -o monitoring-report.md
+          openops-evidence incident report -i evidence.sample.json -c service-catalog.sample.toml -f json -o incident-report.json
+          openops-evidence validate -i incident-report.json -t incident-report
+          openops-evidence incident report -i evidence.sample.json -c service-catalog.sample.toml -o incident-report.md
           openops-evidence coverage report -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o policy-coverage.md
           openops-evidence check -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o report.openops.json || true
           openops-evidence validate -i report.openops.json -t report
@@ -97,6 +100,8 @@ jobs:
             access-report.md
             monitoring-report.json
             monitoring-report.md
+            incident-report.json
+            incident-report.md
             policy-coverage.md
             report.openops.md
             report.openops.junit.xml

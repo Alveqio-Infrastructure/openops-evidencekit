@@ -18,8 +18,9 @@ The workflow validates evidence, renders an inventory, evaluates the baseline
 policy, creates an evidence questionnaire, service catalog report, policy
 coverage, runbook coverage, evidence freshness, restore assurance, mail domain
 reports, TLS certificate reports, access exposure reports, monitoring reports,
-JUnit, SARIF, badge, executive brief, risk register, scorecard, history
-Markdown/SVG, Prometheus, and review-pack artifacts including a review summary, then
+incident readiness reports, JUnit, SARIF, badge, executive brief, risk register,
+scorecard, history Markdown/SVG, Prometheus, and review-pack artifacts including
+a review summary, then
 enforces a configurable gate:
 
 ```yaml

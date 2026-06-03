@@ -59,6 +59,8 @@
         "access_warnings",
         "monitoring_failures",
         "monitoring_warnings",
+        "incident_failures",
+        "incident_warnings",
         "privacy_findings",
         "scope_warnings",
         "drift_changes",
@@ -142,6 +144,14 @@
           "minimum": 0
         },
         "monitoring_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "incident_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "incident_warnings": {
           "type": "integer",
           "minimum": 0
         },

@@ -210,6 +210,7 @@ class BundleTests(unittest.TestCase):
             tls_report = temp / "tls-report.json"
             access_report = temp / "access-report.json"
             monitoring_report = temp / "monitoring-report.json"
+            incident_report = temp / "incident-report.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             service_catalog = temp / "service-catalog.json"
@@ -523,6 +524,8 @@ class BundleTests(unittest.TestCase):
                             "access_warnings": 0,
                             "monitoring_failures": 0,
                             "monitoring_warnings": 0,
+                            "incident_failures": 0,
+                            "incident_warnings": 0,
                             "privacy_findings": 0,
                             "scope_warnings": 0,
                             "drift_changes": 0,
@@ -748,6 +751,62 @@ class BundleTests(unittest.TestCase):
                             }
                         ],
                         "down_targets": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            incident_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "incident_runbooks_total": 1,
+                            "services_total": 1,
+                            "critical_services": 0,
+                            "high_services": 1,
+                            "services_missing_contacts": 0,
+                            "high_impact_services_missing_contacts": 0,
+                            "high_impact_services_missing_incident_runbooks": 0,
+                            "alert_channels_total": 1,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "incident_runbook_present",
+                                "title": "Incident response runbook is present",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals.docs.runbooks",
+                                "reason": "1 incident runbook(s) found.",
+                                "recommended_action": "Keep incident runbooks current.",
+                            }
+                        ],
+                        "services": [
+                            {
+                                "id": "web",
+                                "name": "Website",
+                                "owner": "platform",
+                                "criticality": "high",
+                                "contacts_total": 1,
+                                "contacts": ["platform@example.invalid"],
+                                "incident_runbooks": ["incident-escalation"],
+                                "status": "pass",
+                                "reason": "Service has contacts and incident response runbook references.",
+                            }
+                        ],
+                        "incident_runbooks": [
+                            {
+                                "name": "incident-escalation",
+                                "path": "runbooks/incident.md",
+                                "updated_at": "2026-05-20T00:00:00+00:00",
+                            }
+                        ],
                     }
                 ),
                 encoding="utf-8",
@@ -1111,6 +1170,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(tls_report), "tls-report")
             self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(monitoring_report), "monitoring-report")
+            self.assertEqual(classify_artifact(incident_report), "incident-report")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(service_catalog), "service-catalog")

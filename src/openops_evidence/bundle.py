@@ -21,6 +21,7 @@ from .schema import (
     validate_executive_brief,
     validate_freshness_report,
     validate_gate_result,
+    validate_incident_report,
     validate_inventory,
     validate_mail_report,
     validate_monitoring_report,
@@ -299,6 +300,8 @@ def classify_artifact(path: Path) -> str:
             return "access-report"
         if validate_monitoring_report(document) == []:
             return "monitoring-report"
+        if validate_incident_report(document) == []:
+            return "incident-report"
         if validate_executive_brief(document) == []:
             return "executive-brief"
         if validate_scorecard(document) == []:
