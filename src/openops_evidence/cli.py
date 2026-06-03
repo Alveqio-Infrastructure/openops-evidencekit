@@ -48,6 +48,7 @@ from .history import append_report_history, render_history_csv, render_history_m
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import UserFacingError, dump_json, load_json, load_structured, write_text
 from .mail import create_mail_report, render_mail_csv, render_mail_markdown
+from .monitoring import create_monitoring_report, render_monitoring_csv, render_monitoring_markdown
 from .merge import merge_evidence
 from .policy import (
     create_policy_matrix,
@@ -89,6 +90,7 @@ from .schema import (
     validate_gate_result,
     validate_inventory,
     validate_mail_report,
+    validate_monitoring_report,
     validate_policy_matrix,
     validate_privacy_scan,
     validate_policy_coverage,
@@ -344,6 +346,16 @@ def build_parser() -> argparse.ArgumentParser:
     access_report.add_argument("-o", "--output", default="-")
     access_report.set_defaults(func=cmd_access_report)
 
+    monitoring = sub.add_parser("monitoring", help="Inspect monitoring target and alert evidence")
+    monitoring_sub = monitoring.add_subparsers(required=True)
+    monitoring_report = monitoring_sub.add_parser("report", help="Render monitoring target and alert evidence")
+    monitoring_report.add_argument("-i", "--input", required=True)
+    monitoring_report.add_argument("--max-alert-test-age-days", type=int, default=90)
+    monitoring_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    monitoring_report.add_argument("--fail-on-warn", action="store_true")
+    monitoring_report.add_argument("-o", "--output", default="-")
+    monitoring_report.set_defaults(func=cmd_monitoring_report)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -449,6 +461,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-mail-warn", action="store_true")
     review_create.add_argument("--fail-on-tls-warn", action="store_true")
     review_create.add_argument("--fail-on-access-warn", action="store_true")
+    review_create.add_argument("--fail-on-monitoring-warn", action="store_true")
     review_create.add_argument("--fail-on-open-risk", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
@@ -546,6 +559,7 @@ def build_parser() -> argparse.ArgumentParser:
             "mail-report",
             "tls-report",
             "access-report",
+            "monitoring-report",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -994,6 +1008,26 @@ def cmd_access_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_monitoring_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    if args.max_alert_test_age_days < 0:
+        raise UserFacingError("--max-alert-test-age-days must be at least 0")
+    report = create_monitoring_report(evidence, max_alert_test_age_days=args.max_alert_test_age_days)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_monitoring_csv(report)
+    else:
+        rendered = render_monitoring_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
 def cmd_evidence_diff(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -1316,6 +1350,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         and pack["access_report"]["summary"]["status"] != "pass"
     ):
         return 1
+    if (
+        args.fail_on_monitoring_warn
+        and pack.get("monitoring_report") is not None
+        and pack["monitoring_report"]["summary"]["status"] != "pass"
+    ):
+        return 1
     if args.fail_on_open_risk and pack["risk_register"]["summary"]["open_count"] > 0:
         return 1
     return 0
@@ -1496,6 +1536,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_tls_report(document)
     elif args.type == "access-report":
         errors = validate_access_report(document)
+    elif args.type == "monitoring-report":
+        errors = validate_monitoring_report(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

@@ -25,6 +25,7 @@ audiences need:
 | `mail-report.json` / `mail-report.md` / `mail-report.csv` | Optional SPF, DKIM, and DMARC report when mail evidence or policy paths exist. |
 | `tls-report.json` / `tls-report.md` / `tls-report.csv` | Optional TLS certificate expiry report when TLS evidence or policy paths exist. |
 | `access-report.json` / `access-report.md` / `access-report.csv` | Optional public SSH, MFA, and admin entrypoint report when access evidence or policy paths exist. |
+| `monitoring-report.json` / `monitoring-report.md` / `monitoring-report.csv` | Optional monitoring target, down target, alert channel, and alert-test report when monitoring evidence or policy paths exist. |
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
 | `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
 | `service-catalog.json` / `service-catalog.md` / `service-catalog.csv` | Optional service ownership and evidence coverage report when `--catalog` is provided. |
@@ -99,6 +100,10 @@ Add `--fail-on-access-warn` when missing public SSH evidence, missing MFA
 evidence, public SSH exposure, missing entrypoints, risky entrypoints, or
 unclassified entrypoints should fail the review pack command after the pack has
 been written.
+
+Add `--fail-on-monitoring-warn` when missing target evidence, down targets,
+missing alert channels, or stale alert tests should fail the review pack command
+after the pack has been written.
 
 Add `--fail-on-open-risk` when open, non-accepted risks in the generated risk
 register should fail the review pack command after the pack has been written.

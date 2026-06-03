@@ -70,3 +70,4 @@
 - Add mail domain reports for SPF, DKIM, and DMARC evidence review.
 - Add TLS certificate reports for expiry and renewal-risk review.
 - Add access exposure reports for public SSH, MFA, and admin entrypoint review.
+- Add monitoring reports for target health, down targets, alert channels, and alert-test freshness.

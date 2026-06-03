@@ -23,6 +23,7 @@ from .schema import (
     validate_gate_result,
     validate_inventory,
     validate_mail_report,
+    validate_monitoring_report,
     validate_policy_coverage,
     validate_questionnaire,
     validate_report,
@@ -296,6 +297,8 @@ def classify_artifact(path: Path) -> str:
             return "tls-report"
         if validate_access_report(document) == []:
             return "access-report"
+        if validate_monitoring_report(document) == []:
+            return "monitoring-report"
         if validate_executive_brief(document) == []:
             return "executive-brief"
         if validate_scorecard(document) == []:

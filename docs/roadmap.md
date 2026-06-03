@@ -53,6 +53,7 @@ having to deploy a platform first.
 - Mail domain reports for SPF, DKIM, and DMARC evidence review.
 - TLS certificate reports for expiry and renewal-risk review.
 - Access exposure reports for public SSH, MFA, and admin entrypoint review.
+- Monitoring reports for target health, down target, alert channel, and alert-test review.
 - SVG trend rendering for readiness history dashboards.
 - Executive brief export for stakeholder handoff.
 - Scope report export for explicit in-scope and out-of-scope boundaries.

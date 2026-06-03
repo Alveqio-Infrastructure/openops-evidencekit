@@ -129,6 +129,7 @@ EvidenceKit infers a simple role for each artifact:
 - `mail-report` for valid mail domain report JSON
 - `tls-report` for valid TLS certificate report JSON
 - `access-report` for valid access exposure report JSON
+- `monitoring-report` for valid monitoring target and alert report JSON
 - `executive-brief` for valid executive brief JSON
 - `scorecard` for valid domain scorecard JSON
 - `scope-report` for valid scope report JSON

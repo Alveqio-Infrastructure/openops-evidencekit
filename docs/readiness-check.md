@@ -63,6 +63,7 @@ python -m openops_evidence restore report -i evidence.redacted.json --max-drill-
 python -m openops_evidence mail report -i evidence.redacted.json -o mail-report.md
 python -m openops_evidence tls report -i evidence.redacted.json -o tls-report.md
 python -m openops_evidence access report -i evidence.redacted.json -o access-report.md
+python -m openops_evidence monitoring report -i evidence.redacted.json -o monitoring-report.md
 ```
 
 ## 4. Render Report

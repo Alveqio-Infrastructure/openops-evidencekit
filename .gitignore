@@ -53,6 +53,9 @@ readiness-badge.json
 /access-report.json
 /access-report.md
 /access-report.csv
+/monitoring-report.json
+/monitoring-report.md
+/monitoring-report.csv
 /questionnaire.*
 /evidence-questionnaire.*
 /executive-brief.json

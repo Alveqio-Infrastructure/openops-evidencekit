@@ -39,8 +39,8 @@ domain scorecards, tickets, and signed evidence bundles.
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
 risk registers, restore assurance reports, mail domain reports, TLS certificate
-reports, access exposure reports, plus review packs with one-page summaries, manifests, and
-attestations.
+reports, access exposure reports, monitoring reports, plus review packs with
+one-page summaries, manifests, and attestations.
 
 ## Status
 
@@ -63,6 +63,7 @@ python -m openops_evidence restore report -i evidence.local.json --max-drill-age
 python -m openops_evidence mail report -i evidence.local.json -o mail-report.md
 python -m openops_evidence tls report -i evidence.local.json -o tls-report.md
 python -m openops_evidence access report -i evidence.local.json -o access-report.md
+python -m openops_evidence monitoring report -i evidence.local.json -o monitoring-report.md
 python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i evidence.local.json -s examples/scope.sample.toml -o scope-report.md
 python -m openops_evidence catalog validate examples/service-catalog.sample.toml
@@ -268,6 +269,7 @@ Restore assurance reports are described in [docs/restore-report.md](docs/restore
 Mail domain reports are described in [docs/mail-report.md](docs/mail-report.md).
 TLS certificate reports are described in [docs/tls-report.md](docs/tls-report.md).
 Access exposure reports are described in [docs/access-report.md](docs/access-report.md).
+Monitoring reports are described in [docs/monitoring-report.md](docs/monitoring-report.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
 Service catalog reports are described in [docs/service-catalog.md](docs/service-catalog.md).
 Runbook coverage reports are described in [docs/runbook-report.md](docs/runbook-report.md).

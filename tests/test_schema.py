@@ -14,6 +14,7 @@ from openops_evidence.schema import (
     validate_gate_result,
     validate_inventory,
     validate_mail_report,
+    validate_monitoring_report,
     validate_policy_coverage,
     validate_policy_matrix,
     validate_privacy_scan,
@@ -720,6 +721,8 @@ class SchemaTests(unittest.TestCase):
                     "tls_warnings": 0,
                     "access_failures": 0,
                     "access_warnings": 0,
+                    "monitoring_failures": 0,
+                    "monitoring_warnings": 0,
                     "privacy_findings": 0,
                     "scope_warnings": 0,
                     "drift_changes": 0,
@@ -1092,6 +1095,47 @@ class SchemaTests(unittest.TestCase):
                         "reason": "Entrypoint is a controlled administrative access layer.",
                     },
                 ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_monitoring_report(self):
+        errors = validate_monitoring_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {
+                    "evaluated_at": "2026-06-01T10:00:00+00:00",
+                    "max_alert_test_age_days": 90,
+                },
+                "summary": {
+                    "status": "pass",
+                    "system": "prometheus",
+                    "targets": 2,
+                    "targets_total": 2,
+                    "targets_up": 2,
+                    "targets_down": 0,
+                    "down_targets_count": 0,
+                    "alert_channels_total": 1,
+                    "last_alert_test_at": "2026-05-25T08:15:00+00:00",
+                    "last_alert_test_age_days": 7,
+                    "checks_total": 1,
+                    "checks_passed": 1,
+                    "checks_warn": 0,
+                    "checks_failed": 0,
+                },
+                "checks": [
+                    {
+                        "id": "monitoring_targets_present",
+                        "title": "Monitoring targets are recorded",
+                        "status": "pass",
+                        "severity": "critical",
+                        "path": "signals.monitoring.targets",
+                        "reason": "2 monitoring target(s) recorded.",
+                        "recommended_action": "Keep monitoring evidence current.",
+                    }
+                ],
+                "down_targets": [],
             }
         )
         self.assertEqual(errors, [])

@@ -367,6 +367,8 @@ def validate_review_summary(document: Any) -> list[str]:
             "tls_warnings",
             "access_failures",
             "access_warnings",
+            "monitoring_failures",
+            "monitoring_warnings",
             "privacy_findings",
             "scope_warnings",
             "drift_changes",
@@ -857,6 +859,18 @@ def _validate_drift_change(change: Any, errors: list[str], prefix: str, name_key
     _require_list(change, "changed_fields", errors, prefix=prefix)
 
 
+def _validate_operational_check(check: Any, errors: list[str], prefix: str) -> None:
+    if not isinstance(check, dict):
+        errors.append(f"{prefix[:-1]} must be an object.")
+        return
+    _require_string(check, "id", errors, prefix=prefix)
+    _require_string(check, "title", errors, prefix=prefix)
+    _require_enum(check, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+    _require_enum(check, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+    for key in ("path", "reason", "recommended_action"):
+        _require_string_type(check, key, errors, prefix=prefix)
+
+
 def validate_policy_coverage(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
@@ -1080,6 +1094,53 @@ def validate_badge(document: Any) -> list[str]:
         errors.append("schemaVersion must be 1.")
     for key in ("label", "message", "color"):
         _require_string(document, key, errors)
+    return errors
+
+
+def validate_monitoring_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Monitoring report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    _require_list(document, "down_targets", errors)
+    metadata = document.get("metadata")
+    if isinstance(metadata, dict):
+        _require_datetime(metadata, "evaluated_at", errors, prefix="metadata.")
+        _require_int_range(metadata, "max_alert_test_age_days", errors, minimum=0, prefix="metadata.")
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        _require_string_type(summary, "system", errors, prefix="summary.")
+        for key in (
+            "down_targets_count",
+            "alert_channels_total",
+            "checks_total",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+        for key in ("targets", "targets_total", "targets_up", "targets_down"):
+            if summary.get(key) is not None:
+                _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+        if summary.get("last_alert_test_age_days") is not None:
+            _require_int(summary, "last_alert_test_age_days", errors, prefix="summary.")
+        if not isinstance(summary.get("last_alert_test_at"), str):
+            errors.append("summary.last_alert_test_at must be a string.")
+    for index, check in enumerate(document.get("checks", [])):
+        _validate_operational_check(check, errors, f"checks[{index}].")
+    for index, target in enumerate(document.get("down_targets", [])):
+        if not isinstance(target, dict):
+            errors.append(f"down_targets[{index}] must be an object.")
+            continue
+        prefix = f"down_targets[{index}]."
+        _require_string(target, "target", errors, prefix=prefix)
+        _require_string(target, "status", errors, prefix=prefix)
+        _require_string_type(target, "reason", errors, prefix=prefix)
     return errors
 
 

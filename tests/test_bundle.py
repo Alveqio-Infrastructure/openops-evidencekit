@@ -209,6 +209,7 @@ class BundleTests(unittest.TestCase):
             mail_report = temp / "mail-report.json"
             tls_report = temp / "tls-report.json"
             access_report = temp / "access-report.json"
+            monitoring_report = temp / "monitoring-report.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             service_catalog = temp / "service-catalog.json"
@@ -520,6 +521,8 @@ class BundleTests(unittest.TestCase):
                             "tls_warnings": 0,
                             "access_failures": 0,
                             "access_warnings": 0,
+                            "monitoring_failures": 0,
+                            "monitoring_warnings": 0,
                             "privacy_findings": 0,
                             "scope_warnings": 0,
                             "drift_changes": 0,
@@ -704,6 +707,47 @@ class BundleTests(unittest.TestCase):
                                 "reason": "Entrypoint is a controlled administrative access layer.",
                             },
                         ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            monitoring_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {
+                            "evaluated_at": "2026-06-01T10:00:00+00:00",
+                            "max_alert_test_age_days": 90,
+                        },
+                        "summary": {
+                            "status": "pass",
+                            "system": "prometheus",
+                            "targets": 2,
+                            "targets_total": 2,
+                            "targets_up": 2,
+                            "targets_down": 0,
+                            "down_targets_count": 0,
+                            "alert_channels_total": 1,
+                            "last_alert_test_at": "2026-05-25T08:15:00+00:00",
+                            "last_alert_test_age_days": 7,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "monitoring_targets_present",
+                                "title": "Monitoring targets are recorded",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals.monitoring.targets",
+                                "reason": "2 monitoring target(s) recorded.",
+                                "recommended_action": "Keep monitoring evidence current.",
+                            }
+                        ],
+                        "down_targets": [],
                     }
                 ),
                 encoding="utf-8",
@@ -1066,6 +1110,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(mail_report), "mail-report")
             self.assertEqual(classify_artifact(tls_report), "tls-report")
             self.assertEqual(classify_artifact(access_report), "access-report")
+            self.assertEqual(classify_artifact(monitoring_report), "monitoring-report")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(service_catalog), "service-catalog")

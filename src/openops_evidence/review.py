@@ -22,6 +22,7 @@ from .gates import evaluate_report_gate, render_gate_markdown
 from .inventory import create_evidence_inventory, render_inventory_csv, render_inventory_markdown
 from .io import dump_json, write_text
 from .mail import create_mail_report, render_mail_csv, render_mail_markdown
+from .monitoring import create_monitoring_report, render_monitoring_csv, render_monitoring_markdown
 from .policy import (
     Check,
     create_policy_matrix,
@@ -83,6 +84,7 @@ def create_review_pack(
     mail_report = create_mail_report(evidence) if _has_mail_context(evidence, checks) else None
     tls_report = create_tls_report(evidence) if _has_tls_context(evidence, checks) else None
     access_report = create_access_report(evidence) if _has_access_context(evidence, checks) else None
+    monitoring_report = create_monitoring_report(evidence) if _has_monitoring_context(evidence, checks) else None
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
     service_catalog = create_service_catalog_report(evidence, catalog_document) if catalog_document is not None else None
@@ -139,6 +141,10 @@ def create_review_pack(
         add_artifact("access-report.json", dump_json(access_report), "Access exposure report", "Machine-readable administrative access exposure report.")
         add_artifact("access-report.md", render_access_markdown(access_report), "Access exposure report", "Human-readable administrative access exposure report.")
         add_artifact("access-report.csv", render_access_csv(access_report), "Access exposure report", "Spreadsheet-friendly administrative access report.")
+    if monitoring_report is not None:
+        add_artifact("monitoring-report.json", dump_json(monitoring_report), "Monitoring report", "Machine-readable monitoring target and alert report.")
+        add_artifact("monitoring-report.md", render_monitoring_markdown(monitoring_report), "Monitoring report", "Human-readable monitoring target and alert report.")
+        add_artifact("monitoring-report.csv", render_monitoring_csv(monitoring_report), "Monitoring report", "Spreadsheet-friendly monitoring report.")
     if evidence_drift is not None:
         add_artifact("evidence-drift.json", dump_json(evidence_drift), "Evidence drift", "Machine-readable evidence drift report.")
         add_artifact("evidence-drift.md", render_evidence_diff_markdown(evidence_drift), "Evidence drift", "Human-readable evidence drift report.")
@@ -210,6 +216,7 @@ def create_review_pack(
         mail_report=mail_report,
         tls_report=tls_report,
         access_report=access_report,
+        monitoring_report=monitoring_report,
         risk_register=risk_register,
         scope_report=scope_report,
         evidence_drift=evidence_drift,
@@ -251,6 +258,7 @@ def create_review_pack(
         "mail_report": mail_report,
         "tls_report": tls_report,
         "access_report": access_report,
+        "monitoring_report": monitoring_report,
         "risk_register": risk_register,
         "review_summary": review_summary,
         "evidence_drift": evidence_drift,
@@ -289,6 +297,8 @@ def render_review_pack_readme(
         suggested_steps.append("Use `tls-report.md` to review certificate expiry and renewal risk.")
     if any(artifact.get("filename") == "access-report.md" for artifact in artifacts):
         suggested_steps.append("Use `access-report.md` to review public SSH, MFA, and admin entrypoints.")
+    if any(artifact.get("filename") == "monitoring-report.md" for artifact in artifacts):
+        suggested_steps.append("Use `monitoring-report.md` to review targets, down targets, alert channels, and alert test freshness.")
     if any(artifact.get("filename") == "service-catalog.md" for artifact in artifacts):
         suggested_steps.append("Review `service-catalog.md` for service ownership, criticality, assets, and runbook gaps.")
     if any(artifact.get("filename") == "runbook-report.md" for artifact in artifacts):
@@ -515,6 +525,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("mail-report.md", "Mail"),
         ("tls-report.md", "TLS"),
         ("access-report.md", "Access"),
+        ("monitoring-report.md", "Monitoring"),
         ("scope-report.md", "Scope Report"),
         ("service-catalog.md", "Service Catalog"),
         ("runbook-report.md", "Runbook Report"),
@@ -552,6 +563,13 @@ def _has_access_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
     if isinstance(signals, dict) and isinstance(signals.get("access"), dict):
         return True
     return any(check.path.startswith("signals.access") for check in checks)
+
+
+def _has_monitoring_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
+    signals = evidence.get("signals")
+    if isinstance(signals, dict) and isinstance(signals.get("monitoring"), dict):
+        return True
+    return any(check.path.startswith("signals.monitoring") for check in checks)
 
 
 def _status_class(value: Any) -> str:

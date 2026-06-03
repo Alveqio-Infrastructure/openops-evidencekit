@@ -30,6 +30,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("openops-evidence mail report", workflow_text)
             self.assertIn("openops-evidence tls report", workflow_text)
             self.assertIn("openops-evidence access report", workflow_text)
+            self.assertIn("openops-evidence monitoring report", workflow_text)
             self.assertIn("openops-evidence questionnaire policy", workflow_text)
             self.assertIn("openops-evidence coverage report", workflow_text)
             self.assertIn("openops-evidence check", workflow_text)
@@ -75,6 +76,8 @@ class CliWorkflowTests(unittest.TestCase):
             tls_markdown = temp / "tls-report.md"
             access_report = temp / "access-report.json"
             access_markdown = temp / "access-report.md"
+            monitoring_report = temp / "monitoring-report.json"
+            monitoring_markdown = temp / "monitoring-report.md"
             evidence_drift = temp / "evidence-drift.json"
             evidence_drift_markdown = temp / "evidence-drift.md"
             coverage = temp / "policy-coverage.json"
@@ -321,6 +324,12 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(access_report), "-t", "access-report"]), 0)
             self.assertEqual(main(["access", "report", "-i", str(merged), "-o", str(access_markdown)]), 0)
             self.assertEqual(
+                main(["monitoring", "report", "-i", str(merged), "-f", "json", "-o", str(monitoring_report)]),
+                0,
+            )
+            self.assertEqual(main(["validate", "-i", str(monitoring_report), "-t", "monitoring-report"]), 0)
+            self.assertEqual(main(["monitoring", "report", "-i", str(merged), "-o", str(monitoring_markdown)]), 0)
+            self.assertEqual(
                 main(
                     [
                         "evidence",
@@ -495,6 +504,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(mail_report),
                         str(tls_report),
                         str(access_report),
+                        str(monitoring_report),
                         str(evidence_drift),
                         str(questionnaire),
                         str(coverage),
@@ -604,6 +614,7 @@ class CliWorkflowTests(unittest.TestCase):
             mail_data = json.loads(mail_report.read_text(encoding="utf-8"))
             tls_data = json.loads(tls_report.read_text(encoding="utf-8"))
             access_data = json.loads(access_report.read_text(encoding="utf-8"))
+            monitoring_data = json.loads(monitoring_report.read_text(encoding="utf-8"))
             evidence_drift_data = json.loads(evidence_drift.read_text(encoding="utf-8"))
             gate_data = json.loads(gate.read_text(encoding="utf-8"))
             badge_data = json.loads(badge.read_text(encoding="utf-8"))
@@ -631,6 +642,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(mail_data["summary"]["status"], "pass")
             self.assertEqual(tls_data["summary"]["status"], "pass")
             self.assertEqual(access_data["summary"]["status"], "pass")
+            self.assertEqual(monitoring_data["summary"]["status"], "pass")
             self.assertEqual(evidence_drift_data["summary"]["status"], "warn")
             self.assertGreater(evidence_drift_data["summary"]["asset_changes_count"], 0)
             self.assertEqual(gate_data["summary"]["status"], "pass")
@@ -639,9 +651,9 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(risk_register_data["summary"]["status"], "pass")
             self.assertEqual(scorecard_data["summary"]["domains_total"], 6)
             self.assertEqual(history_data["summary"]["latest_score"], 100)
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 24)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 25)
             self.assertEqual(attestation_data["summary"]["status"], "warn")
-            self.assertEqual(attestation_data["manifest"]["artifact_count"], 24)
+            self.assertEqual(attestation_data["manifest"]["artifact_count"], 25)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -655,6 +667,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("openops_readiness_score 100", prometheus.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Executive Brief", brief_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Risk Register", risk_register_markdown.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Monitoring Report", monitoring_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Domain Scorecard", scorecard_markdown.read_text(encoding="utf-8"))
             self.assertIn("domain,title,status,score", scorecard_csv.read_text(encoding="utf-8"))
             self.assertIn("<title>OpenOps Domain Scorecard</title>", scorecard_html.read_text(encoding="utf-8"))
