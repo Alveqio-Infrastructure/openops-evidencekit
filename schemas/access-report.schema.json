@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/access-report.schema.json",
+  "title": "OpenOps Access Exposure Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "checks", "entrypoints"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "ssh_public_exposed",
+        "mfa_required",
+        "entrypoints_total",
+        "safe_entrypoints",
+        "risky_entrypoints",
+        "unknown_entrypoints",
+        "checks_total",
+        "checks_passed",
+        "checks_warn",
+        "checks_failed"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "ssh_public_exposed": {
+          "type": ["boolean", "null"]
+        },
+        "mfa_required": {
+          "type": ["boolean", "null"]
+        },
+        "entrypoints_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "safe_entrypoints": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "risky_entrypoints": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown_entrypoints": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_failed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "title", "status", "severity", "path", "reason", "recommended_action"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["pass", "warn", "fail"]
+          },
+          "severity": {
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "path": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "recommended_action": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entrypoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["name", "status", "reason"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["safe", "risky", "unknown"]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

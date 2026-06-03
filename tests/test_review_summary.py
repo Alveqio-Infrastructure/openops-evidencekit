@@ -62,6 +62,19 @@ class ReviewSummaryTests(unittest.TestCase):
         self.assertEqual(summary["metrics"]["mail_failures"], 1)
         self.assertIn("mail domain checks failed", summary["decision"]["reason"])
 
+    def test_review_summary_blocks_on_access_failures(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            access_report={"summary": {"checks_failed": 1, "checks_warn": 0}},
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "fail")
+        self.assertEqual(summary["metrics"]["access_failures"], 1)
+        self.assertIn("access exposure checks failed", summary["decision"]["reason"])
+
     def test_review_summary_passes_clean_pack(self):
         summary = create_review_summary(
             report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},

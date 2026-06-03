@@ -2,6 +2,7 @@ import unittest
 
 from openops_evidence.schema import (
     validate_action_plan,
+    validate_access_report,
     validate_badge,
     validate_bundle_manifest,
     validate_bundle_signature,
@@ -714,6 +715,8 @@ class SchemaTests(unittest.TestCase):
                     "restore_warnings": 0,
                     "mail_failures": 0,
                     "mail_warnings": 0,
+                    "access_failures": 0,
+                    "access_warnings": 0,
                     "privacy_findings": 0,
                     "scope_warnings": 0,
                     "drift_changes": 0,
@@ -1039,6 +1042,52 @@ class SchemaTests(unittest.TestCase):
                         "reason": "SPF, DKIM, and enforced DMARC evidence are present.",
                         "recommended_action": "Keep mail authentication evidence current.",
                     }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_access_report(self):
+        errors = validate_access_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "ssh_public_exposed": False,
+                    "mfa_required": True,
+                    "entrypoints_total": 2,
+                    "safe_entrypoints": 2,
+                    "risky_entrypoints": 0,
+                    "unknown_entrypoints": 0,
+                    "checks_total": 1,
+                    "checks_passed": 1,
+                    "checks_warn": 0,
+                    "checks_failed": 0,
+                },
+                "checks": [
+                    {
+                        "id": "public_ssh_closed",
+                        "title": "Public SSH exposure is closed",
+                        "status": "pass",
+                        "severity": "critical",
+                        "path": "signals.access.ssh_public_exposed",
+                        "reason": "Public SSH exposure is recorded as closed.",
+                        "recommended_action": "Keep public SSH behind controlled access.",
+                    }
+                ],
+                "entrypoints": [
+                    {
+                        "name": "vpn",
+                        "status": "safe",
+                        "reason": "Entrypoint is a controlled administrative access layer.",
+                    },
+                    {
+                        "name": "sso",
+                        "status": "safe",
+                        "reason": "Entrypoint is a controlled administrative access layer.",
+                    },
                 ],
             }
         )

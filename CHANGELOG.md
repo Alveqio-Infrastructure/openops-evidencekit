@@ -68,3 +68,4 @@
 - Add review summary artifacts for one-page review-pack decisions.
 - Add restore assurance reports for backup recency and restore drill proof.
 - Add mail domain reports for SPF, DKIM, and DMARC evidence review.
+- Add access exposure reports for public SSH, MFA, and admin entrypoint review.

@@ -44,6 +44,9 @@ jobs:
           openops-evidence mail report -i evidence.sample.json -f json -o mail-report.json
           openops-evidence validate -i mail-report.json -t mail-report
           openops-evidence mail report -i evidence.sample.json -o mail-report.md
+          openops-evidence access report -i evidence.sample.json -f json -o access-report.json
+          openops-evidence validate -i access-report.json -t access-report
+          openops-evidence access report -i evidence.sample.json -o access-report.md
           openops-evidence coverage report -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o policy-coverage.md
           openops-evidence check -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o report.openops.json || true
           openops-evidence validate -i report.openops.json -t report
@@ -82,6 +85,8 @@ jobs:
             restore-report.md
             mail-report.json
             mail-report.md
+            access-report.json
+            access-report.md
             policy-coverage.md
             report.openops.md
             report.openops.junit.xml

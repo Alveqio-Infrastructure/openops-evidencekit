@@ -57,6 +57,9 @@ class ReviewPackTests(unittest.TestCase):
                 "mail-report.csv",
                 "mail-report.json",
                 "mail-report.md",
+                "access-report.csv",
+                "access-report.json",
+                "access-report.md",
                 "manifest.json",
                 "policy-matrix.csv",
                 "policy-matrix.json",
@@ -100,6 +103,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertEqual(main(["validate", "-i", str(pack / "review-summary.json"), "-t", "review-summary"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "restore-report.json"), "-t", "restore-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "mail-report.json"), "-t", "mail-report"]), 0)
+            self.assertEqual(main(["validate", "-i", str(pack / "access-report.json"), "-t", "access-report"]), 0)
             self.assertEqual(main(["validate", "-i", str(pack / "manifest.json"), "-t", "bundle"]), 0)
 
             manifest = json.loads((pack / "manifest.json").read_text(encoding="utf-8"))
@@ -114,6 +118,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertIn("freshness-report.md", readme)
             self.assertIn("restore-report.md", readme)
             self.assertIn("mail-report.md", readme)
+            self.assertIn("access-report.md", readme)
             self.assertIn("risk-register.md", readme)
             self.assertIn("privacy-scan.md", readme)
             self.assertIn("<title>OpenOps Review Pack</title>", index)
@@ -121,6 +126,7 @@ class ReviewPackTests(unittest.TestCase):
             self.assertIn("Freshness", index)
             self.assertIn("Restore", index)
             self.assertIn("Mail", index)
+            self.assertIn("Access", index)
             self.assertIn("Risk Register", index)
             self.assertIn("scorecard.html", index)
 
@@ -157,7 +163,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             scope_report = json.loads((pack / "scope-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 47)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 50)
             self.assertEqual(scope_report["summary"]["status"], "warn")
             self.assertIn("scope-report.md", readme)
             self.assertIn("Scope Report", index)
@@ -220,7 +226,7 @@ class ReviewPackTests(unittest.TestCase):
             index = (pack / "index.html").read_text(encoding="utf-8")
             service_catalog = json.loads((pack / "service-catalog.json").read_text(encoding="utf-8"))
             runbook_report = json.loads((pack / "runbook-report.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 50)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 53)
             self.assertEqual(service_catalog["summary"]["status"], "warn")
             self.assertEqual(service_catalog["summary"]["missing_catalog_assets_count"], 1)
             self.assertEqual(runbook_report["summary"]["missing_runbooks_count"], 1)
@@ -303,7 +309,7 @@ class ReviewPackTests(unittest.TestCase):
             readme = (pack / "README.md").read_text(encoding="utf-8")
             index = (pack / "index.html").read_text(encoding="utf-8")
             drift = json.loads((pack / "evidence-drift.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["metadata"]["artifact_count"], 47)
+            self.assertEqual(manifest["metadata"]["artifact_count"], 50)
             self.assertEqual(drift["summary"]["status"], "warn")
             self.assertIn("evidence-drift.md", readme)
             self.assertIn("Evidence Drift", index)
@@ -532,6 +538,73 @@ remediation = "Record at least one mail domain."
             self.assertEqual(review_summary["decision"]["status"], "warn")
             self.assertTrue((pack / "manifest.json").is_file())
 
+    def test_review_create_can_fail_on_access_after_writing_pack(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+            pack = temp / "review-pack"
+            policy = temp / "passing-policy.toml"
+            weak_access = temp / "weak-access.json"
+            policy.write_text(
+                """
+[[checks]]
+id = "mfa_required"
+title = "Administrative MFA is required"
+path = "signals.access.mfa_required"
+operator = "equals"
+value = true
+severity = "high"
+required = true
+remediation = "Require MFA for administrative entrypoints."
+""".lstrip(),
+                encoding="utf-8",
+            )
+            weak_access.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T00:00:00+00:00",
+                        "metadata": {},
+                        "assets": [],
+                        "signals": {
+                            "backup": {
+                                "last_success_at": "2026-05-31T00:00:00+00:00",
+                                "repository_count": 1,
+                                "restore_test_at": "2026-05-20T00:00:00+00:00",
+                            },
+                            "access": {
+                                "ssh_public_exposed": False,
+                                "mfa_required": True,
+                                "admin_entrypoints": ["public-ssh"],
+                            },
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                main(
+                    [
+                        "review",
+                        "create",
+                        "-i",
+                        str(weak_access),
+                        "-p",
+                        str(policy),
+                        "--fail-on-access-warn",
+                        "-o",
+                        str(pack),
+                    ]
+                ),
+                1,
+            )
+
+            access_report = json.loads((pack / "access-report.json").read_text(encoding="utf-8"))
+            review_summary = json.loads((pack / "review-summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(access_report["summary"]["status"], "fail")
+            self.assertEqual(review_summary["decision"]["status"], "fail")
+            self.assertTrue((pack / "manifest.json").is_file())
+
     def test_review_create_can_fail_on_open_risk_after_writing_pack(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)
@@ -605,6 +678,7 @@ remediation = "Add the missing operational signal to evidence."
             self.assertIn("review-summary.md", names)
             self.assertIn("restore-report.md", names)
             self.assertIn("mail-report.md", names)
+            self.assertIn("access-report.md", names)
             self.assertIn("report.json", names)
             self.assertIn("scorecard.html", names)
 

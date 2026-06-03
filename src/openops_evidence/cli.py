@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from . import __version__
+from .access import create_access_report, render_access_csv, render_access_markdown
 from .actions import create_action_plan, render_action_plan_csv, render_action_plan_markdown
 from .attestations import create_review_attestation, render_attestation_csv, render_attestation_markdown
 from .badges import create_report_badge
@@ -76,6 +77,7 @@ from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_
 from .scaffold import create_evidence_scaffold
 from .schema import (
     validate_action_plan,
+    validate_access_report,
     validate_badge,
     validate_bundle_manifest,
     validate_bundle_signature,
@@ -321,6 +323,15 @@ def build_parser() -> argparse.ArgumentParser:
     mail_report.add_argument("-o", "--output", default="-")
     mail_report.set_defaults(func=cmd_mail_report)
 
+    access = sub.add_parser("access", help="Inspect administrative access exposure evidence")
+    access_sub = access.add_subparsers(required=True)
+    access_report = access_sub.add_parser("report", help="Render SSH, MFA, and admin entrypoint evidence")
+    access_report.add_argument("-i", "--input", required=True)
+    access_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    access_report.add_argument("--fail-on-warn", action="store_true")
+    access_report.add_argument("-o", "--output", default="-")
+    access_report.set_defaults(func=cmd_access_report)
+
     compare = sub.add_parser("compare", help="Compare two report JSON files")
     compare.add_argument("--base", required=True)
     compare.add_argument("--current", required=True)
@@ -424,6 +435,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-freshness-warn", action="store_true")
     review_create.add_argument("--fail-on-restore-warn", action="store_true")
     review_create.add_argument("--fail-on-mail-warn", action="store_true")
+    review_create.add_argument("--fail-on-access-warn", action="store_true")
     review_create.add_argument("--fail-on-open-risk", action="store_true")
     review_create.add_argument("--archive", help="Optional ZIP archive path for the generated review pack")
     review_create.set_defaults(func=cmd_review_create)
@@ -519,6 +531,7 @@ def build_parser() -> argparse.ArgumentParser:
             "review-summary",
             "restore-report",
             "mail-report",
+            "access-report",
             "gate-result",
             "badge",
             "policy-matrix",
@@ -929,6 +942,24 @@ def cmd_mail_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_access_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    report = create_access_report(evidence)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_access_csv(report)
+    else:
+        rendered = render_access_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
 def cmd_evidence_diff(args: argparse.Namespace) -> int:
     base = load_json(args.base)
     current = load_json(args.current)
@@ -1239,6 +1270,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
         and pack["mail_report"]["summary"]["status"] != "pass"
     ):
         return 1
+    if (
+        args.fail_on_access_warn
+        and pack.get("access_report") is not None
+        and pack["access_report"]["summary"]["status"] != "pass"
+    ):
+        return 1
     if args.fail_on_open_risk and pack["risk_register"]["summary"]["open_count"] > 0:
         return 1
     return 0
@@ -1415,6 +1452,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_restore_report(document)
     elif args.type == "mail-report":
         errors = validate_mail_report(document)
+    elif args.type == "access-report":
+        errors = validate_access_report(document)
     elif args.type == "gate-result":
         errors = validate_gate_result(document)
     elif args.type == "badge":

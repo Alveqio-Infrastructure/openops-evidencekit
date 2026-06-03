@@ -53,6 +53,8 @@
         "restore_warnings",
         "mail_failures",
         "mail_warnings",
+        "access_failures",
+        "access_warnings",
         "privacy_findings",
         "scope_warnings",
         "drift_changes",
@@ -112,6 +114,14 @@
           "minimum": 0
         },
         "mail_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "access_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "access_warnings": {
           "type": "integer",
           "minimum": 0
         },

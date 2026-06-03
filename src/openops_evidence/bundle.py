@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .schema import (
+    validate_access_report,
     validate_action_plan,
     validate_badge,
     validate_bundle_signature,
@@ -290,6 +291,8 @@ def classify_artifact(path: Path) -> str:
             return "restore-report"
         if validate_mail_report(document) == []:
             return "mail-report"
+        if validate_access_report(document) == []:
+            return "access-report"
         if validate_executive_brief(document) == []:
             return "executive-brief"
         if validate_scorecard(document) == []:

@@ -51,6 +51,7 @@ having to deploy a platform first.
 - Evidence freshness reports for timestamp recency review.
 - Restore assurance reports for backup recency and restore drill proof.
 - Mail domain reports for SPF, DKIM, and DMARC evidence review.
+- Access exposure reports for public SSH, MFA, and admin entrypoint review.
 - SVG trend rendering for readiness history dashboards.
 - Executive brief export for stakeholder handoff.
 - Scope report export for explicit in-scope and out-of-scope boundaries.

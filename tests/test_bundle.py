@@ -207,6 +207,7 @@ class BundleTests(unittest.TestCase):
             review_summary = temp / "review-summary.json"
             restore_report = temp / "restore-report.json"
             mail_report = temp / "mail-report.json"
+            access_report = temp / "access-report.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
             service_catalog = temp / "service-catalog.json"
@@ -514,6 +515,8 @@ class BundleTests(unittest.TestCase):
                             "restore_warnings": 0,
                             "mail_failures": 0,
                             "mail_warnings": 0,
+                            "access_failures": 0,
+                            "access_warnings": 0,
                             "privacy_findings": 0,
                             "scope_warnings": 0,
                             "drift_changes": 0,
@@ -617,6 +620,52 @@ class BundleTests(unittest.TestCase):
                                 "reason": "SPF, DKIM, and enforced DMARC evidence are present.",
                                 "recommended_action": "Keep mail authentication evidence current.",
                             }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            access_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "ssh_public_exposed": False,
+                            "mfa_required": True,
+                            "entrypoints_total": 2,
+                            "safe_entrypoints": 2,
+                            "risky_entrypoints": 0,
+                            "unknown_entrypoints": 0,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "public_ssh_closed",
+                                "title": "Public SSH exposure is closed",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals.access.ssh_public_exposed",
+                                "reason": "Public SSH exposure is recorded as closed.",
+                                "recommended_action": "Keep public SSH behind controlled access.",
+                            }
+                        ],
+                        "entrypoints": [
+                            {
+                                "name": "vpn",
+                                "status": "safe",
+                                "reason": "Entrypoint is a controlled administrative access layer.",
+                            },
+                            {
+                                "name": "sso",
+                                "status": "safe",
+                                "reason": "Entrypoint is a controlled administrative access layer.",
+                            },
                         ],
                     }
                 ),
@@ -978,6 +1027,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(review_summary), "review-summary")
             self.assertEqual(classify_artifact(restore_report), "restore-report")
             self.assertEqual(classify_artifact(mail_report), "mail-report")
+            self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")
             self.assertEqual(classify_artifact(service_catalog), "service-catalog")

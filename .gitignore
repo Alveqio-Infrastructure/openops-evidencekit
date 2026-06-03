@@ -47,6 +47,9 @@ readiness-badge.json
 /mail-report.json
 /mail-report.md
 /mail-report.csv
+/access-report.json
+/access-report.md
+/access-report.csv
 /questionnaire.*
 /evidence-questionnaire.*
 /executive-brief.json
@@ -57,6 +60,7 @@ readiness-history.csv
 readiness-history.svg
 /review-pack/
 /review-pack.zip
+/review-pack-verification.json
 /review-summary.json
 /review-summary.md
 evidence-bundle.manifest.json

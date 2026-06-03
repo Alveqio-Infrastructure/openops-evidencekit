@@ -361,6 +361,10 @@ def validate_review_summary(document: Any) -> list[str]:
             "invalid_timestamps",
             "restore_failures",
             "restore_warnings",
+            "mail_failures",
+            "mail_warnings",
+            "access_failures",
+            "access_warnings",
             "privacy_findings",
             "scope_warnings",
             "drift_changes",
@@ -729,6 +733,57 @@ def validate_mail_report(document: Any) -> list[str]:
         _require_enum(domain, "dmarc_status", {"enforced", "monitoring", "missing", "unknown"}, errors, prefix=prefix)
         for key in ("reason", "recommended_action"):
             _require_string(domain, key, errors, prefix=prefix)
+    return errors
+
+
+def validate_access_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Access report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    _require_list(document, "entrypoints", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in ("ssh_public_exposed", "mfa_required"):
+            if key not in summary:
+                errors.append(f"summary.{key} is required.")
+            elif summary[key] is not None and not isinstance(summary[key], bool):
+                errors.append(f"summary.{key} must be a boolean or null.")
+        for key in (
+            "entrypoints_total",
+            "safe_entrypoints",
+            "risky_entrypoints",
+            "unknown_entrypoints",
+            "checks_total",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        if not isinstance(check, dict):
+            errors.append(f"checks[{index}] must be an object.")
+            continue
+        prefix = f"checks[{index}]."
+        _require_string(check, "id", errors, prefix=prefix)
+        _require_string(check, "title", errors, prefix=prefix)
+        _require_enum(check, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        _require_enum(check, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        for key in ("path", "reason", "recommended_action"):
+            _require_string_type(check, key, errors, prefix=prefix)
+    for index, entrypoint in enumerate(document.get("entrypoints", [])):
+        if not isinstance(entrypoint, dict):
+            errors.append(f"entrypoints[{index}] must be an object.")
+            continue
+        prefix = f"entrypoints[{index}]."
+        _require_string(entrypoint, "name", errors, prefix=prefix)
+        _require_enum(entrypoint, "status", {"safe", "risky", "unknown"}, errors, prefix=prefix)
+        _require_string(entrypoint, "reason", errors, prefix=prefix)
     return errors
 
 
