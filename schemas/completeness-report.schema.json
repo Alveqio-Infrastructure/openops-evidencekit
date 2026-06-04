@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/completeness-report.schema.json",
+  "title": "OpenOps Evidence Completeness Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "items"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "checks_total",
+        "checks_present",
+        "checks_expected_absent",
+        "checks_missing",
+        "required_missing",
+        "optional_missing",
+        "checks_passed",
+        "checks_warn",
+        "checks_failed"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn"]
+        },
+        "checks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_present": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_expected_absent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_missing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_missing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "optional_missing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_failed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/completeness_item"
+      }
+    }
+  },
+  "$defs": {
+    "completeness_item": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "title",
+        "status",
+        "evidence_status",
+        "required",
+        "severity",
+        "path",
+        "operator",
+        "observed_count",
+        "request",
+        "remediation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "evidence_status": {
+          "enum": ["present", "missing", "expected_absent"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "severity": {
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "path": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "observed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "request": {
+          "type": "string"
+        },
+        "remediation": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

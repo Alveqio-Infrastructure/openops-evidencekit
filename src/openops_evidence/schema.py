@@ -269,6 +269,48 @@ def validate_quality_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_completeness_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Completeness report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "items", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn"}, errors, prefix="summary.")
+        for key in (
+            "checks_total",
+            "checks_present",
+            "checks_expected_absent",
+            "checks_missing",
+            "required_missing",
+            "optional_missing",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, item in enumerate(document.get("items", [])):
+        if not isinstance(item, dict):
+            errors.append(f"items[{index}] must be an object.")
+            continue
+        prefix = f"items[{index}]."
+        _require_string(item, "id", errors, prefix=prefix)
+        _require_string(item, "title", errors, prefix=prefix)
+        _require_enum(item, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        _require_enum(item, "evidence_status", {"present", "missing", "expected_absent"}, errors, prefix=prefix)
+        if not isinstance(item.get("required"), bool):
+            errors.append(f"{prefix}required must be a boolean.")
+        _require_enum(item, "severity", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        for key in ("path", "operator", "request", "remediation"):
+            _require_string_type(item, key, errors, prefix=prefix)
+        _require_int_range(item, "observed_count", errors, minimum=0, prefix=prefix)
+    return errors
+
+
 def validate_evidence_drift(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
@@ -400,6 +442,8 @@ def validate_review_summary(document: Any) -> list[str]:
             "privacy_findings",
             "quality_failures",
             "quality_warnings",
+            "completeness_missing",
+            "completeness_optional_missing",
             "scope_warnings",
             "drift_changes",
             "catalog_warnings",

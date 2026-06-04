@@ -224,6 +224,7 @@ class BundleTests(unittest.TestCase):
             history = temp / "history.json"
             questionnaire = temp / "questionnaire.json"
             quality_report = temp / "quality-report.json"
+            completeness_report = temp / "completeness-report.json"
             signature = temp / "signature.json"
             report.write_text(
                 json.dumps(
@@ -531,6 +532,8 @@ class BundleTests(unittest.TestCase):
                             "privacy_findings": 0,
                             "quality_failures": 0,
                             "quality_warnings": 0,
+                            "completeness_missing": 0,
+                            "completeness_optional_missing": 0,
                             "scope_warnings": 0,
                             "drift_changes": 0,
                             "catalog_warnings": 0,
@@ -1155,6 +1158,43 @@ class BundleTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            completeness_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "checks_total": 1,
+                            "checks_present": 1,
+                            "checks_expected_absent": 0,
+                            "checks_missing": 0,
+                            "required_missing": 0,
+                            "optional_missing": 0,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "items": [
+                            {
+                                "id": "backup_recent",
+                                "title": "Recent backup",
+                                "status": "pass",
+                                "evidence_status": "present",
+                                "required": True,
+                                "severity": "critical",
+                                "path": "signals.backup.last_success_at",
+                                "operator": "exists",
+                                "observed_count": 1,
+                                "request": "Evidence is present for this policy path.",
+                                "remediation": "Keep backup evidence current.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
             signature.write_text(
                 json.dumps(
                     {
@@ -1246,6 +1286,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(history), "report-history")
             self.assertEqual(classify_artifact(questionnaire), "questionnaire")
             self.assertEqual(classify_artifact(quality_report), "quality-report")
+            self.assertEqual(classify_artifact(completeness_report), "completeness-report")
             self.assertEqual(classify_artifact(signature), "bundle-signature")
             self.assertEqual(classify_artifact(policy), "policy")
             self.assertEqual(classify_artifact(waivers), "waivers")

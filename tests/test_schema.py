@@ -7,6 +7,7 @@ from openops_evidence.schema import (
     validate_bundle_manifest,
     validate_bundle_signature,
     validate_bundle_verification,
+    validate_completeness_report,
     validate_evidence,
     validate_evidence_drift,
     validate_executive_brief,
@@ -528,6 +529,43 @@ class SchemaTests(unittest.TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_valid_completeness_report(self):
+        errors = validate_completeness_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "checks_total": 1,
+                    "checks_present": 0,
+                    "checks_expected_absent": 0,
+                    "checks_missing": 1,
+                    "required_missing": 1,
+                    "optional_missing": 0,
+                    "checks_passed": 0,
+                    "checks_warn": 0,
+                    "checks_failed": 1,
+                },
+                "items": [
+                    {
+                        "id": "restore_drill",
+                        "title": "Restore drill",
+                        "status": "fail",
+                        "evidence_status": "missing",
+                        "required": True,
+                        "severity": "high",
+                        "path": "signals.backup.restore_test_at",
+                        "operator": "exists",
+                        "observed_count": 0,
+                        "request": "Provide evidence for `signals.backup.restore_test_at`.",
+                        "remediation": "Record restore drill evidence.",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
     def test_valid_evidence_drift(self):
         errors = validate_evidence_drift(
             {
@@ -761,6 +799,8 @@ class SchemaTests(unittest.TestCase):
                     "privacy_findings": 0,
                     "quality_failures": 0,
                     "quality_warnings": 0,
+                    "completeness_missing": 0,
+                    "completeness_optional_missing": 0,
                     "scope_warnings": 0,
                     "drift_changes": 0,
                     "catalog_warnings": 0,

@@ -31,6 +31,9 @@ jobs:
           openops-evidence evidence quality -i evidence.sample.json -f json -o quality-report.json
           openops-evidence validate -i quality-report.json -t quality-report
           openops-evidence evidence quality -i evidence.sample.json -o quality-report.md
+          openops-evidence evidence completeness -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -f json -o completeness-report.json
+          openops-evidence validate -i completeness-report.json -t completeness-report
+          openops-evidence evidence completeness -i evidence.sample.json -p __OPENOPS_POLICY_FILE__ -o completeness-report.md
           openops-evidence catalog validate service-catalog.sample.toml
           openops-evidence catalog report -i evidence.sample.json -c service-catalog.sample.toml -f json -o service-catalog.json || true
           openops-evidence validate -i service-catalog.json -t service-catalog
@@ -90,6 +93,8 @@ jobs:
             inventory.md
             quality-report.json
             quality-report.md
+            completeness-report.json
+            completeness-report.md
             service-catalog.json
             service-catalog.md
             runbook-report.json

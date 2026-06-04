@@ -16,6 +16,7 @@ from .catalog import (
     render_service_catalog_markdown,
 )
 from .checklist import create_review_checklist, render_review_checklist_csv, render_review_checklist_markdown
+from .completeness import create_completeness_report, render_completeness_csv, render_completeness_markdown
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .freshness import create_freshness_report, render_freshness_csv, render_freshness_markdown
@@ -95,6 +96,7 @@ def create_review_pack(
     service_catalog = create_service_catalog_report(evidence, catalog_document) if catalog_document is not None else None
     runbook_report = create_runbook_report(evidence, catalog_document=catalog_document) if catalog_document is not None else None
     policy_matrix = create_policy_matrix(checks)
+    completeness_report = create_completeness_report(evidence, checks)
     coverage = create_coverage_report(evidence, checks)
     scorecard = create_report_scorecard(report)
     brief = create_report_brief(report, max_findings=max_findings)
@@ -191,6 +193,9 @@ def create_review_pack(
     add_artifact("policy-matrix.json", dump_json(policy_matrix), "Policy matrix", "Machine-readable policy coverage map.")
     add_artifact("policy-matrix.md", render_policy_matrix_markdown(policy_matrix), "Policy matrix", "Reviewable policy coverage table.")
     add_artifact("policy-matrix.csv", render_policy_matrix_csv(policy_matrix), "Policy matrix", "Spreadsheet-friendly policy coverage export.")
+    add_artifact("completeness-report.json", dump_json(completeness_report), "Evidence completeness", "Machine-readable policy evidence completeness report.")
+    add_artifact("completeness-report.md", render_completeness_markdown(completeness_report), "Evidence completeness", "Human-readable policy evidence completeness report.")
+    add_artifact("completeness-report.csv", render_completeness_csv(completeness_report), "Evidence completeness", "Spreadsheet-friendly policy evidence completeness report.")
     add_artifact("policy-coverage.json", dump_json(coverage), "Policy coverage", "Machine-readable evidence-domain coverage report.")
     add_artifact("policy-coverage.md", render_coverage_markdown(coverage), "Policy coverage", "Human-readable evidence-domain coverage report.")
     add_artifact("policy-coverage.csv", render_coverage_csv(coverage), "Policy coverage", "Spreadsheet-friendly coverage export.")
@@ -224,6 +229,7 @@ def create_review_pack(
         gate=gate,
         privacy_scan=privacy_scan,
         quality_report=quality_report,
+        completeness_report=completeness_report,
         freshness_report=freshness_report,
         restore_report=restore_report,
         mail_report=mail_report,
@@ -272,6 +278,7 @@ def create_review_pack(
         "report": report,
         "gate": gate,
         "quality_report": quality_report,
+        "completeness_report": completeness_report,
         "freshness_report": freshness_report,
         "restore_report": restore_report,
         "mail_report": mail_report,
@@ -307,6 +314,7 @@ def render_review_pack_readme(
         "Read `executive-brief.md` for the management summary.",
         "Use `scorecard.md` to see which operational domains need attention.",
         "Use `quality-report.md` to catch evidence hygiene problems before sharing.",
+        "Use `completeness-report.md` to find missing policy evidence before retesting.",
     ]
     if any(artifact.get("filename") == "scope-report.md" for artifact in artifacts):
         suggested_steps.append("Check `scope-report.md` for in-scope, out-of-scope, and unclassified evidence.")
@@ -547,6 +555,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("review-checklist.md", "Checklist"),
         ("scorecard.html", "Scorecard"),
         ("quality-report.md", "Quality"),
+        ("completeness-report.md", "Completeness"),
         ("freshness-report.md", "Freshness"),
         ("restore-report.md", "Restore"),
         ("mail-report.md", "Mail"),

@@ -28,6 +28,7 @@ from .catalog import (
     validate_catalog_document,
 )
 from .compare import compare_reports, render_comparison_markdown
+from .completeness import create_completeness_report, render_completeness_csv, render_completeness_markdown
 from .collectors import (
     collect_borg_archives,
     collect_docker_containers,
@@ -85,6 +86,7 @@ from .schema import (
     validate_bundle_manifest,
     validate_bundle_signature,
     validate_bundle_verification,
+    validate_completeness_report,
     validate_evidence,
     validate_evidence_drift,
     validate_executive_brief,
@@ -270,6 +272,13 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_quality.add_argument("--fail-on-warn", action="store_true")
     evidence_quality.add_argument("-o", "--output", default="-")
     evidence_quality.set_defaults(func=cmd_evidence_quality)
+    evidence_completeness = evidence_sub.add_parser("completeness", help="Render policy evidence completeness")
+    evidence_completeness.add_argument("-i", "--input", required=True)
+    evidence_completeness.add_argument("-p", "--policy", required=True)
+    evidence_completeness.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    evidence_completeness.add_argument("--fail-on-missing", action="store_true")
+    evidence_completeness.add_argument("-o", "--output", default="-")
+    evidence_completeness.set_defaults(func=cmd_evidence_completeness)
 
     scope = sub.add_parser("scope", help="Check review scope against evidence")
     scope_sub = scope.add_subparsers(required=True)
@@ -602,6 +611,7 @@ def build_parser() -> argparse.ArgumentParser:
             "bundle-verification",
             "bundle-signature",
             "comparison",
+            "completeness-report",
         ],
         default="evidence",
     )
@@ -1271,6 +1281,27 @@ def cmd_evidence_quality(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_evidence_completeness(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    policy_raw = load_structured(args.policy)
+    policy_errors = validate_policy_document(policy_raw)
+    if policy_errors:
+        raise UserFacingError("Policy validation failed:\n- " + "\n- ".join(policy_errors))
+    report = create_completeness_report(evidence, parse_policy(policy_raw))
+    if args.format == "markdown":
+        write_text(args.output, render_completeness_markdown(report))
+    elif args.format == "csv":
+        write_text(args.output, render_completeness_csv(report))
+    else:
+        write_text(args.output, dump_json(report))
+    if args.fail_on_missing and report["summary"]["required_missing"] > 0:
+        return 1
+    return 0
+
+
 def cmd_gate_report(args: argparse.Namespace) -> int:
     report = load_json(args.input)
     errors = validate_report(report)
@@ -1652,6 +1683,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_bundle_signature(document)
     elif args.type == "comparison":
         errors = validate_report_comparison(document)
+    elif args.type == "completeness-report":
+        errors = validate_completeness_report(document)
     else:
         errors = validate_evidence(document)
     if errors:

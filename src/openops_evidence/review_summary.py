@@ -12,6 +12,7 @@ def create_review_summary(
     gate: dict[str, Any],
     privacy_scan: dict[str, Any],
     quality_report: dict[str, Any] | None = None,
+    completeness_report: dict[str, Any] | None = None,
     freshness_report: dict[str, Any] | None = None,
     restore_report: dict[str, Any] | None = None,
     mail_report: dict[str, Any] | None = None,
@@ -29,6 +30,7 @@ def create_review_summary(
     gate_summary = gate.get("summary", {})
     privacy_summary = privacy_scan.get("summary", {})
     quality_summary = (quality_report or {}).get("summary", {})
+    completeness_summary = (completeness_report or {}).get("summary", {})
     freshness_summary = (freshness_report or {}).get("summary", {})
     restore_summary = (restore_report or {}).get("summary", {})
     mail_summary = (mail_report or {}).get("summary", {})
@@ -67,6 +69,8 @@ def create_review_summary(
         "privacy_findings": _int_or_zero(privacy_summary.get("findings_count")),
         "quality_failures": _int_or_zero(quality_summary.get("checks_failed")),
         "quality_warnings": _int_or_zero(quality_summary.get("checks_warn")),
+        "completeness_missing": _int_or_zero(completeness_summary.get("required_missing")),
+        "completeness_optional_missing": _int_or_zero(completeness_summary.get("optional_missing")),
         "scope_warnings": 1 if scope_summary.get("status") == "warn" else 0,
         "drift_changes": _int_or_zero(drift_summary.get("asset_changes_count"))
         + _int_or_zero(drift_summary.get("domain_changes_count")),
@@ -130,6 +134,8 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "privacy_findings",
         "quality_failures",
         "quality_warnings",
+        "completeness_missing",
+        "completeness_optional_missing",
         "drift_changes",
         "catalog_warnings",
         "runbook_warnings",
@@ -159,6 +165,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("privacy findings exist")
     if metrics["quality_failures"] > 0:
         blockers.append("evidence quality checks failed")
+    if metrics["completeness_missing"] > 0:
+        blockers.append("required evidence is missing")
     if metrics["restore_failures"] > 0:
         blockers.append("restore assurance failed")
     if metrics["mail_failures"] > 0:
@@ -182,6 +190,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("accepted risks need review")
     if metrics["quality_warnings"] > 0:
         warnings.append("evidence quality warnings exist")
+    if metrics["completeness_optional_missing"] > 0:
+        warnings.append("optional evidence is missing")
     if metrics["stale_timestamps"] > 0 or metrics["invalid_timestamps"] > 0:
         warnings.append("evidence freshness needs review")
     if metrics["restore_warnings"] > 0:
@@ -230,6 +240,10 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['quality_failures']} evidence quality check(s) failed.")
     if metrics["quality_warnings"]:
         highlights.append(f"{metrics['quality_warnings']} evidence quality warning(s) need review.")
+    if metrics["completeness_missing"]:
+        highlights.append(f"{metrics['completeness_missing']} required evidence path(s) are missing.")
+    if metrics["completeness_optional_missing"]:
+        highlights.append(f"{metrics['completeness_optional_missing']} optional evidence path(s) are missing.")
     if metrics["restore_failures"]:
         highlights.append(f"{metrics['restore_failures']} restore assurance check(s) failed.")
     if metrics["restore_warnings"]:
@@ -272,6 +286,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Review `privacy-scan.md` before sending the pack outside the operating team.")
     if metrics["quality_failures"] > 0 or metrics["quality_warnings"] > 0:
         steps.append("Review `quality-report.md` and fix evidence hygiene issues before relying on the handoff.")
+    if metrics["completeness_missing"] > 0 or metrics["completeness_optional_missing"] > 0:
+        steps.append("Review `completeness-report.md` and collect missing policy evidence.")
     if metrics["restore_failures"] > 0 or metrics["restore_warnings"] > 0:
         steps.append("Review `restore-report.md` and refresh backup or restore drill evidence.")
     if metrics["mail_failures"] > 0 or metrics["mail_warnings"] > 0:

@@ -62,6 +62,16 @@ def create_review_checklist(review_summary: dict[str, Any], artifacts: list[dict
         items,
         filenames,
         metrics,
+        "completeness-report.md",
+        "review_completeness",
+        "Review evidence completeness",
+        "completeness_missing",
+        "completeness_optional_missing",
+    )
+    _append_if_present(
+        items,
+        filenames,
+        metrics,
         "risk-register.md",
         "review_risk_register",
         "Review open and accepted risks",
@@ -272,4 +282,10 @@ def _int(value: Any) -> int:
 
 
 def _is_failure_metric(name: str) -> bool:
-    return name.endswith("_failures") or name in {"checks_failed", "open_risks", "invalid_timestamps", "quality_failures"}
+    return name.endswith("_failures") or name in {
+        "checks_failed",
+        "open_risks",
+        "invalid_timestamps",
+        "quality_failures",
+        "completeness_missing",
+    }

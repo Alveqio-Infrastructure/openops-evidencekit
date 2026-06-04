@@ -16,6 +16,7 @@ from .schema import (
     validate_badge,
     validate_bundle_signature,
     validate_bundle_verification,
+    validate_completeness_report,
     validate_evidence,
     validate_evidence_drift,
     validate_executive_brief,
@@ -320,6 +321,8 @@ def classify_artifact(path: Path) -> str:
             return "questionnaire"
         if validate_quality_report(document) == []:
             return "quality-report"
+        if validate_completeness_report(document) == []:
+            return "completeness-report"
         if validate_waiver_document(document) == []:
             return "waivers"
         return "json"

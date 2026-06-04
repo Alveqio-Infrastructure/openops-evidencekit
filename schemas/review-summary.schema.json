@@ -64,6 +64,8 @@
         "privacy_findings",
         "quality_failures",
         "quality_warnings",
+        "completeness_missing",
+        "completeness_optional_missing",
         "scope_warnings",
         "drift_changes",
         "catalog_warnings",
@@ -166,6 +168,14 @@
           "minimum": 0
         },
         "quality_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completeness_missing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completeness_optional_missing": {
           "type": "integer",
           "minimum": 0
         },

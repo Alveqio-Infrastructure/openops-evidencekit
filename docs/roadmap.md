@@ -25,7 +25,7 @@ having to deploy a platform first.
 
 - BookStack-oriented Markdown export.
 - Runbook freshness checks.
-- Inventory completeness checks.
+- Evidence completeness reports.
 - Evidence bundle manifest.
 - Privacy scan for reviewed sharing artifacts.
 - Bundle manifest validation.
@@ -74,6 +74,7 @@ having to deploy a platform first.
 - Policy questionnaire export for pre-assessment evidence requests.
 - Evidence scaffold generation from policy signal paths.
 - Evidence quality report for input hygiene checks.
+- Evidence completeness report for missing policy evidence paths.
 - Bundle manifest verification.
 - Policy validation and authoring guardrails.
 

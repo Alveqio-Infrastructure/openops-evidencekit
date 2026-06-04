@@ -22,6 +22,7 @@ and automation wrappers.
 - `compare --fail-on-regression` returns `1` when an existing check regresses.
 - `evidence diff --fail-on-drift` returns `1` when asset or signal-domain drift is found.
 - `evidence quality` returns `1` when quality checks fail, or when `--fail-on-warn` is set and warnings are found.
+- `evidence completeness --fail-on-missing` returns `1` when required policy evidence is missing.
 - `scope report --fail-on-warn` returns `1` when scope warnings are found.
 - `review create --fail-on-gate` returns `1` when the generated gate fails.
 - `review create --fail-on-drift` returns `1` when an included evidence drift report warns.
