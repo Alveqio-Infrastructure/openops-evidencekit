@@ -24,6 +24,7 @@ def create_review_summary(
     scope_report: dict[str, Any] | None = None,
     evidence_drift: dict[str, Any] | None = None,
     service_catalog: dict[str, Any] | None = None,
+    service_level_report: dict[str, Any] | None = None,
     runbook_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     report_summary = report.get("summary", {})
@@ -42,6 +43,7 @@ def create_review_summary(
     scope_summary = (scope_report or {}).get("summary", {})
     drift_summary = (evidence_drift or {}).get("summary", {})
     catalog_summary = (service_catalog or {}).get("summary", {})
+    service_level_summary = (service_level_report or {}).get("summary", {})
     runbook_summary = (runbook_report or {}).get("summary", {})
     metrics = {
         "readiness_score": _int_or_none(report_summary.get("score")),
@@ -75,6 +77,8 @@ def create_review_summary(
         "drift_changes": _int_or_zero(drift_summary.get("asset_changes_count"))
         + _int_or_zero(drift_summary.get("domain_changes_count")),
         "catalog_warnings": _int_or_zero(catalog_summary.get("services_warn")),
+        "service_level_failures": _int_or_zero(service_level_summary.get("services_failed")),
+        "service_level_warnings": _int_or_zero(service_level_summary.get("services_warn")),
         "runbook_warnings": _int_or_zero(runbook_summary.get("missing_runbooks_count"))
         + _int_or_zero(runbook_summary.get("stale_runbooks_count"))
         + _int_or_zero(runbook_summary.get("unreferenced_runbooks_count"))
@@ -138,6 +142,8 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "completeness_optional_missing",
         "drift_changes",
         "catalog_warnings",
+        "service_level_failures",
+        "service_level_warnings",
         "runbook_warnings",
     ):
         lines.append(f"| {escape_markdown_text(key.replace('_', ' ').title())} | {escape_markdown_text(_display(metrics.get(key)))} |")
@@ -179,6 +185,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("monitoring checks failed")
     if metrics["incident_failures"] > 0:
         blockers.append("incident readiness checks failed")
+    if metrics["service_level_failures"] > 0:
+        blockers.append("service-level targets were missed")
     if blockers:
         return {
             "status": "fail",
@@ -212,6 +220,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("evidence drift exists")
     if metrics["catalog_warnings"] > 0 or metrics["runbook_warnings"] > 0:
         warnings.append("service or runbook warnings exist")
+    if metrics["service_level_warnings"] > 0:
+        warnings.append("service-level evidence warnings exist")
     if warnings:
         return {
             "status": "warn",
@@ -270,6 +280,10 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['incident_warnings']} incident readiness warning(s) need review.")
     if metrics["drift_changes"]:
         highlights.append(f"{metrics['drift_changes']} evidence drift change(s) were detected.")
+    if metrics["service_level_failures"]:
+        highlights.append(f"{metrics['service_level_failures']} service-level target(s) were missed.")
+    if metrics["service_level_warnings"]:
+        highlights.append(f"{metrics['service_level_warnings']} service-level warning(s) need review.")
     return highlights
 
 
@@ -304,6 +318,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Refresh stale or invalid evidence timestamps before relying on the handoff.")
     if metrics["catalog_warnings"] > 0 or metrics["runbook_warnings"] > 0:
         steps.append("Review service catalog and runbook warnings with service owners.")
+    if metrics["service_level_failures"] > 0 or metrics["service_level_warnings"] > 0:
+        steps.append("Review `service-level-report.md` with service owners and confirm error-budget treatment.")
     if not steps:
         steps.append("Review warning artifacts and record the treatment decision.")
     return steps

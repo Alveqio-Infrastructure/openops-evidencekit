@@ -101,6 +101,32 @@ class ReviewSummaryTests(unittest.TestCase):
         self.assertEqual(summary["metrics"]["incident_failures"], 1)
         self.assertIn("incident readiness checks failed", summary["decision"]["reason"])
 
+    def test_review_summary_blocks_on_service_level_failures(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            service_level_report={"summary": {"services_failed": 1, "services_warn": 0}},
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "fail")
+        self.assertEqual(summary["metrics"]["service_level_failures"], 1)
+        self.assertIn("service-level targets were missed", summary["decision"]["reason"])
+
+    def test_review_summary_warns_on_service_level_warnings(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            service_level_report={"summary": {"services_failed": 0, "services_warn": 2}},
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "warn")
+        self.assertEqual(summary["metrics"]["service_level_warnings"], 2)
+        self.assertIn("service-level evidence warnings exist", summary["decision"]["reason"])
+
     def test_review_summary_blocks_on_tls_failures(self):
         summary = create_review_summary(
             report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},

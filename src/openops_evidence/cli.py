@@ -111,11 +111,13 @@ from .schema import (
     validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
+    validate_service_level_report,
     validate_service_catalog_report,
     validate_scope_report,
     validate_tls_report,
 )
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
+from .service_level import create_service_level_report, render_service_level_csv, render_service_level_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown, validate_scope_document
 from .tickets import export_action_plan_tickets
 from .tls import create_tls_report, render_tls_csv, render_tls_markdown
@@ -376,6 +378,16 @@ def build_parser() -> argparse.ArgumentParser:
     monitoring_report.add_argument("-o", "--output", default="-")
     monitoring_report.set_defaults(func=cmd_monitoring_report)
 
+    service_level = sub.add_parser("service-level", help="Inspect service-level and SLO evidence")
+    service_level_sub = service_level.add_subparsers(required=True)
+    service_level_report = service_level_sub.add_parser("report", help="Render service-level evidence from monitoring and catalog data")
+    service_level_report.add_argument("-i", "--input", required=True)
+    service_level_report.add_argument("-c", "--catalog", required=True)
+    service_level_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    service_level_report.add_argument("--fail-on-warn", action="store_true")
+    service_level_report.add_argument("-o", "--output", default="-")
+    service_level_report.set_defaults(func=cmd_service_level_report)
+
     incident = sub.add_parser("incident", help="Inspect incident response readiness evidence")
     incident_sub = incident.add_subparsers(required=True)
     incident_report = incident_sub.add_parser("report", help="Render incident response readiness evidence")
@@ -592,6 +604,7 @@ def build_parser() -> argparse.ArgumentParser:
             "tls-report",
             "access-report",
             "monitoring-report",
+            "service-level-report",
             "incident-report",
             "gate-result",
             "badge",
@@ -1057,6 +1070,28 @@ def cmd_monitoring_report(args: argparse.Namespace) -> int:
         rendered = render_monitoring_csv(report)
     else:
         rendered = render_monitoring_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
+def cmd_service_level_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    catalog_document = load_structured(args.catalog)
+    catalog_errors = validate_catalog_document(catalog_document)
+    if catalog_errors:
+        raise UserFacingError("Service catalog validation failed:\n- " + "\n- ".join(catalog_errors))
+    report = create_service_level_report(evidence, catalog_document)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_service_level_csv(report)
+    else:
+        rendered = render_service_level_markdown(report)
     write_text(args.output, rendered)
     if args.fail_on_warn and report["summary"]["status"] != "pass":
         return 1
@@ -1645,6 +1680,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_access_report(document)
     elif args.type == "monitoring-report":
         errors = validate_monitoring_report(document)
+    elif args.type == "service-level-report":
+        errors = validate_service_level_report(document)
     elif args.type == "incident-report":
         errors = validate_incident_report(document)
     elif args.type == "gate-result":

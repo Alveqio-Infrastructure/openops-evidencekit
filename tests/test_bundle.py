@@ -211,6 +211,7 @@ class BundleTests(unittest.TestCase):
             tls_report = temp / "tls-report.json"
             access_report = temp / "access-report.json"
             monitoring_report = temp / "monitoring-report.json"
+            service_level_report = temp / "service-level-report.json"
             incident_report = temp / "incident-report.json"
             scorecard = temp / "scorecard.json"
             scope_report = temp / "scope-report.json"
@@ -537,6 +538,8 @@ class BundleTests(unittest.TestCase):
                             "scope_warnings": 0,
                             "drift_changes": 0,
                             "catalog_warnings": 0,
+                            "service_level_failures": 0,
+                            "service_level_warnings": 0,
                             "runbook_warnings": 0,
                         },
                         "highlights": [],
@@ -758,6 +761,42 @@ class BundleTests(unittest.TestCase):
                             }
                         ],
                         "down_targets": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            service_level_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "services_total": 1,
+                            "services_passed": 1,
+                            "services_warn": 0,
+                            "services_failed": 0,
+                            "services_missing_evidence": 0,
+                            "critical_services": 0,
+                            "high_services": 1,
+                        },
+                        "services": [
+                            {
+                                "id": "public-web",
+                                "name": "Public website",
+                                "owner": "platform",
+                                "criticality": "high",
+                                "status": "pass",
+                                "evidence_status": "present",
+                                "target_percent": 99.5,
+                                "observed_percent": 99.9,
+                                "window": "30d",
+                                "error_budget_remaining_percent": 80.0,
+                                "reason": "Observed availability meets target.",
+                                "recommended_action": "Keep service-level evidence current.",
+                            }
+                        ],
                     }
                 ),
                 encoding="utf-8",
@@ -1273,6 +1312,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(tls_report), "tls-report")
             self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(monitoring_report), "monitoring-report")
+            self.assertEqual(classify_artifact(service_level_report), "service-level-report")
             self.assertEqual(classify_artifact(incident_report), "incident-report")
             self.assertEqual(classify_artifact(scorecard), "scorecard")
             self.assertEqual(classify_artifact(scope_report), "scope-report")

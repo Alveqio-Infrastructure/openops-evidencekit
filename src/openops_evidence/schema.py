@@ -447,6 +447,8 @@ def validate_review_summary(document: Any) -> list[str]:
             "scope_warnings",
             "drift_changes",
             "catalog_warnings",
+            "service_level_failures",
+            "service_level_warnings",
             "runbook_warnings",
         ):
             _require_int_range(metrics, key, errors, minimum=0, prefix="metrics.")
@@ -1247,6 +1249,47 @@ def validate_monitoring_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_service_level_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Service level report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "services", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in (
+            "services_total",
+            "services_passed",
+            "services_warn",
+            "services_failed",
+            "services_missing_evidence",
+            "critical_services",
+            "high_services",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, service in enumerate(document.get("services", [])):
+        if not isinstance(service, dict):
+            errors.append(f"services[{index}] must be an object.")
+            continue
+        prefix = f"services[{index}]."
+        _require_string(service, "id", errors, prefix=prefix)
+        _require_string_type(service, "name", errors, prefix=prefix)
+        _require_string_type(service, "owner", errors, prefix=prefix)
+        _require_enum(service, "criticality", {"critical", "high", "medium", "low"}, errors, prefix=prefix)
+        _require_enum(service, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        _require_enum(service, "evidence_status", {"present", "missing", "invalid"}, errors, prefix=prefix)
+        for key in ("target_percent", "observed_percent", "error_budget_remaining_percent"):
+            if service.get(key) is not None:
+                _require_number_range(service, key, errors, minimum=0, maximum=100, prefix=prefix)
+        for key in ("window", "reason", "recommended_action"):
+            _require_string_type(service, key, errors, prefix=prefix)
+    return errors
+
+
 def validate_incident_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
@@ -1548,6 +1591,25 @@ def _require_int(document: dict[str, Any], key: str, errors: list[str], prefix: 
     value = document.get(key)
     if not isinstance(value, int) or isinstance(value, bool):
         errors.append(f"{prefix}{key} must be an integer.")
+
+
+def _require_number_range(
+    document: dict[str, Any],
+    key: str,
+    errors: list[str],
+    *,
+    minimum: float | None = None,
+    maximum: float | None = None,
+    prefix: str = "",
+) -> None:
+    value = document.get(key)
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        errors.append(f"{prefix}{key} must be a number.")
+        return
+    if minimum is not None and value < minimum:
+        errors.append(f"{prefix}{key} must be at least {minimum:g}.")
+    if maximum is not None and value > maximum:
+        errors.append(f"{prefix}{key} must be at most {maximum:g}.")
 
 
 def _require_string_type(document: dict[str, Any], key: str, errors: list[str], prefix: str = "") -> None:

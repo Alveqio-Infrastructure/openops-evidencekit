@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/service-level-report.schema.json",
+  "title": "OpenOps Service Level Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "services"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "services_total",
+        "services_passed",
+        "services_warn",
+        "services_failed",
+        "services_missing_evidence",
+        "critical_services",
+        "high_services"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "services_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "services_missing_evidence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_services": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_services": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/service_level"
+      }
+    }
+  },
+  "$defs": {
+    "percent": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 100
+    },
+    "service_level": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "name",
+        "owner",
+        "criticality",
+        "status",
+        "evidence_status",
+        "target_percent",
+        "observed_percent",
+        "window",
+        "error_budget_remaining_percent",
+        "reason",
+        "recommended_action"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "criticality": {
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "evidence_status": {
+          "enum": ["present", "missing", "invalid"]
+        },
+        "target_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "observed_percent": {
+          "$ref": "#/$defs/percent"
+        },
+        "window": {
+          "type": "string"
+        },
+        "error_budget_remaining_percent": {
+          "$ref": "#/$defs/percent"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "recommended_action": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -16,9 +16,9 @@ Generated files:
 
 The workflow validates evidence, renders an inventory, evaluates the baseline
 policy, creates an evidence questionnaire, evidence quality and completeness
-reports, service catalog report, policy coverage, runbook coverage, evidence freshness, restore assurance, mail domain
-reports, TLS certificate reports, access exposure reports, monitoring reports,
-incident readiness reports, JUnit, SARIF, badge, executive brief, risk register,
+reports, service catalog report, service-level report, policy coverage, runbook
+coverage, evidence freshness, restore assurance, mail domain reports, TLS
+certificate reports, access exposure reports, monitoring reports, incident readiness reports, JUnit, SARIF, badge, executive brief, risk register,
 scorecard, history Markdown/SVG, Prometheus, and review-pack artifacts including
 a review summary and reviewer checklist, then
 enforces a configurable gate:

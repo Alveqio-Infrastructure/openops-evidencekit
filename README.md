@@ -39,7 +39,7 @@ domain scorecards, tickets, and signed evidence bundles.
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
 risk registers, restore assurance reports, mail domain reports, TLS certificate
-reports, access exposure reports, monitoring reports, incident readiness
+reports, access exposure reports, monitoring reports, service-level reports, incident readiness
 reports, plus review packs with one-page summaries, manifests, and
 attestations.
 
@@ -67,6 +67,7 @@ python -m openops_evidence mail report -i evidence.local.json -o mail-report.md
 python -m openops_evidence tls report -i evidence.local.json -o tls-report.md
 python -m openops_evidence access report -i evidence.local.json -o access-report.md
 python -m openops_evidence monitoring report -i evidence.local.json -o monitoring-report.md
+python -m openops_evidence service-level report -i evidence.local.json -c examples/service-catalog.sample.toml -o service-level-report.md
 python -m openops_evidence incident report -i evidence.local.json -c examples/service-catalog.sample.toml -o incident-report.md
 python -m openops_evidence scope validate examples/scope.sample.toml
 python -m openops_evidence scope report -i evidence.local.json -s examples/scope.sample.toml -o scope-report.md
@@ -245,6 +246,8 @@ Use `tls report` when certificate expiry evidence should become a standalone
 renewal-risk artifact.
 Use `access report` when public SSH, MFA, and administrative entrypoints should
 be reviewed as a standalone access exposure artifact.
+Use `service-level report` when service owners need uptime, SLO target, and
+error-budget evidence tied to the service catalog.
 Use `scope report` when the assessment needs explicit in-scope, out-of-scope,
 missing, and unclassified evidence boundaries.
 Use `catalog report` when service ownership, criticality, assets, evidence
@@ -281,6 +284,7 @@ Mail domain reports are described in [docs/mail-report.md](docs/mail-report.md).
 TLS certificate reports are described in [docs/tls-report.md](docs/tls-report.md).
 Access exposure reports are described in [docs/access-report.md](docs/access-report.md).
 Monitoring reports are described in [docs/monitoring-report.md](docs/monitoring-report.md).
+Service-level reports are described in [docs/service-level-report.md](docs/service-level-report.md).
 Incident readiness reports are described in [docs/incident-report.md](docs/incident-report.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).
 Service catalog reports are described in [docs/service-catalog.md](docs/service-catalog.md).

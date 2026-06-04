@@ -49,6 +49,7 @@ from .review_summary import create_review_summary, render_review_summary_markdow
 from .restore import create_restore_report, render_restore_csv, render_restore_markdown
 from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
+from .service_level import create_service_level_report, render_service_level_csv, render_service_level_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown
 from .tls import create_tls_report, render_tls_csv, render_tls_markdown
 
@@ -94,6 +95,7 @@ def create_review_pack(
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
     scope_report = create_scope_report(evidence, scope_document) if scope_document is not None else None
     service_catalog = create_service_catalog_report(evidence, catalog_document) if catalog_document is not None else None
+    service_level_report = create_service_level_report(evidence, catalog_document) if catalog_document is not None else None
     runbook_report = create_runbook_report(evidence, catalog_document=catalog_document) if catalog_document is not None else None
     policy_matrix = create_policy_matrix(checks)
     completeness_report = create_completeness_report(evidence, checks)
@@ -186,6 +188,25 @@ def create_review_pack(
             "Service catalog",
             "Spreadsheet-friendly service catalog report.",
         )
+    if service_level_report is not None:
+        add_artifact(
+            "service-level-report.json",
+            dump_json(service_level_report),
+            "Service level report",
+            "Machine-readable service-level and SLO report.",
+        )
+        add_artifact(
+            "service-level-report.md",
+            render_service_level_markdown(service_level_report),
+            "Service level report",
+            "Human-readable service-level and SLO report.",
+        )
+        add_artifact(
+            "service-level-report.csv",
+            render_service_level_csv(service_level_report),
+            "Service level report",
+            "Spreadsheet-friendly service-level and SLO report.",
+        )
     if runbook_report is not None:
         add_artifact("runbook-report.json", dump_json(runbook_report), "Runbook report", "Machine-readable runbook coverage report.")
         add_artifact("runbook-report.md", render_runbook_markdown(runbook_report), "Runbook report", "Human-readable runbook coverage report.")
@@ -241,6 +262,7 @@ def create_review_pack(
         scope_report=scope_report,
         evidence_drift=evidence_drift,
         service_catalog=service_catalog,
+        service_level_report=service_level_report,
         runbook_report=runbook_report,
     )
     add_artifact("review-summary.json", dump_json(review_summary), "Review summary", "Machine-readable review decision summary.")
@@ -292,6 +314,7 @@ def create_review_pack(
         "evidence_drift": evidence_drift,
         "scope_report": scope_report,
         "service_catalog": service_catalog,
+        "service_level_report": service_level_report,
         "runbook_report": runbook_report,
         "privacy_scan": privacy_scan,
         "manifest": manifest,
@@ -334,6 +357,8 @@ def render_review_pack_readme(
         suggested_steps.append("Use `incident-report.md` to review escalation contacts, incident runbooks, alerts, restore proof, and emergency access.")
     if any(artifact.get("filename") == "service-catalog.md" for artifact in artifacts):
         suggested_steps.append("Review `service-catalog.md` for service ownership, criticality, assets, and runbook gaps.")
+    if any(artifact.get("filename") == "service-level-report.md" for artifact in artifacts):
+        suggested_steps.append("Review `service-level-report.md` for service-level targets, missing SLO evidence, and error-budget risk.")
     if any(artifact.get("filename") == "runbook-report.md" for artifact in artifacts):
         suggested_steps.append("Use `runbook-report.md` to confirm required runbooks are present and current.")
     if any(artifact.get("filename") == "evidence-drift.md" for artifact in artifacts):
@@ -565,6 +590,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("incident-report.md", "Incident"),
         ("scope-report.md", "Scope Report"),
         ("service-catalog.md", "Service Catalog"),
+        ("service-level-report.md", "Service Levels"),
         ("runbook-report.md", "Runbook Report"),
         ("evidence-drift.md", "Evidence Drift"),
         ("report.md", "Report"),

@@ -21,7 +21,7 @@ documentation, demos, and issue reproduction.
 - `scope.sample.toml` declares a sample readiness review scope for assets and
   evidence domains.
 - `service-catalog.sample.toml` declares synthetic services, owners,
-  criticality, assets, evidence domains, runbooks, and contacts.
+  criticality, SLO targets, assets, evidence domains, runbooks, and contacts.
 
 The same policies are also bundled as package policy packs. Use
 `openops-evidence policy list` and `openops-evidence policy show <name>` after
@@ -55,7 +55,7 @@ is available.
 
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
-evidence scaffolds, evidence quality reports, scope reports, service catalog reports, runbook coverage
+evidence scaffolds, evidence quality reports, scope reports, service catalog reports, service-level reports, runbook coverage
 reports, evidence completeness reports, evidence freshness reports, restore assurance reports, access exposure
 reports, TLS certificate reports, monitoring reports, incident readiness
 reports, executive briefs, scorecards, history timelines, evidence drift

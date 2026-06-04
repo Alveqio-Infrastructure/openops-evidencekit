@@ -161,6 +161,16 @@ def create_review_checklist(review_summary: dict[str, Any], artifacts: list[dict
     _append_if_present(items, filenames, metrics, "scope-report.md", "review_scope", "Review scope boundaries", "scope_warnings")
     _append_if_present(items, filenames, metrics, "evidence-drift.md", "review_drift", "Review evidence drift", "drift_changes")
     _append_if_present(items, filenames, metrics, "service-catalog.md", "review_catalog", "Review service catalog gaps", "catalog_warnings")
+    _append_if_present(
+        items,
+        filenames,
+        metrics,
+        "service-level-report.md",
+        "review_service_levels",
+        "Review service-level evidence",
+        "service_level_failures",
+        "service_level_warnings",
+    )
     _append_if_present(items, filenames, metrics, "runbook-report.md", "review_runbooks", "Review runbook coverage", "runbook_warnings")
     required = [item for item in items if item["required"]]
     failed = [item for item in items if item["status"] == "fail"]

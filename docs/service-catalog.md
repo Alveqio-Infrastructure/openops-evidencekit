@@ -36,6 +36,7 @@ id = "public-web"
 name = "Public website"
 owner = "platform"
 criticality = "high"
+slo_target_percent = 99.5
 assets = ["web-01"]
 domains = ["backup", "monitoring", "tls", "docs"]
 runbooks = ["backup-restore", "incident-escalation"]
@@ -46,6 +47,7 @@ Each service needs:
 
 - `id`, `name`, and `owner`
 - optional `criticality`: `critical`, `high`, `medium`, or `low`
+- optional `slo_target_percent` for service-level reports
 - at least one of `assets`, `domains`, or `runbooks`
 - optional `contacts`
 

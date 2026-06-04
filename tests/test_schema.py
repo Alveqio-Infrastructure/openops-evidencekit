@@ -32,6 +32,7 @@ from openops_evidence.schema import (
     validate_risk_register,
     validate_runbook_report,
     validate_scorecard,
+    validate_service_level_report,
     validate_service_catalog_report,
     validate_scope_report,
     validate_tls_report,
@@ -804,6 +805,8 @@ class SchemaTests(unittest.TestCase):
                     "scope_warnings": 0,
                     "drift_changes": 0,
                     "catalog_warnings": 0,
+                    "service_level_failures": 0,
+                    "service_level_warnings": 0,
                     "runbook_warnings": 0,
                 },
                 "highlights": ["One accepted risk needs expiry tracking."],
@@ -1213,6 +1216,42 @@ class SchemaTests(unittest.TestCase):
                     }
                 ],
                 "down_targets": [],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_service_level_report(self):
+        errors = validate_service_level_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "services_total": 1,
+                    "services_passed": 0,
+                    "services_warn": 1,
+                    "services_failed": 0,
+                    "services_missing_evidence": 1,
+                    "critical_services": 1,
+                    "high_services": 0,
+                },
+                "services": [
+                    {
+                        "id": "backup-platform",
+                        "name": "Backup repository",
+                        "owner": "backup",
+                        "criticality": "critical",
+                        "status": "warn",
+                        "evidence_status": "missing",
+                        "target_percent": 99.9,
+                        "observed_percent": None,
+                        "window": "",
+                        "error_budget_remaining_percent": None,
+                        "reason": "No service-level evidence was recorded for this service.",
+                        "recommended_action": "Add signals.monitoring.service_levels evidence for this service.",
+                    }
+                ],
             }
         )
         self.assertEqual(errors, [])

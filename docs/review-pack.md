@@ -33,6 +33,7 @@ audiences need:
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
 | `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
 | `service-catalog.json` / `service-catalog.md` / `service-catalog.csv` | Optional service ownership and evidence coverage report when `--catalog` is provided. |
+| `service-level-report.json` / `service-level-report.md` / `service-level-report.csv` | Optional service-level and SLO report when `--catalog` is provided. |
 | `runbook-report.json` / `runbook-report.md` / `runbook-report.csv` | Optional runbook coverage report when `--catalog` is provided. |
 | `policy-matrix.json` / `policy-matrix.md` / `policy-matrix.csv` | Coverage map for the policy that was evaluated. |
 | `policy-coverage.json` / `policy-coverage.md` / `policy-coverage.csv` | Evidence-domain coverage and gap analysis for the evaluated policy. |
@@ -53,6 +54,7 @@ work through `review-checklist.md`, inspect `quality-report.md`, inspect
 ```powershell
 python -m openops_evidence validate -i review-pack/quality-report.json -t quality-report
 python -m openops_evidence validate -i review-pack/completeness-report.json -t completeness-report
+python -m openops_evidence validate -i review-pack/service-level-report.json -t service-level-report
 python -m openops_evidence validate -i review-pack/review-checklist.json -t review-checklist
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
 python -m openops_evidence bundle verify review-pack/manifest.json --base-dir review-pack -o review-pack/verification.json

@@ -33,7 +33,21 @@
       "system": "prometheus",
       "targets": 12,
       "alert_channels": ["email", "matrix"],
-      "last_alert_test_at": "2026-05-25T08:15:00+00:00"
+      "last_alert_test_at": "2026-05-25T08:15:00+00:00",
+      "service_levels": [
+        {
+          "service_id": "public-web",
+          "uptime_percent": 99.82,
+          "window": "30d",
+          "error_budget_remaining_percent": 64.0
+        },
+        {
+          "service_id": "backup-platform",
+          "uptime_percent": 99.95,
+          "window": "30d",
+          "error_budget_remaining_percent": 78.5
+        }
+      ]
     },
     "access": {
       "ssh_public_exposed": false,
