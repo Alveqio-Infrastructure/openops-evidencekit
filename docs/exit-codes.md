@@ -24,6 +24,7 @@ and automation wrappers.
 - `evidence quality` returns `1` when quality checks fail, or when `--fail-on-warn` is set and warnings are found.
 - `evidence completeness --fail-on-missing` returns `1` when required policy evidence is missing.
 - `scope report --fail-on-warn` returns `1` when scope warnings are found.
+- `runtime report --fail-on-warn` returns `1` when runtime checks fail or warn.
 - `service-level report --fail-on-warn` returns `1` when service-level targets fail or SLO evidence warnings exist.
 - `review create --fail-on-gate` returns `1` when the generated gate fails.
 - `review create --fail-on-drift` returns `1` when an included evidence drift report warns.

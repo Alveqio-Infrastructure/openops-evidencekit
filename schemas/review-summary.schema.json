@@ -59,6 +59,8 @@
         "access_warnings",
         "monitoring_failures",
         "monitoring_warnings",
+        "runtime_failures",
+        "runtime_warnings",
         "incident_failures",
         "incident_warnings",
         "privacy_findings",
@@ -150,6 +152,14 @@
           "minimum": 0
         },
         "monitoring_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runtime_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runtime_warnings": {
           "type": "integer",
           "minimum": 0
         },

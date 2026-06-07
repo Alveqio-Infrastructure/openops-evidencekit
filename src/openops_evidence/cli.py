@@ -78,6 +78,7 @@ from .review import create_review_pack
 from .restore import create_restore_report, render_restore_csv, render_restore_markdown
 from .risk import create_risk_register, render_risk_register_csv, render_risk_register_markdown
 from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_markdown
+from .runtime import create_runtime_report, render_runtime_csv, render_runtime_markdown
 from .scaffold import create_evidence_scaffold
 from .schema import (
     validate_action_plan,
@@ -109,6 +110,7 @@ from .schema import (
     validate_review_summary,
     validate_restore_report,
     validate_risk_register,
+    validate_runtime_report,
     validate_runbook_report,
     validate_scorecard,
     validate_service_level_report,
@@ -378,6 +380,15 @@ def build_parser() -> argparse.ArgumentParser:
     monitoring_report.add_argument("-o", "--output", default="-")
     monitoring_report.set_defaults(func=cmd_monitoring_report)
 
+    runtime = sub.add_parser("runtime", help="Inspect Docker and systemd runtime evidence")
+    runtime_sub = runtime.add_subparsers(required=True)
+    runtime_report = runtime_sub.add_parser("report", help="Render runtime container and timer evidence")
+    runtime_report.add_argument("-i", "--input", required=True)
+    runtime_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    runtime_report.add_argument("--fail-on-warn", action="store_true")
+    runtime_report.add_argument("-o", "--output", default="-")
+    runtime_report.set_defaults(func=cmd_runtime_report)
+
     service_level = sub.add_parser("service-level", help="Inspect service-level and SLO evidence")
     service_level_sub = service_level.add_subparsers(required=True)
     service_level_report = service_level_sub.add_parser("report", help="Render service-level evidence from monitoring and catalog data")
@@ -604,6 +615,7 @@ def build_parser() -> argparse.ArgumentParser:
             "tls-report",
             "access-report",
             "monitoring-report",
+            "runtime-report",
             "service-level-report",
             "incident-report",
             "gate-result",
@@ -1070,6 +1082,24 @@ def cmd_monitoring_report(args: argparse.Namespace) -> int:
         rendered = render_monitoring_csv(report)
     else:
         rendered = render_monitoring_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
+def cmd_runtime_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    report = create_runtime_report(evidence)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_runtime_csv(report)
+    else:
+        rendered = render_runtime_markdown(report)
     write_text(args.output, rendered)
     if args.fail_on_warn and report["summary"]["status"] != "pass":
         return 1
@@ -1680,6 +1710,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_access_report(document)
     elif args.type == "monitoring-report":
         errors = validate_monitoring_report(document)
+    elif args.type == "runtime-report":
+        errors = validate_runtime_report(document)
     elif args.type == "service-level-report":
         errors = validate_service_level_report(document)
     elif args.type == "incident-report":

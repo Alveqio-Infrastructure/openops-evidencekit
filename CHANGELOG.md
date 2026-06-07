@@ -58,6 +58,7 @@
 - Add evidence quality reports for input hygiene checks.
 - Add evidence completeness reports for missing policy evidence paths.
 - Add service-level reports for SLO and availability evidence by service.
+- Add runtime reports for Docker containers and systemd timers.
 - Add SVG trend rendering for readiness report history.
 - Add optional ZIP archive creation to review pack generation.
 - Add browser-friendly HTML index pages to review packs.

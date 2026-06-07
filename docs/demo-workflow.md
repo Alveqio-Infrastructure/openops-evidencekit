@@ -58,6 +58,9 @@ python -m openops_evidence access report -i evidence.redacted.json -o access-rep
 python -m openops_evidence monitoring report -i evidence.redacted.json -f json -o monitoring-report.json
 python -m openops_evidence validate -i monitoring-report.json -t monitoring-report
 python -m openops_evidence monitoring report -i evidence.redacted.json -o monitoring-report.md
+python -m openops_evidence runtime report -i evidence.redacted.json -f json -o runtime-report.json
+python -m openops_evidence validate -i runtime-report.json -t runtime-report
+python -m openops_evidence runtime report -i evidence.redacted.json -o runtime-report.md
 python -m openops_evidence incident report -i evidence.redacted.json -c examples/service-catalog.sample.toml -f json -o incident-report.json
 python -m openops_evidence validate -i incident-report.json -t incident-report
 python -m openops_evidence incident report -i evidence.redacted.json -c examples/service-catalog.sample.toml -o incident-report.md
@@ -120,6 +123,7 @@ python -m openops_evidence validate -i review-pack/mail-report.json -t mail-repo
 python -m openops_evidence validate -i review-pack/tls-report.json -t tls-report
 python -m openops_evidence validate -i review-pack/access-report.json -t access-report
 python -m openops_evidence validate -i review-pack/monitoring-report.json -t monitoring-report
+python -m openops_evidence validate -i review-pack/runtime-report.json -t runtime-report
 python -m openops_evidence validate -i review-pack/service-level-report.json -t service-level-report
 python -m openops_evidence validate -i review-pack/incident-report.json -t incident-report
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle
@@ -130,7 +134,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
 python -m openops_evidence ticket export -i action-plan.json -o action-tickets
-python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json quality-report.json completeness-report.json freshness-report.json restore-report.json mail-report.json tls-report.json access-report.json monitoring-report.json service-level-report.json incident-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json quality-report.json completeness-report.json freshness-report.json restore-report.json mail-report.json tls-report.json access-report.json monitoring-report.json runtime-report.json service-level-report.json incident-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification

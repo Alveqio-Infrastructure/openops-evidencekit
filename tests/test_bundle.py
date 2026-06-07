@@ -211,6 +211,7 @@ class BundleTests(unittest.TestCase):
             tls_report = temp / "tls-report.json"
             access_report = temp / "access-report.json"
             monitoring_report = temp / "monitoring-report.json"
+            runtime_report = temp / "runtime-report.json"
             service_level_report = temp / "service-level-report.json"
             incident_report = temp / "incident-report.json"
             scorecard = temp / "scorecard.json"
@@ -528,6 +529,8 @@ class BundleTests(unittest.TestCase):
                             "access_warnings": 0,
                             "monitoring_failures": 0,
                             "monitoring_warnings": 0,
+                            "runtime_failures": 0,
+                            "runtime_warnings": 0,
                             "incident_failures": 0,
                             "incident_warnings": 0,
                             "privacy_findings": 0,
@@ -761,6 +764,44 @@ class BundleTests(unittest.TestCase):
                             }
                         ],
                         "down_targets": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            runtime_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "containers_total": 2,
+                            "containers_running": 2,
+                            "containers_exited": 0,
+                            "restart_policy_missing_count": 0,
+                            "timers_total": 2,
+                            "timers_active": 2,
+                            "timers_failed": 0,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "runtime_signal_present",
+                                "title": "Runtime signal is present",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals.runtime",
+                                "reason": "Runtime evidence is present.",
+                                "recommended_action": "Keep runtime evidence current.",
+                            }
+                        ],
+                        "exited_containers": [],
+                        "restart_policy_missing": [],
+                        "failed_timers": [],
                     }
                 ),
                 encoding="utf-8",
@@ -1312,6 +1353,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(tls_report), "tls-report")
             self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(monitoring_report), "monitoring-report")
+            self.assertEqual(classify_artifact(runtime_report), "runtime-report")
             self.assertEqual(classify_artifact(service_level_report), "service-level-report")
             self.assertEqual(classify_artifact(incident_report), "incident-report")
             self.assertEqual(classify_artifact(scorecard), "scorecard")

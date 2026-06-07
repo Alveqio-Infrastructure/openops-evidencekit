@@ -88,6 +88,32 @@ class ReviewSummaryTests(unittest.TestCase):
         self.assertEqual(summary["metrics"]["monitoring_failures"], 1)
         self.assertIn("monitoring checks failed", summary["decision"]["reason"])
 
+    def test_review_summary_blocks_on_runtime_failures(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            runtime_report={"summary": {"checks_failed": 1, "checks_warn": 0}},
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "fail")
+        self.assertEqual(summary["metrics"]["runtime_failures"], 1)
+        self.assertIn("runtime checks failed", summary["decision"]["reason"])
+
+    def test_review_summary_warns_on_runtime_warnings(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            runtime_report={"summary": {"checks_failed": 0, "checks_warn": 2}},
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "warn")
+        self.assertEqual(summary["metrics"]["runtime_warnings"], 2)
+        self.assertIn("runtime warnings exist", summary["decision"]["reason"])
+
     def test_review_summary_blocks_on_incident_failures(self):
         summary = create_review_summary(
             report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},

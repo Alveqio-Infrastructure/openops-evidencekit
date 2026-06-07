@@ -37,6 +37,7 @@ from .schema import (
     validate_review_summary,
     validate_restore_report,
     validate_risk_register,
+    validate_runtime_report,
     validate_runbook_report,
     validate_scorecard,
     validate_service_level_report,
@@ -306,6 +307,8 @@ def classify_artifact(path: Path) -> str:
             return "access-report"
         if validate_monitoring_report(document) == []:
             return "monitoring-report"
+        if validate_runtime_report(document) == []:
+            return "runtime-report"
         if validate_service_level_report(document) == []:
             return "service-level-report"
         if validate_incident_report(document) == []:

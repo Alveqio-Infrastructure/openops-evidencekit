@@ -437,6 +437,8 @@ def validate_review_summary(document: Any) -> list[str]:
             "access_warnings",
             "monitoring_failures",
             "monitoring_warnings",
+            "runtime_failures",
+            "runtime_warnings",
             "incident_failures",
             "incident_warnings",
             "privacy_findings",
@@ -1246,6 +1248,38 @@ def validate_monitoring_report(document: Any) -> list[str]:
         _require_string(target, "target", errors, prefix=prefix)
         _require_string(target, "status", errors, prefix=prefix)
         _require_string_type(target, "reason", errors, prefix=prefix)
+    return errors
+
+
+def validate_runtime_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Runtime report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    _require_list(document, "exited_containers", errors)
+    _require_list(document, "restart_policy_missing", errors)
+    _require_list(document, "failed_timers", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in (
+            "restart_policy_missing_count",
+            "timers_failed",
+            "checks_total",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+        for key in ("containers_total", "containers_running", "containers_exited", "timers_total", "timers_active"):
+            if summary.get(key) is not None:
+                _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        _validate_operational_check(check, errors, f"checks[{index}].")
     return errors
 
 

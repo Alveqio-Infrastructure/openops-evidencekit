@@ -30,6 +30,7 @@ from openops_evidence.schema import (
     validate_review_summary,
     validate_restore_report,
     validate_risk_register,
+    validate_runtime_report,
     validate_runbook_report,
     validate_scorecard,
     validate_service_level_report,
@@ -795,6 +796,8 @@ class SchemaTests(unittest.TestCase):
                     "access_warnings": 0,
                     "monitoring_failures": 0,
                     "monitoring_warnings": 0,
+                    "runtime_failures": 0,
+                    "runtime_warnings": 0,
                     "incident_failures": 0,
                     "incident_warnings": 0,
                     "privacy_findings": 0,
@@ -1216,6 +1219,44 @@ class SchemaTests(unittest.TestCase):
                     }
                 ],
                 "down_targets": [],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_runtime_report(self):
+        errors = validate_runtime_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "containers_total": 2,
+                    "containers_running": 2,
+                    "containers_exited": 0,
+                    "restart_policy_missing_count": 0,
+                    "timers_total": 2,
+                    "timers_active": 2,
+                    "timers_failed": 0,
+                    "checks_total": 1,
+                    "checks_passed": 1,
+                    "checks_warn": 0,
+                    "checks_failed": 0,
+                },
+                "checks": [
+                    {
+                        "id": "runtime_signal_present",
+                        "title": "Runtime signal is present",
+                        "status": "pass",
+                        "severity": "critical",
+                        "path": "signals.runtime",
+                        "reason": "Runtime evidence is present.",
+                        "recommended_action": "Keep runtime evidence current.",
+                    }
+                ],
+                "exited_containers": [],
+                "restart_policy_missing": [],
+                "failed_timers": [],
             }
         )
         self.assertEqual(errors, [])

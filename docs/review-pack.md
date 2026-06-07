@@ -29,6 +29,7 @@ audiences need:
 | `tls-report.json` / `tls-report.md` / `tls-report.csv` | Optional TLS certificate expiry report when TLS evidence or policy paths exist. |
 | `access-report.json` / `access-report.md` / `access-report.csv` | Optional public SSH, MFA, and admin entrypoint report when access evidence or policy paths exist. |
 | `monitoring-report.json` / `monitoring-report.md` / `monitoring-report.csv` | Optional monitoring target, down target, alert channel, and alert-test report when monitoring evidence or policy paths exist. |
+| `runtime-report.json` / `runtime-report.md` / `runtime-report.csv` | Optional Docker and systemd runtime report when runtime evidence or policy paths exist. |
 | `incident-report.json` / `incident-report.md` / `incident-report.csv` | Optional incident readiness report when `--catalog` is provided or incident policy paths exist. |
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
 | `scope-report.json` / `scope-report.md` / `scope-report.csv` | Optional scope boundary report when `--scope` is provided. |
@@ -54,6 +55,7 @@ work through `review-checklist.md`, inspect `quality-report.md`, inspect
 ```powershell
 python -m openops_evidence validate -i review-pack/quality-report.json -t quality-report
 python -m openops_evidence validate -i review-pack/completeness-report.json -t completeness-report
+python -m openops_evidence validate -i review-pack/runtime-report.json -t runtime-report
 python -m openops_evidence validate -i review-pack/service-level-report.json -t service-level-report
 python -m openops_evidence validate -i review-pack/review-checklist.json -t review-checklist
 python -m openops_evidence validate -i review-pack/manifest.json -t bundle

@@ -39,7 +39,7 @@ domain scorecards, tickets, and signed evidence bundles.
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
 risk registers, restore assurance reports, mail domain reports, TLS certificate
-reports, access exposure reports, monitoring reports, service-level reports, incident readiness
+reports, access exposure reports, monitoring reports, runtime reports, service-level reports, incident readiness
 reports, plus review packs with one-page summaries, manifests, and
 attestations.
 
@@ -181,6 +181,8 @@ python -m openops_evidence collect systemd-timers systemd.timers.json -o systemd
 
 docker ps -a --format '{{json .}}' > docker.containers.jsonl
 python -m openops_evidence collect docker-containers docker.containers.jsonl -o docker.evidence.json
+python -m openops_evidence merge systemd.evidence.json docker.evidence.json -o runtime.evidence.json
+python -m openops_evidence runtime report -i runtime.evidence.json -o runtime-report.md
 ```
 
 Collect documentation inventory and runbook evidence:
@@ -248,6 +250,8 @@ Use `access report` when public SSH, MFA, and administrative entrypoints should
 be reviewed as a standalone access exposure artifact.
 Use `service-level report` when service owners need uptime, SLO target, and
 error-budget evidence tied to the service catalog.
+Use `runtime report` when Docker containers, restart policies, and systemd
+timers should become a standalone runtime operations artifact.
 Use `scope report` when the assessment needs explicit in-scope, out-of-scope,
 missing, and unclassified evidence boundaries.
 Use `catalog report` when service ownership, criticality, assets, evidence
@@ -284,6 +288,7 @@ Mail domain reports are described in [docs/mail-report.md](docs/mail-report.md).
 TLS certificate reports are described in [docs/tls-report.md](docs/tls-report.md).
 Access exposure reports are described in [docs/access-report.md](docs/access-report.md).
 Monitoring reports are described in [docs/monitoring-report.md](docs/monitoring-report.md).
+Runtime reports are described in [docs/runtime-report.md](docs/runtime-report.md).
 Service-level reports are described in [docs/service-level-report.md](docs/service-level-report.md).
 Incident readiness reports are described in [docs/incident-report.md](docs/incident-report.md).
 Scope reports are described in [docs/scope-report.md](docs/scope-report.md).

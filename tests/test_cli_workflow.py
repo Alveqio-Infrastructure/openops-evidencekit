@@ -58,6 +58,8 @@ class CliWorkflowTests(unittest.TestCase):
             temp = Path(temp_dir)
             evidence = temp / "evidence.json"
             restic = temp / "restic.json"
+            systemd = temp / "systemd.json"
+            docker = temp / "docker.json"
             merged = temp / "merged.json"
             inventory = temp / "inventory.json"
             inventory_markdown = temp / "inventory.md"
@@ -79,6 +81,8 @@ class CliWorkflowTests(unittest.TestCase):
             access_markdown = temp / "access-report.md"
             monitoring_report = temp / "monitoring-report.json"
             monitoring_markdown = temp / "monitoring-report.md"
+            runtime_report = temp / "runtime-report.json"
+            runtime_markdown = temp / "runtime-report.md"
             service_level_report = temp / "service-level-report.json"
             service_level_markdown = temp / "service-level-report.md"
             incident_report = temp / "incident-report.json"
@@ -132,7 +136,31 @@ class CliWorkflowTests(unittest.TestCase):
                 ),
                 0,
             )
-            self.assertEqual(main(["merge", str(evidence), str(restic), "-o", str(merged)]), 0)
+            self.assertEqual(
+                main(
+                    [
+                        "collect",
+                        "systemd-timers",
+                        str(ROOT / "examples" / "systemd.timers.sample.json"),
+                        "-o",
+                        str(systemd),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(
+                main(
+                    [
+                        "collect",
+                        "docker-containers",
+                        str(ROOT / "examples" / "docker.containers.sample.jsonl"),
+                        "-o",
+                        str(docker),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(main(["merge", str(evidence), str(restic), str(systemd), str(docker), "-o", str(merged)]), 0)
             self.assertEqual(main(["validate", "-i", str(merged)]), 0)
             self.assertEqual(main(["inventory", "evidence", "-i", str(merged), "-f", "json", "-o", str(inventory)]), 0)
             self.assertEqual(main(["validate", "-i", str(inventory), "-t", "inventory"]), 0)
@@ -334,6 +362,9 @@ class CliWorkflowTests(unittest.TestCase):
             )
             self.assertEqual(main(["validate", "-i", str(monitoring_report), "-t", "monitoring-report"]), 0)
             self.assertEqual(main(["monitoring", "report", "-i", str(merged), "-o", str(monitoring_markdown)]), 0)
+            self.assertEqual(main(["runtime", "report", "-i", str(merged), "-f", "json", "-o", str(runtime_report)]), 0)
+            self.assertEqual(main(["validate", "-i", str(runtime_report), "-t", "runtime-report"]), 0)
+            self.assertEqual(main(["runtime", "report", "-i", str(merged), "-o", str(runtime_markdown)]), 0)
             self.assertEqual(
                 main(
                     [
@@ -576,6 +607,7 @@ class CliWorkflowTests(unittest.TestCase):
                         str(tls_report),
                         str(access_report),
                         str(monitoring_report),
+                        str(runtime_report),
                         str(service_level_report),
                         str(incident_report),
                         str(evidence_drift),
@@ -688,6 +720,7 @@ class CliWorkflowTests(unittest.TestCase):
             tls_data = json.loads(tls_report.read_text(encoding="utf-8"))
             access_data = json.loads(access_report.read_text(encoding="utf-8"))
             monitoring_data = json.loads(monitoring_report.read_text(encoding="utf-8"))
+            runtime_data = json.loads(runtime_report.read_text(encoding="utf-8"))
             service_level_data = json.loads(service_level_report.read_text(encoding="utf-8"))
             incident_data = json.loads(incident_report.read_text(encoding="utf-8"))
             evidence_drift_data = json.loads(evidence_drift.read_text(encoding="utf-8"))
@@ -718,6 +751,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(tls_data["summary"]["status"], "pass")
             self.assertEqual(access_data["summary"]["status"], "pass")
             self.assertEqual(monitoring_data["summary"]["status"], "pass")
+            self.assertEqual(runtime_data["summary"]["status"], "warn")
             self.assertEqual(service_level_data["summary"]["status"], "warn")
             self.assertEqual(incident_data["summary"]["status"], "fail")
             self.assertEqual(evidence_drift_data["summary"]["status"], "warn")
@@ -728,9 +762,9 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertEqual(risk_register_data["summary"]["status"], "pass")
             self.assertEqual(scorecard_data["summary"]["domains_total"], 6)
             self.assertEqual(history_data["summary"]["latest_score"], 100)
-            self.assertEqual(manifest_data["metadata"]["artifact_count"], 27)
+            self.assertEqual(manifest_data["metadata"]["artifact_count"], 28)
             self.assertEqual(attestation_data["summary"]["status"], "warn")
-            self.assertEqual(attestation_data["manifest"]["artifact_count"], 27)
+            self.assertEqual(attestation_data["manifest"]["artifact_count"], 28)
             self.assertEqual(verification_data["summary"]["status"], "pass")
             self.assertTrue(archive.is_file())
             self.assertEqual(signature_data["metadata"]["key_id"], "test-key")
@@ -745,6 +779,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("# OpenOps Executive Brief", brief_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Risk Register", risk_register_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Monitoring Report", monitoring_markdown.read_text(encoding="utf-8"))
+            self.assertIn("# OpenOps Runtime Report", runtime_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Service Level Report", service_level_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Incident Readiness Report", incident_markdown.read_text(encoding="utf-8"))
             self.assertIn("# OpenOps Domain Scorecard", scorecard_markdown.read_text(encoding="utf-8"))
