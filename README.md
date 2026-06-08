@@ -14,6 +14,7 @@ answers to practical readiness questions:
 - Are monitoring targets and alert channels present?
 - Are administrative entry points protected?
 - Are public ports intentional and reviewed?
+- Is the firewall active and default-deny?
 - Are security updates pending or reboots required?
 - Are TLS, mail, inventory, and runbook basics documented?
 - Can evidence be shared without leaking secrets or customer data?
@@ -41,7 +42,7 @@ domain scorecards, tickets, and signed evidence bundles.
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
 risk registers, restore assurance reports, mail domain reports, TLS certificate
-reports, access exposure reports, monitoring reports, exposure reports, patch reports, runtime reports, service-level reports, incident readiness
+reports, access exposure reports, monitoring reports, exposure reports, firewall reports, patch reports, runtime reports, service-level reports, incident readiness
 reports, plus review packs with one-page summaries, manifests, and
 attestations.
 
@@ -183,6 +184,14 @@ python -m openops_evidence collect nmap-xml nmap.xml -o exposure.evidence.json
 python -m openops_evidence exposure report -i exposure.evidence.json -o exposure-report.md
 ```
 
+Import UFW firewall status:
+
+```powershell
+ufw status verbose > ufw.status.txt
+python -m openops_evidence collect ufw-status ufw.status.txt -o firewall.evidence.json
+python -m openops_evidence firewall report -i firewall.evidence.json -o firewall-report.md
+```
+
 Import apt package update evidence:
 
 ```powershell
@@ -268,6 +277,8 @@ Use `access report` when public SSH, MFA, and administrative entrypoints should
 be reviewed as a standalone access exposure artifact.
 Use `exposure report` when Nmap scan evidence should become a standalone open
 port and risky public service artifact.
+Use `firewall report` when firewall status, default incoming policy, and public
+administrative allow rules should become a standalone firewall artifact.
 Use `patch report` when package update, security update, and reboot evidence
 should become a standalone maintenance artifact.
 Use `service-level report` when service owners need uptime, SLO target, and
@@ -311,6 +322,7 @@ TLS certificate reports are described in [docs/tls-report.md](docs/tls-report.md
 Access exposure reports are described in [docs/access-report.md](docs/access-report.md).
 Monitoring reports are described in [docs/monitoring-report.md](docs/monitoring-report.md).
 Exposure reports are described in [docs/exposure-report.md](docs/exposure-report.md).
+Firewall reports are described in [docs/firewall-report.md](docs/firewall-report.md).
 Patch reports are described in [docs/patch-report.md](docs/patch-report.md).
 Runtime reports are described in [docs/runtime-report.md](docs/runtime-report.md).
 Service-level reports are described in [docs/service-level-report.md](docs/service-level-report.md).

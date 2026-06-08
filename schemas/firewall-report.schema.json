@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/firewall-report.schema.json",
+  "title": "OpenOps Firewall Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "checks", "rules", "public_admin_rules"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["status", "source", "firewall_status", "default_incoming", "rules_total", "public_admin_rules_total", "checks_total", "checks_passed", "checks_warn", "checks_failed"],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "source": {
+          "type": "string"
+        },
+        "firewall_status": {
+          "type": "string"
+        },
+        "default_incoming": {
+          "type": "string"
+        },
+        "rules_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "public_admin_rules_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_failed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operational_check"
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/firewall_rule"
+      }
+    },
+    "public_admin_rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/firewall_rule"
+      }
+    }
+  },
+  "$defs": {
+    "operational_check": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "status", "severity", "path", "reason", "recommended_action"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "severity": {
+          "enum": ["info", "low", "medium", "high", "critical"]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string"
+        },
+        "recommended_action": {
+          "type": "string"
+        }
+      }
+    },
+    "firewall_rule": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "to", "action", "from", "public_admin"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "public_admin": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

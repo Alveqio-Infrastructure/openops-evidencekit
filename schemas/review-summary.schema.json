@@ -62,6 +62,9 @@
         "exposure_failures",
         "exposure_warnings",
         "risky_ports",
+        "firewall_failures",
+        "firewall_warnings",
+        "public_admin_rules",
         "patch_failures",
         "patch_warnings",
         "security_updates",
@@ -170,6 +173,18 @@
           "minimum": 0
         },
         "risky_ports": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "firewall_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "firewall_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "public_admin_rules": {
           "type": "integer",
           "minimum": 0
         },

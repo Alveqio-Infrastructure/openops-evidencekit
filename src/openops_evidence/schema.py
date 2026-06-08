@@ -440,6 +440,9 @@ def validate_review_summary(document: Any) -> list[str]:
             "exposure_failures",
             "exposure_warnings",
             "risky_ports",
+            "firewall_failures",
+            "firewall_warnings",
+            "public_admin_rules",
             "patch_failures",
             "patch_warnings",
             "security_updates",
@@ -1298,6 +1301,41 @@ def validate_exposure_report(document: Any) -> list[str]:
             _require_string_type(port, "service", errors, prefix=prefix)
             _require_enum(port, "risk", {"review", "risky"}, errors, prefix=prefix)
             _require_string_type(port, "reason", errors, prefix=prefix)
+    return errors
+
+
+def validate_firewall_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Firewall report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    _require_list(document, "rules", errors)
+    _require_list(document, "public_admin_rules", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in ("source", "firewall_status", "default_incoming"):
+            _require_string_type(summary, key, errors, prefix="summary.")
+        for key in ("rules_total", "public_admin_rules_total", "checks_total", "checks_passed", "checks_warn", "checks_failed"):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        _validate_operational_check(check, errors, f"checks[{index}].")
+    for collection_name in ("rules", "public_admin_rules"):
+        for index, rule in enumerate(document.get(collection_name, [])):
+            if not isinstance(rule, dict):
+                errors.append(f"{collection_name}[{index}] must be an object.")
+                continue
+            prefix = f"{collection_name}[{index}]."
+            _require_string(rule, "id", errors, prefix=prefix)
+            _require_string_type(rule, "to", errors, prefix=prefix)
+            _require_string_type(rule, "action", errors, prefix=prefix)
+            _require_string_type(rule, "from", errors, prefix=prefix)
+            if not isinstance(rule.get("public_admin"), bool):
+                errors.append(f"{prefix}public_admin must be a boolean.")
     return errors
 
 

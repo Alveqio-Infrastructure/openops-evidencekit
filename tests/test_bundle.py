@@ -212,6 +212,7 @@ class BundleTests(unittest.TestCase):
             access_report = temp / "access-report.json"
             monitoring_report = temp / "monitoring-report.json"
             exposure_report = temp / "exposure-report.json"
+            firewall_report = temp / "firewall-report.json"
             patch_report = temp / "patch-report.json"
             runtime_report = temp / "runtime-report.json"
             service_level_report = temp / "service-level-report.json"
@@ -534,6 +535,9 @@ class BundleTests(unittest.TestCase):
                             "exposure_failures": 0,
                             "exposure_warnings": 0,
                             "risky_ports": 0,
+                            "firewall_failures": 0,
+                            "firewall_warnings": 0,
+                            "public_admin_rules": 0,
                             "patch_failures": 0,
                             "patch_warnings": 0,
                             "security_updates": 0,
@@ -806,6 +810,41 @@ class BundleTests(unittest.TestCase):
                         ],
                         "open_ports": [],
                         "risky_ports": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            firewall_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "source": "ufw",
+                            "firewall_status": "active",
+                            "default_incoming": "deny",
+                            "rules_total": 0,
+                            "public_admin_rules_total": 0,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "firewall_active",
+                                "title": "Firewall is active",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals.firewall.status",
+                                "reason": "Firewall status is active.",
+                                "recommended_action": "Keep firewall evidence current.",
+                            }
+                        ],
+                        "rules": [],
+                        "public_admin_rules": [],
                     }
                 ),
                 encoding="utf-8",
@@ -1430,6 +1469,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(monitoring_report), "monitoring-report")
             self.assertEqual(classify_artifact(exposure_report), "exposure-report")
+            self.assertEqual(classify_artifact(firewall_report), "firewall-report")
             self.assertEqual(classify_artifact(patch_report), "patch-report")
             self.assertEqual(classify_artifact(runtime_report), "runtime-report")
             self.assertEqual(classify_artifact(service_level_report), "service-level-report")

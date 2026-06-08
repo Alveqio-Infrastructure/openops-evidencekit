@@ -20,6 +20,7 @@ Integrations should collect facts, not secrets.
 | Monitoring | Prometheus | target count, up/down target count, down target list |
 | Monitoring | Uptime Kuma | monitor count, enabled target count, alert channel references |
 | Exposure | Nmap XML | hosts, open ports, service names, risky public services |
+| Firewall | UFW | status, default incoming policy, allow rules |
 | Patching | apt | pending packages, security updates |
 | Runtime | systemd | enabled timers, failed units |
 | Runtime | Docker | running containers, restart policies |
@@ -44,6 +45,7 @@ produces the common CI artifacts below.
 | Access exposure | `openops-evidence access report -i evidence.json -o access-report.md` | Show public SSH, MFA, and admin entrypoint evidence before review. |
 | Monitoring report | `openops-evidence monitoring report -i evidence.json -o monitoring-report.md` | Show target health, down targets, alert channels, and alert-test freshness before review. |
 | Exposure report | `openops-evidence exposure report -i evidence.json -o exposure-report.md` | Show open ports and risky public services before review. |
+| Firewall report | `openops-evidence firewall report -i evidence.json -o firewall-report.md` | Show firewall status, default policy, and public administrative allow rules before review. |
 | Patch report | `openops-evidence patch report -i evidence.json -o patch-report.md` | Show pending package updates, security updates, and reboot state before review. |
 | Runtime report | `openops-evidence runtime report -i evidence.json -o runtime-report.md` | Show stopped containers, missing restart policies, and failed systemd timers. |
 | Service-level report | `openops-evidence service-level report -i evidence.json -c service-catalog.toml -o service-level-report.md` | Show per-service SLO targets, observed availability, and missing service-level evidence. |

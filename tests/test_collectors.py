@@ -14,6 +14,7 @@ from openops_evidence.collectors import (
     collect_restic_snapshots,
     collect_systemd_timers,
     collect_uptime_kuma_export,
+    collect_ufw_status,
 )
 
 
@@ -142,6 +143,29 @@ curl/jammy-updates 7.81.0-1ubuntu1.21 amd64 [upgradable from: 7.81.0-1ubuntu1.20
         self.assertEqual(patch["updates_total"], 2)
         self.assertEqual(patch["security_updates_total"], 1)
         self.assertEqual(patch["security_packages"], ["openssl"])
+
+    def test_collect_ufw_status(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "ufw.txt"
+            path.write_text(
+                """
+Status: active
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW       Anywhere
+443/tcp                    ALLOW       Anywhere
+Default: deny (incoming), allow (outgoing), disabled (routed)
+""".strip(),
+                encoding="utf-8",
+            )
+            evidence = collect_ufw_status(str(path))
+        firewall = evidence["signals"]["firewall"]
+        self.assertEqual(firewall["source"], "ufw")
+        self.assertEqual(firewall["status"], "active")
+        self.assertEqual(firewall["default_incoming"], "deny")
+        self.assertEqual(firewall["rules_total"], 2)
+        self.assertEqual(firewall["public_admin_rules"], ["22/tcp ALLOW Anywhere"])
 
     def test_collect_systemd_timers(self):
         with tempfile.TemporaryDirectory() as temp_dir:

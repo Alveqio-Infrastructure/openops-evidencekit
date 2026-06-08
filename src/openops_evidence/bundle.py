@@ -20,6 +20,7 @@ from .schema import (
     validate_evidence,
     validate_evidence_drift,
     validate_exposure_report,
+    validate_firewall_report,
     validate_executive_brief,
     validate_freshness_report,
     validate_gate_result,
@@ -311,6 +312,8 @@ def classify_artifact(path: Path) -> str:
             return "monitoring-report"
         if validate_exposure_report(document) == []:
             return "exposure-report"
+        if validate_firewall_report(document) == []:
+            return "firewall-report"
         if validate_patch_report(document) == []:
             return "patch-report"
         if validate_runtime_report(document) == []:

@@ -42,10 +42,12 @@ from .collectors import (
     collect_systemd_timers,
     collect_tls,
     collect_uptime_kuma_export,
+    collect_ufw_status,
 )
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .exposure import create_exposure_report, render_exposure_csv, render_exposure_markdown
+from .firewall import create_firewall_report, render_firewall_csv, render_firewall_markdown
 from .freshness import create_freshness_report, render_freshness_csv, render_freshness_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .history import append_report_history, render_history_csv, render_history_markdown, render_history_svg
@@ -95,6 +97,7 @@ from .schema import (
     validate_evidence,
     validate_evidence_drift,
     validate_exposure_report,
+    validate_firewall_report,
     validate_executive_brief,
     validate_freshness_report,
     validate_gate_result,
@@ -182,6 +185,10 @@ def build_parser() -> argparse.ArgumentParser:
     apt.add_argument("path")
     apt.add_argument("-o", "--output", default="-")
     apt.set_defaults(func=cmd_collect_apt)
+    ufw = collect_sub.add_parser("ufw-status", help="Collect firewall evidence from ufw status output")
+    ufw.add_argument("path")
+    ufw.add_argument("-o", "--output", default="-")
+    ufw.set_defaults(func=cmd_collect_ufw)
     nmap = collect_sub.add_parser("nmap-xml", help="Collect exposure evidence from Nmap XML output")
     nmap.add_argument("path")
     nmap.add_argument("-o", "--output", default="-")
@@ -411,6 +418,15 @@ def build_parser() -> argparse.ArgumentParser:
     patch_report.add_argument("--fail-on-warn", action="store_true")
     patch_report.add_argument("-o", "--output", default="-")
     patch_report.set_defaults(func=cmd_patch_report)
+
+    firewall = sub.add_parser("firewall", help="Inspect firewall policy and rule evidence")
+    firewall_sub = firewall.add_subparsers(required=True)
+    firewall_report = firewall_sub.add_parser("report", help="Render firewall status and rule evidence")
+    firewall_report.add_argument("-i", "--input", required=True)
+    firewall_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    firewall_report.add_argument("--fail-on-warn", action="store_true")
+    firewall_report.add_argument("-o", "--output", default="-")
+    firewall_report.set_defaults(func=cmd_firewall_report)
 
     runtime = sub.add_parser("runtime", help="Inspect Docker and systemd runtime evidence")
     runtime_sub = runtime.add_subparsers(required=True)
@@ -648,6 +664,7 @@ def build_parser() -> argparse.ArgumentParser:
             "access-report",
             "monitoring-report",
             "exposure-report",
+            "firewall-report",
             "patch-report",
             "runtime-report",
             "service-level-report",
@@ -746,6 +763,11 @@ def cmd_collect_prometheus(args: argparse.Namespace) -> int:
 
 def cmd_collect_apt(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(collect_apt_upgrades(args.path)))
+    return 0
+
+
+def cmd_collect_ufw(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_ufw_status(args.path)))
     return 0
 
 
@@ -1162,6 +1184,24 @@ def cmd_patch_report(args: argparse.Namespace) -> int:
         rendered = render_patch_csv(report)
     else:
         rendered = render_patch_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
+def cmd_firewall_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    report = create_firewall_report(evidence)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_firewall_csv(report)
+    else:
+        rendered = render_firewall_markdown(report)
     write_text(args.output, rendered)
     if args.fail_on_warn and report["summary"]["status"] != "pass":
         return 1
@@ -1792,6 +1832,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_monitoring_report(document)
     elif args.type == "exposure-report":
         errors = validate_exposure_report(document)
+    elif args.type == "firewall-report":
+        errors = validate_firewall_report(document)
     elif args.type == "patch-report":
         errors = validate_patch_report(document)
     elif args.type == "runtime-report":

@@ -32,6 +32,7 @@ class CliWorkflowTests(unittest.TestCase):
             self.assertIn("openops-evidence access report", workflow_text)
             self.assertIn("openops-evidence monitoring report", workflow_text)
             self.assertIn("openops-evidence exposure report", workflow_text)
+            self.assertIn("openops-evidence firewall report", workflow_text)
             self.assertIn("openops-evidence patch report", workflow_text)
             self.assertIn("openops-evidence incident report", workflow_text)
             self.assertIn("openops-evidence questionnaire policy", workflow_text)

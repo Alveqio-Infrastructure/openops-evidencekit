@@ -20,6 +20,7 @@ from .completeness import create_completeness_report, render_completeness_csv, r
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .exposure import create_exposure_report, render_exposure_csv, render_exposure_markdown
+from .firewall import create_firewall_report, render_firewall_csv, render_firewall_markdown
 from .freshness import create_freshness_report, render_freshness_csv, render_freshness_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .incident import create_incident_report, render_incident_csv, render_incident_markdown
@@ -95,6 +96,7 @@ def create_review_pack(
     access_report = create_access_report(evidence) if _has_access_context(evidence, checks) else None
     monitoring_report = create_monitoring_report(evidence) if _has_monitoring_context(evidence, checks) else None
     exposure_report = create_exposure_report(evidence) if _has_exposure_context(evidence, checks) else None
+    firewall_report = create_firewall_report(evidence) if _has_firewall_context(evidence, checks) else None
     patch_report = create_patch_report(evidence) if _has_patch_context(evidence, checks) else None
     runtime_report = create_runtime_report(evidence) if _has_runtime_context(evidence, checks) else None
     incident_report = create_incident_report(evidence, catalog_document=catalog_document) if _has_incident_context(evidence, catalog_document, checks) else None
@@ -167,6 +169,10 @@ def create_review_pack(
         add_artifact("exposure-report.json", dump_json(exposure_report), "Exposure report", "Machine-readable open port and risky service report.")
         add_artifact("exposure-report.md", render_exposure_markdown(exposure_report), "Exposure report", "Human-readable open port and risky service report.")
         add_artifact("exposure-report.csv", render_exposure_csv(exposure_report), "Exposure report", "Spreadsheet-friendly exposure report.")
+    if firewall_report is not None:
+        add_artifact("firewall-report.json", dump_json(firewall_report), "Firewall report", "Machine-readable firewall status and rules report.")
+        add_artifact("firewall-report.md", render_firewall_markdown(firewall_report), "Firewall report", "Human-readable firewall status and rules report.")
+        add_artifact("firewall-report.csv", render_firewall_csv(firewall_report), "Firewall report", "Spreadsheet-friendly firewall report.")
     if patch_report is not None:
         add_artifact("patch-report.json", dump_json(patch_report), "Patch report", "Machine-readable package update and reboot report.")
         add_artifact("patch-report.md", render_patch_markdown(patch_report), "Patch report", "Human-readable package update and reboot report.")
@@ -276,6 +282,7 @@ def create_review_pack(
         access_report=access_report,
         monitoring_report=monitoring_report,
         exposure_report=exposure_report,
+        firewall_report=firewall_report,
         patch_report=patch_report,
         runtime_report=runtime_report,
         incident_report=incident_report,
@@ -329,6 +336,7 @@ def create_review_pack(
         "access_report": access_report,
         "monitoring_report": monitoring_report,
         "exposure_report": exposure_report,
+        "firewall_report": firewall_report,
         "patch_report": patch_report,
         "runtime_report": runtime_report,
         "incident_report": incident_report,
@@ -379,6 +387,8 @@ def render_review_pack_readme(
         suggested_steps.append("Use `monitoring-report.md` to review targets, down targets, alert channels, and alert test freshness.")
     if any(artifact.get("filename") == "exposure-report.md" for artifact in artifacts):
         suggested_steps.append("Use `exposure-report.md` to review open ports and risky public services.")
+    if any(artifact.get("filename") == "firewall-report.md" for artifact in artifacts):
+        suggested_steps.append("Use `firewall-report.md` to review firewall status, default policy, and public admin rules.")
     if any(artifact.get("filename") == "patch-report.md" for artifact in artifacts):
         suggested_steps.append("Use `patch-report.md` to review pending updates, security updates, and reboot state.")
     if any(artifact.get("filename") == "runtime-report.md" for artifact in artifacts):
@@ -618,6 +628,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("access-report.md", "Access"),
         ("monitoring-report.md", "Monitoring"),
         ("exposure-report.md", "Exposure"),
+        ("firewall-report.md", "Firewall"),
         ("patch-report.md", "Patch"),
         ("runtime-report.md", "Runtime"),
         ("incident-report.md", "Incident"),
@@ -673,6 +684,13 @@ def _has_exposure_context(evidence: dict[str, Any], checks: list[Check]) -> bool
     if isinstance(signals, dict) and isinstance(signals.get("exposure"), dict):
         return True
     return any(check.path.startswith("signals.exposure") for check in checks)
+
+
+def _has_firewall_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
+    signals = evidence.get("signals")
+    if isinstance(signals, dict) and isinstance(signals.get("firewall"), dict):
+        return True
+    return any(check.path.startswith("signals.firewall") for check in checks)
 
 
 def _has_patch_context(evidence: dict[str, Any], checks: list[Check]) -> bool:

@@ -115,6 +115,33 @@ class ReviewSummaryTests(unittest.TestCase):
         self.assertEqual(summary["metrics"]["exposure_warnings"], 1)
         self.assertIn("network exposure warnings exist", summary["decision"]["reason"])
 
+    def test_review_summary_blocks_on_firewall_failures(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            firewall_report={"summary": {"checks_failed": 1, "checks_warn": 1, "public_admin_rules_total": 2}},
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "fail")
+        self.assertEqual(summary["metrics"]["firewall_failures"], 1)
+        self.assertEqual(summary["metrics"]["public_admin_rules"], 2)
+        self.assertIn("firewall checks failed", summary["decision"]["reason"])
+
+    def test_review_summary_warns_on_firewall_warnings(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            firewall_report={"summary": {"checks_failed": 0, "checks_warn": 1, "public_admin_rules_total": 1}},
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "warn")
+        self.assertEqual(summary["metrics"]["firewall_warnings"], 1)
+        self.assertIn("firewall warnings exist", summary["decision"]["reason"])
+
     def test_review_summary_blocks_on_patch_failures(self):
         summary = create_review_summary(
             report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},

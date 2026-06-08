@@ -403,6 +403,57 @@ def collect_apt_upgrades(path: str) -> dict[str, Any]:
     }
 
 
+def collect_ufw_status(path: str) -> dict[str, Any]:
+    text = read_text(path)
+    status = "unknown"
+    default_incoming = ""
+    default_outgoing = ""
+    rules: list[dict[str, Any]] = []
+    for line in text.splitlines():
+        value = line.strip()
+        if not value or value.startswith("-") or value.lower().startswith("to "):
+            continue
+        lower = value.lower()
+        if lower.startswith("status:"):
+            status = value.split(":", 1)[1].strip().lower()
+            continue
+        if lower.startswith("default:"):
+            default_incoming, default_outgoing = _parse_ufw_defaults(value)
+            continue
+        rule = _parse_ufw_rule(value)
+        if rule is not None:
+            rules.append(rule)
+    public_admin_rules = [rule for rule in rules if _is_public_admin_rule(rule)]
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "source": f"ufw-status:{path}",
+            "collector": "openops-evidencekit",
+        },
+        "assets": [
+            {
+                "id": rule["to"],
+                "type": "firewall-rule",
+                "roles": ["firewall"],
+                "tags": ["ufw", rule["action"].lower()],
+            }
+            for rule in rules
+        ],
+        "signals": {
+            "firewall": {
+                "source": "ufw",
+                "status": status,
+                "default_incoming": default_incoming,
+                "default_outgoing": default_outgoing,
+                "rules_total": len(rules),
+                "rules": rules,
+                "public_admin_rules": [rule["id"] for rule in public_admin_rules],
+            }
+        },
+    }
+
+
 def collect_nmap_xml(path: str) -> dict[str, Any]:
     tree = ET.parse(path)
     root = tree.getroot()
@@ -603,6 +654,45 @@ def _apt_upgrade_record(line: str) -> dict[str, Any] | None:
         "architecture": architecture,
         "security": "security" in lower,
     }
+
+
+def _parse_ufw_defaults(line: str) -> tuple[str, str]:
+    body = line.split(":", 1)[1].strip().lower()
+    incoming = ""
+    outgoing = ""
+    for segment in body.split(","):
+        value = segment.strip()
+        if "(incoming)" in value:
+            incoming = value.split("(", 1)[0].strip()
+        elif "(outgoing)" in value:
+            outgoing = value.split("(", 1)[0].strip()
+    return incoming, outgoing
+
+
+def _parse_ufw_rule(line: str) -> dict[str, str] | None:
+    parts = line.split()
+    action_index = next((index for index, part in enumerate(parts) if part.upper() in {"ALLOW", "DENY", "REJECT", "LIMIT"}), None)
+    if action_index is None or action_index == 0:
+        return None
+    to_value = " ".join(parts[:action_index])
+    action = parts[action_index].upper()
+    from_value = " ".join(parts[action_index + 1 :]) or "unknown"
+    return {
+        "id": f"{to_value} {action} {from_value}",
+        "to": to_value,
+        "action": action,
+        "from": from_value,
+    }
+
+
+def _is_public_admin_rule(rule: dict[str, str]) -> bool:
+    if rule.get("action") != "ALLOW":
+        return False
+    from_value = rule.get("from", "").lower()
+    if "anywhere" not in from_value and from_value not in {"any", "0.0.0.0/0", "::/0"}:
+        return False
+    to_value = rule.get("to", "").lower()
+    return any(token in to_value for token in ("22", "3389", "5900", "2375"))
 
 
 def _first_value(document: dict[str, Any], *keys: str) -> Any:

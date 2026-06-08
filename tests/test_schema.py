@@ -11,6 +11,7 @@ from openops_evidence.schema import (
     validate_evidence,
     validate_evidence_drift,
     validate_exposure_report,
+    validate_firewall_report,
     validate_patch_report,
     validate_executive_brief,
     validate_freshness_report,
@@ -801,6 +802,9 @@ class SchemaTests(unittest.TestCase):
                     "exposure_failures": 0,
                     "exposure_warnings": 0,
                     "risky_ports": 0,
+                    "firewall_failures": 0,
+                    "firewall_warnings": 0,
+                    "public_admin_rules": 0,
                     "patch_failures": 0,
                     "patch_warnings": 0,
                     "security_updates": 0,
@@ -1320,6 +1324,45 @@ class SchemaTests(unittest.TestCase):
                         "risk": "risky",
                         "reason": "SSH should be restricted.",
                     }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_firewall_report(self):
+        errors = validate_firewall_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "warn",
+                    "source": "ufw",
+                    "firewall_status": "active",
+                    "default_incoming": "deny",
+                    "rules_total": 1,
+                    "public_admin_rules_total": 1,
+                    "checks_total": 1,
+                    "checks_passed": 0,
+                    "checks_warn": 1,
+                    "checks_failed": 0,
+                },
+                "checks": [
+                    {
+                        "id": "public_admin_rules_restricted",
+                        "title": "Public administrative firewall rules are restricted",
+                        "status": "warn",
+                        "severity": "high",
+                        "path": "signals.firewall.public_admin_rules",
+                        "reason": "Public admin rules need review.",
+                        "recommended_action": "Restrict admin access.",
+                    }
+                ],
+                "rules": [
+                    {"id": "22/tcp ALLOW Anywhere", "to": "22/tcp", "action": "ALLOW", "from": "Anywhere", "public_admin": True}
+                ],
+                "public_admin_rules": [
+                    {"id": "22/tcp ALLOW Anywhere", "to": "22/tcp", "action": "ALLOW", "from": "Anywhere", "public_admin": True}
                 ],
             }
         )

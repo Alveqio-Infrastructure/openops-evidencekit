@@ -3,7 +3,7 @@
 Review summaries are generated inside review packs as `review-summary.json` and
 `review-summary.md`. They condense the technical report, gate result, risk
 register, evidence freshness, privacy scan, scope, drift, service catalog,
-network exposure, patch report, runtime report, service-level report, runbook, restore assurance, mail-domain, TLS certificate,
+network exposure, firewall report, patch report, runtime report, service-level report, runbook, restore assurance, mail-domain, TLS certificate,
 access exposure, monitoring, and incident readiness signals into one handoff
 decision.
 
@@ -17,7 +17,7 @@ The Markdown version is meant to be the first file a reviewer reads. It points
 to the specific artifact that needs attention, such as `risk-register.md`,
 `privacy-scan.md`, `freshness-report.md`, `restore-report.md`,
 `mail-report.md`, `tls-report.md`, `access-report.md`,
-`monitoring-report.md`, `exposure-report.md`, `patch-report.md`, `runtime-report.md`, `service-level-report.md`, `incident-report.md`, or
+`monitoring-report.md`, `exposure-report.md`, `firewall-report.md`, `patch-report.md`, `runtime-report.md`, `service-level-report.md`, `incident-report.md`, or
 service/runbook reports.
 
 Review summaries are deliberately deterministic. They summarize generated

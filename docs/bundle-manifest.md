@@ -132,6 +132,7 @@ EvidenceKit infers a simple role for each artifact:
 - `access-report` for valid access exposure report JSON
 - `monitoring-report` for valid monitoring target and alert report JSON
 - `exposure-report` for valid open port exposure report JSON
+- `firewall-report` for valid firewall status and rule report JSON
 - `patch-report` for valid package update and reboot report JSON
 - `runtime-report` for valid runtime report JSON
 - `service-level-report` for valid service-level report JSON

@@ -65,6 +65,7 @@ python -m openops_evidence tls report -i evidence.redacted.json -o tls-report.md
 python -m openops_evidence access report -i evidence.redacted.json -o access-report.md
 python -m openops_evidence monitoring report -i evidence.redacted.json -o monitoring-report.md
 python -m openops_evidence exposure report -i evidence.redacted.json -o exposure-report.md
+python -m openops_evidence firewall report -i evidence.redacted.json -o firewall-report.md
 python -m openops_evidence patch report -i evidence.redacted.json -o patch-report.md
 python -m openops_evidence runtime report -i evidence.redacted.json -o runtime-report.md
 python -m openops_evidence service-level report -i evidence.redacted.json -c examples/service-catalog.sample.toml -o service-level-report.md
