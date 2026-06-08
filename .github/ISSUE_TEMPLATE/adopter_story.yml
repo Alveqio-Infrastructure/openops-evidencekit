@@ -1,0 +1,48 @@
+name: Adopter story
+description: Share a privacy-safe OpenOps EvidenceKit use case.
+title: "adopter: "
+labels: ["adopter", "community"]
+body:
+  - type: input
+    id: organization
+    attributes:
+      label: Organization or anonymous description
+      placeholder: "Example Association IT Team, Anonymous MSP, Small SaaS team..."
+    validations:
+      required: true
+  - type: dropdown
+    id: team-type
+    attributes:
+      label: Team type
+      options:
+        - MSP or consultant
+        - Nonprofit or association
+        - Small SaaS or platform team
+        - Internal IT team
+        - Agency
+        - Self-hoster
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: use
+    attributes:
+      label: Use case
+      description: Which evidence domains or reports are useful to you?
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What improved in your readiness review, handoff, or remediation workflow?
+    validations:
+      required: true
+  - type: checkboxes
+    id: public
+    attributes:
+      label: Public listing
+      options:
+        - label: This story may be summarized in ADOPTERS.md.
+        - label: I did not include secrets, real customer data, private hostnames, or private IP addresses.
+          required: true

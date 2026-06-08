@@ -1,0 +1,46 @@
+name: Integration request
+description: Suggest a source-system integration, parser, exporter, or workflow.
+title: "integration: "
+labels: ["integration", "enhancement"]
+body:
+  - type: input
+    id: source
+    attributes:
+      label: Source system or workflow
+      placeholder: "Trivy, CycloneDX, systemd, Docker, Zabbix, BookStack..."
+    validations:
+      required: true
+  - type: textarea
+    id: operator-question
+    attributes:
+      label: Operator question
+      description: Which practical readiness question should this integration answer?
+      placeholder: "Can we prove that..."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence fields
+      description: Which fields should be collected, reported, or exported?
+    validations:
+      required: true
+  - type: textarea
+    id: data-minimization
+    attributes:
+      label: Data minimization
+      description: Which fields should be ignored, redacted, hashed, or never stored?
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Synthetic sample
+      description: Link or paste a synthetic example. Do not include real hostnames, IPs, customer data, tokens, or secrets.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Data safety
+      options:
+        - label: I did not include secrets, real customer data, private hostnames, or private IP addresses.
+          required: true

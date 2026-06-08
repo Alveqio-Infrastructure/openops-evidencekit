@@ -23,8 +23,21 @@ Use focused pull requests. Include sample evidence for new collectors, and make
 sure fixtures do not contain real customer names, hostnames, IP addresses, tokens,
 or private infrastructure details.
 
+## Good First Contributions
+
+- Add a synthetic fixture for a common infrastructure export.
+- Improve remediation text for an existing policy check.
+- Propose a collector or integration with clear data-minimization notes.
+- Add docs for an operator workflow in `docs/use-cases.md`.
+- Improve report readability without changing deterministic results.
+- Add tests around redaction, schema validation, or generated artifacts.
+
 Maintainer decisions, compatibility rules, and security governance are described
 in [GOVERNANCE.md](GOVERNANCE.md).
+
+Maintainer duties and Codex-assisted maintenance expectations are described in
+[MAINTAINERS.md](MAINTAINERS.md). Privacy-safe adopter notes are tracked in
+[ADOPTERS.md](ADOPTERS.md).
 
 ## Commit Style
 
