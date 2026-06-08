@@ -370,6 +370,39 @@ def collect_docker_containers(path: str) -> dict[str, Any]:
     }
 
 
+def collect_apt_upgrades(path: str) -> dict[str, Any]:
+    packages = [_apt_upgrade_record(line) for line in read_text(path).splitlines()]
+    packages = [item for item in packages if item is not None]
+    security_updates = [item for item in packages if item["security"]]
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "source": f"apt-upgrades:{path}",
+            "collector": "openops-evidencekit",
+        },
+        "assets": [
+            {
+                "id": item["name"],
+                "type": "package",
+                "roles": ["patching"],
+                "tags": ["apt", "security" if item["security"] else "update"],
+            }
+            for item in packages
+        ],
+        "signals": {
+            "patch": {
+                "source": "apt",
+                "updates_total": len(packages),
+                "security_updates_total": len(security_updates),
+                "reboot_required": None,
+                "packages": packages,
+                "security_packages": [item["name"] for item in security_updates],
+            }
+        },
+    }
+
+
 def collect_nmap_xml(path: str) -> dict[str, Any]:
     tree = ET.parse(path)
     root = tree.getroot()
@@ -544,6 +577,32 @@ def _load_json_or_json_lines(path: str) -> Any:
             except json.JSONDecodeError as exc:
                 raise ValueError(f"Invalid JSON line {line_number} in {path}: {exc}") from exc
         return rows
+
+
+def _apt_upgrade_record(line: str) -> dict[str, Any] | None:
+    value = line.strip()
+    if not value or value.lower().startswith("listing...") or "/" not in value:
+        return None
+    head, _, tail = value.partition(" ")
+    name, _, suite = head.partition("/")
+    parts = tail.split()
+    if len(parts) < 2 or not name:
+        return None
+    candidate = parts[0]
+    architecture = parts[1]
+    current = ""
+    marker = "[upgradable from:"
+    if marker in value:
+        current = value.split(marker, 1)[1].rstrip("]").strip()
+    lower = value.lower()
+    return {
+        "name": name,
+        "suite": suite,
+        "candidate_version": candidate,
+        "current_version": current,
+        "architecture": architecture,
+        "security": "security" in lower,
+    }
 
 
 def _first_value(document: dict[str, Any], *keys: str) -> Any:

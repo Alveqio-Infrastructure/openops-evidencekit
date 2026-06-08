@@ -28,6 +28,7 @@ from .schema import (
     validate_mail_report,
     validate_monitoring_report,
     validate_policy_coverage,
+    validate_patch_report,
     validate_questionnaire,
     validate_quality_report,
     validate_report,
@@ -310,6 +311,8 @@ def classify_artifact(path: Path) -> str:
             return "monitoring-report"
         if validate_exposure_report(document) == []:
             return "exposure-report"
+        if validate_patch_report(document) == []:
+            return "patch-report"
         if validate_runtime_report(document) == []:
             return "runtime-report"
         if validate_service_level_report(document) == []:

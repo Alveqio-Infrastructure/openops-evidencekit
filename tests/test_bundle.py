@@ -212,6 +212,7 @@ class BundleTests(unittest.TestCase):
             access_report = temp / "access-report.json"
             monitoring_report = temp / "monitoring-report.json"
             exposure_report = temp / "exposure-report.json"
+            patch_report = temp / "patch-report.json"
             runtime_report = temp / "runtime-report.json"
             service_level_report = temp / "service-level-report.json"
             incident_report = temp / "incident-report.json"
@@ -533,6 +534,9 @@ class BundleTests(unittest.TestCase):
                             "exposure_failures": 0,
                             "exposure_warnings": 0,
                             "risky_ports": 0,
+                            "patch_failures": 0,
+                            "patch_warnings": 0,
+                            "security_updates": 0,
                             "runtime_failures": 0,
                             "runtime_warnings": 0,
                             "incident_failures": 0,
@@ -802,6 +806,40 @@ class BundleTests(unittest.TestCase):
                         ],
                         "open_ports": [],
                         "risky_ports": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            patch_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "source": "apt",
+                            "updates_total": 0,
+                            "security_updates_total": 0,
+                            "reboot_required": False,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "security_updates_applied",
+                                "title": "Security updates are applied",
+                                "status": "pass",
+                                "severity": "high",
+                                "path": "signals.patch.security_packages",
+                                "reason": "No pending security updates were recorded.",
+                                "recommended_action": "Keep patch evidence current.",
+                            }
+                        ],
+                        "packages": [],
+                        "security_packages": [],
                     }
                 ),
                 encoding="utf-8",
@@ -1392,6 +1430,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(monitoring_report), "monitoring-report")
             self.assertEqual(classify_artifact(exposure_report), "exposure-report")
+            self.assertEqual(classify_artifact(patch_report), "patch-report")
             self.assertEqual(classify_artifact(runtime_report), "runtime-report")
             self.assertEqual(classify_artifact(service_level_report), "service-level-report")
             self.assertEqual(classify_artifact(incident_report), "incident-report")

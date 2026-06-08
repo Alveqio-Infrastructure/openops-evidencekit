@@ -8,6 +8,7 @@ from openops_evidence.collectors import (
     collect_borg_archives,
     collect_docker_containers,
     collect_docs_directory,
+    collect_apt_upgrades,
     collect_nmap_xml,
     collect_prometheus_targets,
     collect_restic_snapshots,
@@ -123,6 +124,24 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(exposure["hosts_total"], 1)
         self.assertEqual(exposure["open_ports_total"], 2)
         self.assertEqual(exposure["risky_ports"], ["203.0.113.10:22/tcp"])
+
+    def test_collect_apt_upgrades(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "apt.txt"
+            path.write_text(
+                """
+Listing...
+openssl/jammy-security 3.0.2-0ubuntu1.18 amd64 [upgradable from: 3.0.2-0ubuntu1.16]
+curl/jammy-updates 7.81.0-1ubuntu1.21 amd64 [upgradable from: 7.81.0-1ubuntu1.20]
+""".strip(),
+                encoding="utf-8",
+            )
+            evidence = collect_apt_upgrades(str(path))
+        patch = evidence["signals"]["patch"]
+        self.assertEqual(patch["source"], "apt")
+        self.assertEqual(patch["updates_total"], 2)
+        self.assertEqual(patch["security_updates_total"], 1)
+        self.assertEqual(patch["security_packages"], ["openssl"])
 
     def test_collect_systemd_timers(self):
         with tempfile.TemporaryDirectory() as temp_dir:

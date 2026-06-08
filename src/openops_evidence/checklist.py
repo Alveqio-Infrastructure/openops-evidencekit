@@ -162,6 +162,16 @@ def create_review_checklist(review_summary: dict[str, Any], artifacts: list[dict
         items,
         filenames,
         metrics,
+        "patch-report.md",
+        "review_patching",
+        "Review patch and reboot evidence",
+        "patch_failures",
+        "patch_warnings",
+    )
+    _append_if_present(
+        items,
+        filenames,
+        metrics,
         "runtime-report.md",
         "review_runtime",
         "Review runtime evidence",

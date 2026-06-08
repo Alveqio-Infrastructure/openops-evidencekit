@@ -62,6 +62,9 @@
         "exposure_failures",
         "exposure_warnings",
         "risky_ports",
+        "patch_failures",
+        "patch_warnings",
+        "security_updates",
         "runtime_failures",
         "runtime_warnings",
         "incident_failures",
@@ -167,6 +170,18 @@
           "minimum": 0
         },
         "risky_ports": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "patch_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "patch_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "security_updates": {
           "type": "integer",
           "minimum": 0
         },

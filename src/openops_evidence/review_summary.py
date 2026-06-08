@@ -20,6 +20,7 @@ def create_review_summary(
     access_report: dict[str, Any] | None = None,
     monitoring_report: dict[str, Any] | None = None,
     exposure_report: dict[str, Any] | None = None,
+    patch_report: dict[str, Any] | None = None,
     runtime_report: dict[str, Any] | None = None,
     incident_report: dict[str, Any] | None = None,
     risk_register: dict[str, Any] | None = None,
@@ -41,6 +42,7 @@ def create_review_summary(
     access_summary = (access_report or {}).get("summary", {})
     monitoring_summary = (monitoring_report or {}).get("summary", {})
     exposure_summary = (exposure_report or {}).get("summary", {})
+    patch_summary = (patch_report or {}).get("summary", {})
     runtime_summary = (runtime_report or {}).get("summary", {})
     incident_summary = (incident_report or {}).get("summary", {})
     risk_summary = (risk_register or {}).get("summary", {})
@@ -73,6 +75,9 @@ def create_review_summary(
         "exposure_failures": _int_or_zero(exposure_summary.get("checks_failed")),
         "exposure_warnings": _int_or_zero(exposure_summary.get("checks_warn")),
         "risky_ports": _int_or_zero(exposure_summary.get("risky_ports_total")),
+        "patch_failures": _int_or_zero(patch_summary.get("checks_failed")),
+        "patch_warnings": _int_or_zero(patch_summary.get("checks_warn")),
+        "security_updates": _int_or_zero(patch_summary.get("security_updates_total")),
         "runtime_failures": _int_or_zero(runtime_summary.get("checks_failed")),
         "runtime_warnings": _int_or_zero(runtime_summary.get("checks_warn")),
         "incident_failures": _int_or_zero(incident_summary.get("checks_failed")),
@@ -145,6 +150,9 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "exposure_failures",
         "exposure_warnings",
         "risky_ports",
+        "patch_failures",
+        "patch_warnings",
+        "security_updates",
         "runtime_failures",
         "runtime_warnings",
         "incident_failures",
@@ -199,6 +207,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("monitoring checks failed")
     if metrics["exposure_failures"] > 0:
         blockers.append("network exposure checks failed")
+    if metrics["patch_failures"] > 0:
+        blockers.append("patch checks failed")
     if metrics["runtime_failures"] > 0:
         blockers.append("runtime checks failed")
     if metrics["incident_failures"] > 0:
@@ -232,6 +242,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("monitoring warnings exist")
     if metrics["exposure_warnings"] > 0:
         warnings.append("network exposure warnings exist")
+    if metrics["patch_warnings"] > 0:
+        warnings.append("patch warnings exist")
     if metrics["runtime_warnings"] > 0:
         warnings.append("runtime warnings exist")
     if metrics["incident_warnings"] > 0:
@@ -302,6 +314,12 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['exposure_warnings']} network exposure warning(s) need review.")
     if metrics["risky_ports"]:
         highlights.append(f"{metrics['risky_ports']} risky open port(s) were recorded.")
+    if metrics["patch_failures"]:
+        highlights.append(f"{metrics['patch_failures']} patch check(s) failed.")
+    if metrics["patch_warnings"]:
+        highlights.append(f"{metrics['patch_warnings']} patch warning(s) need review.")
+    if metrics["security_updates"]:
+        highlights.append(f"{metrics['security_updates']} security update(s) are pending.")
     if metrics["runtime_failures"]:
         highlights.append(f"{metrics['runtime_failures']} runtime check(s) failed.")
     if metrics["runtime_warnings"]:
@@ -346,6 +364,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Review `monitoring-report.md` and fix down targets, alert routing, or alert test evidence.")
     if metrics["exposure_failures"] > 0 or metrics["exposure_warnings"] > 0:
         steps.append("Review `exposure-report.md` and restrict or document open public services.")
+    if metrics["patch_failures"] > 0 or metrics["patch_warnings"] > 0:
+        steps.append("Review `patch-report.md` and apply, schedule, or explicitly defer pending updates.")
     if metrics["runtime_failures"] > 0 or metrics["runtime_warnings"] > 0:
         steps.append("Review `runtime-report.md` and fix failed timers, stopped containers, or missing restart policies.")
     if metrics["incident_failures"] > 0 or metrics["incident_warnings"] > 0:

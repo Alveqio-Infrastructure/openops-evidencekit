@@ -11,6 +11,7 @@ from openops_evidence.schema import (
     validate_evidence,
     validate_evidence_drift,
     validate_exposure_report,
+    validate_patch_report,
     validate_executive_brief,
     validate_freshness_report,
     validate_gate_result,
@@ -800,6 +801,9 @@ class SchemaTests(unittest.TestCase):
                     "exposure_failures": 0,
                     "exposure_warnings": 0,
                     "risky_ports": 0,
+                    "patch_failures": 0,
+                    "patch_warnings": 0,
+                    "security_updates": 0,
                     "runtime_failures": 0,
                     "runtime_warnings": 0,
                     "incident_failures": 0,
@@ -1315,6 +1319,56 @@ class SchemaTests(unittest.TestCase):
                         "product": "OpenSSH",
                         "risk": "risky",
                         "reason": "SSH should be restricted.",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_patch_report(self):
+        errors = validate_patch_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "fail",
+                    "source": "apt",
+                    "updates_total": 1,
+                    "security_updates_total": 1,
+                    "reboot_required": True,
+                    "checks_total": 1,
+                    "checks_passed": 0,
+                    "checks_warn": 0,
+                    "checks_failed": 1,
+                },
+                "checks": [
+                    {
+                        "id": "security_updates_applied",
+                        "title": "Security updates are applied",
+                        "status": "fail",
+                        "severity": "high",
+                        "path": "signals.patch.security_packages",
+                        "reason": "Security updates are pending.",
+                        "recommended_action": "Apply security updates.",
+                    }
+                ],
+                "packages": [
+                    {
+                        "name": "openssl",
+                        "current_version": "1",
+                        "candidate_version": "2",
+                        "architecture": "amd64",
+                        "security": True,
+                    }
+                ],
+                "security_packages": [
+                    {
+                        "name": "openssl",
+                        "current_version": "1",
+                        "candidate_version": "2",
+                        "architecture": "amd64",
+                        "security": True,
                     }
                 ],
             }

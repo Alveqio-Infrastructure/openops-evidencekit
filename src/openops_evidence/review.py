@@ -27,6 +27,7 @@ from .inventory import create_evidence_inventory, render_inventory_csv, render_i
 from .io import dump_json, write_text
 from .mail import create_mail_report, render_mail_csv, render_mail_markdown
 from .monitoring import create_monitoring_report, render_monitoring_csv, render_monitoring_markdown
+from .patching import create_patch_report, render_patch_csv, render_patch_markdown
 from .policy import (
     Check,
     create_policy_matrix,
@@ -94,6 +95,7 @@ def create_review_pack(
     access_report = create_access_report(evidence) if _has_access_context(evidence, checks) else None
     monitoring_report = create_monitoring_report(evidence) if _has_monitoring_context(evidence, checks) else None
     exposure_report = create_exposure_report(evidence) if _has_exposure_context(evidence, checks) else None
+    patch_report = create_patch_report(evidence) if _has_patch_context(evidence, checks) else None
     runtime_report = create_runtime_report(evidence) if _has_runtime_context(evidence, checks) else None
     incident_report = create_incident_report(evidence, catalog_document=catalog_document) if _has_incident_context(evidence, catalog_document, checks) else None
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
@@ -165,6 +167,10 @@ def create_review_pack(
         add_artifact("exposure-report.json", dump_json(exposure_report), "Exposure report", "Machine-readable open port and risky service report.")
         add_artifact("exposure-report.md", render_exposure_markdown(exposure_report), "Exposure report", "Human-readable open port and risky service report.")
         add_artifact("exposure-report.csv", render_exposure_csv(exposure_report), "Exposure report", "Spreadsheet-friendly exposure report.")
+    if patch_report is not None:
+        add_artifact("patch-report.json", dump_json(patch_report), "Patch report", "Machine-readable package update and reboot report.")
+        add_artifact("patch-report.md", render_patch_markdown(patch_report), "Patch report", "Human-readable package update and reboot report.")
+        add_artifact("patch-report.csv", render_patch_csv(patch_report), "Patch report", "Spreadsheet-friendly patch report.")
     if runtime_report is not None:
         add_artifact("runtime-report.json", dump_json(runtime_report), "Runtime report", "Machine-readable runtime container and timer report.")
         add_artifact("runtime-report.md", render_runtime_markdown(runtime_report), "Runtime report", "Human-readable runtime container and timer report.")
@@ -270,6 +276,7 @@ def create_review_pack(
         access_report=access_report,
         monitoring_report=monitoring_report,
         exposure_report=exposure_report,
+        patch_report=patch_report,
         runtime_report=runtime_report,
         incident_report=incident_report,
         risk_register=risk_register,
@@ -322,6 +329,7 @@ def create_review_pack(
         "access_report": access_report,
         "monitoring_report": monitoring_report,
         "exposure_report": exposure_report,
+        "patch_report": patch_report,
         "runtime_report": runtime_report,
         "incident_report": incident_report,
         "risk_register": risk_register,
@@ -371,6 +379,8 @@ def render_review_pack_readme(
         suggested_steps.append("Use `monitoring-report.md` to review targets, down targets, alert channels, and alert test freshness.")
     if any(artifact.get("filename") == "exposure-report.md" for artifact in artifacts):
         suggested_steps.append("Use `exposure-report.md` to review open ports and risky public services.")
+    if any(artifact.get("filename") == "patch-report.md" for artifact in artifacts):
+        suggested_steps.append("Use `patch-report.md` to review pending updates, security updates, and reboot state.")
     if any(artifact.get("filename") == "runtime-report.md" for artifact in artifacts):
         suggested_steps.append("Use `runtime-report.md` to review stopped containers, restart policies, and failed timers.")
     if any(artifact.get("filename") == "incident-report.md" for artifact in artifacts):
@@ -608,6 +618,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("access-report.md", "Access"),
         ("monitoring-report.md", "Monitoring"),
         ("exposure-report.md", "Exposure"),
+        ("patch-report.md", "Patch"),
         ("runtime-report.md", "Runtime"),
         ("incident-report.md", "Incident"),
         ("scope-report.md", "Scope Report"),
@@ -662,6 +673,13 @@ def _has_exposure_context(evidence: dict[str, Any], checks: list[Check]) -> bool
     if isinstance(signals, dict) and isinstance(signals.get("exposure"), dict):
         return True
     return any(check.path.startswith("signals.exposure") for check in checks)
+
+
+def _has_patch_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
+    signals = evidence.get("signals")
+    if isinstance(signals, dict) and isinstance(signals.get("patch"), dict):
+        return True
+    return any(check.path.startswith("signals.patch") for check in checks)
 
 
 def _has_runtime_context(evidence: dict[str, Any], checks: list[Check]) -> bool:

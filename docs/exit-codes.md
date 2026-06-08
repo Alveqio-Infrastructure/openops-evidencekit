@@ -25,6 +25,7 @@ and automation wrappers.
 - `evidence completeness --fail-on-missing` returns `1` when required policy evidence is missing.
 - `scope report --fail-on-warn` returns `1` when scope warnings are found.
 - `exposure report --fail-on-warn` returns `1` when exposure checks fail or warn.
+- `patch report --fail-on-warn` returns `1` when patch checks fail or warn.
 - `runtime report --fail-on-warn` returns `1` when runtime checks fail or warn.
 - `service-level report --fail-on-warn` returns `1` when service-level targets fail or SLO evidence warnings exist.
 - `review create --fail-on-gate` returns `1` when the generated gate fails.

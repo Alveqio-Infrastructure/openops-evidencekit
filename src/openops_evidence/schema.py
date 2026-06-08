@@ -440,6 +440,9 @@ def validate_review_summary(document: Any) -> list[str]:
             "exposure_failures",
             "exposure_warnings",
             "risky_ports",
+            "patch_failures",
+            "patch_warnings",
+            "security_updates",
             "runtime_failures",
             "runtime_warnings",
             "incident_failures",
@@ -1295,6 +1298,42 @@ def validate_exposure_report(document: Any) -> list[str]:
             _require_string_type(port, "service", errors, prefix=prefix)
             _require_enum(port, "risk", {"review", "risky"}, errors, prefix=prefix)
             _require_string_type(port, "reason", errors, prefix=prefix)
+    return errors
+
+
+def validate_patch_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Patch report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    _require_list(document, "packages", errors)
+    _require_list(document, "security_packages", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        _require_string_type(summary, "source", errors, prefix="summary.")
+        for key in ("updates_total", "security_updates_total", "checks_total", "checks_passed", "checks_warn", "checks_failed"):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+        if summary.get("reboot_required") is not None and not isinstance(summary.get("reboot_required"), bool):
+            errors.append("summary.reboot_required must be a boolean or null.")
+    for index, check in enumerate(document.get("checks", [])):
+        _validate_operational_check(check, errors, f"checks[{index}].")
+    for collection_name in ("packages", "security_packages"):
+        for index, package in enumerate(document.get(collection_name, [])):
+            if not isinstance(package, dict):
+                errors.append(f"{collection_name}[{index}] must be an object.")
+                continue
+            prefix = f"{collection_name}[{index}]."
+            _require_string(package, "name", errors, prefix=prefix)
+            _require_string_type(package, "current_version", errors, prefix=prefix)
+            _require_string_type(package, "candidate_version", errors, prefix=prefix)
+            _require_string_type(package, "architecture", errors, prefix=prefix)
+            if not isinstance(package.get("security"), bool):
+                errors.append(f"{prefix}security must be a boolean.")
     return errors
 
 
