@@ -90,5 +90,5 @@ having to deploy a platform first.
 - Backward-compatible report schema.
 - Documented maintainer policy for security and governance.
 - Public adopter workflow for privacy-safe use-case notes.
-- Codex-assisted maintainer workflow for collector scaffolding, tests, docs,
+- Assisted maintainer workflow for collector scaffolding, tests, docs,
   release checklists, and redaction review.

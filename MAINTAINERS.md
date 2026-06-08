@@ -23,9 +23,9 @@ share, and more useful to an operator under time pressure. A new feature should
 answer at least one concrete readiness question or make evidence easier to
 collect, validate, redact, report, compare, or hand off.
 
-## Codex-Assisted Maintenance
+## Assisted Maintenance
 
-Codex is useful for repeatable maintainer work such as:
+Automation and AI tools can be useful for repeatable maintainer work such as:
 
 - scaffolding collectors from public source formats;
 - generating synthetic fixtures and focused tests;
@@ -34,8 +34,9 @@ Codex is useful for repeatable maintainer work such as:
 - reviewing redaction and privacy-sensitive paths;
 - drafting release notes, issue replies, and maintainer checklists.
 
-Codex assistance must not make readiness decisions opaque. Pass/fail decisions
-belong to deterministic policy rules, documented schemas, and reviewable code.
+Assisted maintenance must not make readiness decisions opaque. Pass/fail
+decisions belong to deterministic policy rules, documented schemas, and
+reviewable code.
 
 ## Maintainer Checklist
 

@@ -82,4 +82,4 @@
 - Add vulnerability reports for Trivy scan severity and fixed-version review.
 - Add software inventory reports for CycloneDX SBOM component metadata review.
 - Add incident readiness reports for escalation contacts, incident runbooks, alerts, restore proof, and emergency access.
-- Add Codex for OSS positioning notes, application draft, maintainer guidance, adopter tracking, use-case documentation, and community issue templates.
+- Add project-impact positioning, maintainer guidance, adopter tracking, use-case documentation, and community issue templates.

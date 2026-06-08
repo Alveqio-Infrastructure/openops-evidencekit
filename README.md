@@ -38,11 +38,8 @@ The project is designed to be useful for open source maintainers, nonprofits,
 associations, MSPs, agencies, self-hosters, and small platform teams that need
 clear answers without exposing secrets or locking into one vendor. See
 [docs/use-cases.md](docs/use-cases.md) for practical adoption scenarios and
-[docs/codex-for-oss-notes.md](docs/codex-for-oss-notes.md) for the maintainer
+[docs/project-impact.md](docs/project-impact.md) for the public-benefit
 positioning behind the project.
-
-A copy-ready application draft lives in
-[docs/codex-for-oss-application.md](docs/codex-for-oss-application.md).
 
 ## Example Output
 
@@ -349,10 +346,8 @@ JSON Schemas for generated artifacts live in [schemas/](schemas/).
 Example inputs and generated artifact shapes are described in
 [examples/README.md](examples/README.md).
 Use cases are described in [docs/use-cases.md](docs/use-cases.md).
-Codex for OSS positioning notes are described in
-[docs/codex-for-oss-notes.md](docs/codex-for-oss-notes.md).
-The application draft is described in
-[docs/codex-for-oss-application.md](docs/codex-for-oss-application.md).
+Project impact and public-benefit positioning are described in
+[docs/project-impact.md](docs/project-impact.md).
 Bundled policies are described in [docs/policy-packs.md](docs/policy-packs.md).
 Bundle manifests are described in [docs/bundle-manifest.md](docs/bundle-manifest.md).
 Report comparisons are described in [docs/report-comparison.md](docs/report-comparison.md).

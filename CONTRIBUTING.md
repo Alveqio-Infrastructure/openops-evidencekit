@@ -35,7 +35,7 @@ or private infrastructure details.
 Maintainer decisions, compatibility rules, and security governance are described
 in [GOVERNANCE.md](GOVERNANCE.md).
 
-Maintainer duties and Codex-assisted maintenance expectations are described in
+Maintainer duties and assisted-maintenance expectations are described in
 [MAINTAINERS.md](MAINTAINERS.md). Privacy-safe adopter notes are tracked in
 [ADOPTERS.md](ADOPTERS.md).
 
