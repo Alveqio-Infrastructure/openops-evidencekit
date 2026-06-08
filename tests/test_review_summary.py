@@ -211,6 +211,52 @@ class ReviewSummaryTests(unittest.TestCase):
         self.assertEqual(summary["metrics"]["vulnerability_warnings"], 1)
         self.assertIn("vulnerability warnings exist", summary["decision"]["reason"])
 
+    def test_review_summary_blocks_on_software_inventory_failures(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            software_inventory_report={
+                "summary": {
+                    "checks_failed": 1,
+                    "checks_warn": 0,
+                    "components_total": 0,
+                    "missing_versions": 0,
+                    "missing_purls": 0,
+                    "missing_licenses": 0,
+                }
+            },
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "fail")
+        self.assertEqual(summary["metrics"]["software_inventory_failures"], 1)
+        self.assertIn("software inventory checks failed", summary["decision"]["reason"])
+
+    def test_review_summary_warns_on_software_inventory_metadata_gaps(self):
+        summary = create_review_summary(
+            report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},
+            gate={"summary": {"status": "pass"}},
+            privacy_scan={"summary": {"findings_count": 0}},
+            software_inventory_report={
+                "summary": {
+                    "checks_failed": 0,
+                    "checks_warn": 2,
+                    "components_total": 3,
+                    "missing_versions": 1,
+                    "missing_purls": 1,
+                    "missing_licenses": 1,
+                }
+            },
+        )
+
+        self.assertEqual(validate_review_summary(summary), [])
+        self.assertEqual(summary["decision"]["status"], "warn")
+        self.assertEqual(summary["metrics"]["software_inventory_warnings"], 2)
+        self.assertEqual(summary["metrics"]["software_components"], 3)
+        self.assertEqual(summary["metrics"]["software_missing_metadata"], 3)
+        self.assertIn("software inventory warnings exist", summary["decision"]["reason"])
+
     def test_review_summary_blocks_on_runtime_failures(self):
         summary = create_review_summary(
             report={"generated_at": "2026-06-01T10:00:00+00:00", "summary": {"status": "pass", "score": 100}},

@@ -80,4 +80,5 @@
 - Add firewall reports for UFW status, default policy, and public admin rule review.
 - Add patch reports for package update, security update, and reboot review.
 - Add vulnerability reports for Trivy scan severity and fixed-version review.
+- Add software inventory reports for CycloneDX SBOM component metadata review.
 - Add incident readiness reports for escalation contacts, incident runbooks, alerts, restore proof, and emergency access.

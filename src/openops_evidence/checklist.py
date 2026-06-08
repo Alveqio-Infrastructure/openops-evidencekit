@@ -192,6 +192,16 @@ def create_review_checklist(review_summary: dict[str, Any], artifacts: list[dict
         items,
         filenames,
         metrics,
+        "software-inventory-report.md",
+        "review_software_inventory",
+        "Review software inventory evidence",
+        "software_inventory_failures",
+        "software_inventory_warnings",
+    )
+    _append_if_present(
+        items,
+        filenames,
+        metrics,
         "runtime-report.md",
         "review_runtime",
         "Review runtime evidence",

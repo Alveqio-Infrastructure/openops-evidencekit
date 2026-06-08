@@ -39,6 +39,7 @@ from openops_evidence.schema import (
     validate_service_level_report,
     validate_service_catalog_report,
     validate_scope_report,
+    validate_software_inventory_report,
     validate_tls_report,
     validate_vulnerability_report,
 )
@@ -813,6 +814,10 @@ class SchemaTests(unittest.TestCase):
                     "vulnerability_warnings": 0,
                     "critical_vulnerabilities": 0,
                     "high_vulnerabilities": 0,
+                    "software_inventory_failures": 0,
+                    "software_inventory_warnings": 0,
+                    "software_components": 0,
+                    "software_missing_metadata": 0,
                     "runtime_failures": 0,
                     "runtime_warnings": 0,
                     "incident_failures": 0,
@@ -1470,6 +1475,54 @@ class SchemaTests(unittest.TestCase):
                 "critical_findings": [finding],
                 "high_findings": [],
                 "critical_high_findings": [finding],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_software_inventory_report(self):
+        component = {
+            "bom_ref": "pkg:pypi/requests@2.32.3",
+            "type": "library",
+            "name": "requests",
+            "version": "2.32.3",
+            "group": "",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "licenses": ["Apache-2.0"],
+        }
+        errors = validate_software_inventory_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "source": "cyclonedx",
+                    "bom_format": "CycloneDX",
+                    "spec_version": "1.5",
+                    "components_total": 1,
+                    "missing_versions": 0,
+                    "missing_purls": 0,
+                    "missing_licenses": 0,
+                    "checks_total": 1,
+                    "checks_passed": 1,
+                    "checks_warn": 0,
+                    "checks_failed": 0,
+                },
+                "checks": [
+                    {
+                        "id": "software_components_recorded",
+                        "title": "Software components are recorded",
+                        "status": "pass",
+                        "severity": "critical",
+                        "path": "signals.software_inventory.components",
+                        "reason": "1 component was recorded.",
+                        "recommended_action": "Keep SBOM evidence current.",
+                    }
+                ],
+                "components": [component],
+                "missing_version_components": [],
+                "missing_purl_components": [],
+                "missing_license_components": [],
             }
         )
         self.assertEqual(errors, [])

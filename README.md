@@ -17,6 +17,7 @@ answers to practical readiness questions:
 - Is the firewall active and default-deny?
 - Are security updates pending or reboots required?
 - Are critical or high vulnerabilities present?
+- Is there a reviewable SBOM/software inventory?
 - Are TLS, mail, inventory, and runbook basics documented?
 - Can evidence be shared without leaking secrets or customer data?
 
@@ -43,7 +44,7 @@ domain scorecards, tickets, and signed evidence bundles.
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
 risk registers, restore assurance reports, mail domain reports, TLS certificate
-reports, access exposure reports, monitoring reports, exposure reports, firewall reports, patch reports, vulnerability reports, runtime reports, service-level reports, incident readiness
+reports, access exposure reports, monitoring reports, exposure reports, firewall reports, patch reports, vulnerability reports, software inventory reports, runtime reports, service-level reports, incident readiness
 reports, plus review packs with one-page summaries, manifests, and
 attestations.
 
@@ -209,6 +210,13 @@ python -m openops_evidence collect trivy-json trivy.json -o vulnerability.eviden
 python -m openops_evidence vulnerability report -i vulnerability.evidence.json -o vulnerability-report.md
 ```
 
+Import CycloneDX SBOM output:
+
+```powershell
+python -m openops_evidence collect cyclonedx-json bom.json -o software.evidence.json
+python -m openops_evidence software report -i software.evidence.json -o software-inventory-report.md
+```
+
 Import runtime evidence from systemd and Docker exports:
 
 ```powershell
@@ -292,6 +300,8 @@ Use `patch report` when package update, security update, and reboot evidence
 should become a standalone maintenance artifact.
 Use `vulnerability report` when Trivy scan evidence should become a standalone
 critical/high vulnerability and fixed-version review artifact.
+Use `software report` when CycloneDX SBOM evidence should become a standalone
+component inventory and metadata-gap artifact.
 Use `service-level report` when service owners need uptime, SLO target, and
 error-budget evidence tied to the service catalog.
 Use `runtime report` when Docker containers, restart policies, and systemd
@@ -336,6 +346,7 @@ Exposure reports are described in [docs/exposure-report.md](docs/exposure-report
 Firewall reports are described in [docs/firewall-report.md](docs/firewall-report.md).
 Patch reports are described in [docs/patch-report.md](docs/patch-report.md).
 Vulnerability reports are described in [docs/vulnerability-report.md](docs/vulnerability-report.md).
+Software inventory reports are described in [docs/software-inventory-report.md](docs/software-inventory-report.md).
 Runtime reports are described in [docs/runtime-report.md](docs/runtime-report.md).
 Service-level reports are described in [docs/service-level-report.md](docs/service-level-report.md).
 Incident readiness reports are described in [docs/incident-report.md](docs/incident-report.md).

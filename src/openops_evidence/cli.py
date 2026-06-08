@@ -31,6 +31,7 @@ from .compare import compare_reports, render_comparison_markdown
 from .completeness import create_completeness_report, render_completeness_csv, render_completeness_markdown
 from .collectors import (
     collect_borg_archives,
+    collect_cyclonedx_json,
     collect_docker_containers,
     collect_docs_directory,
     collect_fixture,
@@ -126,11 +127,13 @@ from .schema import (
     validate_service_level_report,
     validate_service_catalog_report,
     validate_scope_report,
+    validate_software_inventory_report,
     validate_tls_report,
     validate_vulnerability_report,
 )
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .service_level import create_service_level_report, render_service_level_csv, render_service_level_markdown
+from .software_inventory import create_software_inventory_report, render_software_inventory_csv, render_software_inventory_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown, validate_scope_document
 from .tickets import export_action_plan_tickets
 from .tls import create_tls_report, render_tls_csv, render_tls_markdown
@@ -200,6 +203,10 @@ def build_parser() -> argparse.ArgumentParser:
     trivy.add_argument("path")
     trivy.add_argument("-o", "--output", default="-")
     trivy.set_defaults(func=cmd_collect_trivy)
+    cyclonedx = collect_sub.add_parser("cyclonedx-json", help="Collect software inventory evidence from CycloneDX JSON")
+    cyclonedx.add_argument("path")
+    cyclonedx.add_argument("-o", "--output", default="-")
+    cyclonedx.set_defaults(func=cmd_collect_cyclonedx)
     systemd = collect_sub.add_parser("systemd-timers", help="Collect runtime evidence from systemd timer JSON")
     systemd.add_argument("path")
     systemd.add_argument("-o", "--output", default="-")
@@ -434,6 +441,15 @@ def build_parser() -> argparse.ArgumentParser:
     vulnerability_report.add_argument("--fail-on-warn", action="store_true")
     vulnerability_report.add_argument("-o", "--output", default="-")
     vulnerability_report.set_defaults(func=cmd_vulnerability_report)
+
+    software = sub.add_parser("software", help="Inspect SBOM and software inventory evidence")
+    software_sub = software.add_subparsers(required=True)
+    software_report = software_sub.add_parser("report", help="Render SBOM component inventory evidence")
+    software_report.add_argument("-i", "--input", required=True)
+    software_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    software_report.add_argument("--fail-on-warn", action="store_true")
+    software_report.add_argument("-o", "--output", default="-")
+    software_report.set_defaults(func=cmd_software_report)
 
     firewall = sub.add_parser("firewall", help="Inspect firewall policy and rule evidence")
     firewall_sub = firewall.add_subparsers(required=True)
@@ -683,6 +699,7 @@ def build_parser() -> argparse.ArgumentParser:
             "firewall-report",
             "patch-report",
             "vulnerability-report",
+            "software-inventory-report",
             "runtime-report",
             "service-level-report",
             "incident-report",
@@ -790,6 +807,11 @@ def cmd_collect_ufw(args: argparse.Namespace) -> int:
 
 def cmd_collect_trivy(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(collect_trivy_json(args.path)))
+    return 0
+
+
+def cmd_collect_cyclonedx(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_cyclonedx_json(args.path)))
     return 0
 
 
@@ -1224,6 +1246,24 @@ def cmd_vulnerability_report(args: argparse.Namespace) -> int:
         rendered = render_vulnerability_csv(report)
     else:
         rendered = render_vulnerability_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
+def cmd_software_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    report = create_software_inventory_report(evidence)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_software_inventory_csv(report)
+    else:
+        rendered = render_software_inventory_markdown(report)
     write_text(args.output, rendered)
     if args.fail_on_warn and report["summary"]["status"] != "pass":
         return 1
@@ -1878,6 +1918,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_patch_report(document)
     elif args.type == "vulnerability-report":
         errors = validate_vulnerability_report(document)
+    elif args.type == "software-inventory-report":
+        errors = validate_software_inventory_report(document)
     elif args.type == "runtime-report":
         errors = validate_runtime_report(document)
     elif args.type == "service-level-report":

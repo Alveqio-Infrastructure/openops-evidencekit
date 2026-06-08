@@ -71,6 +71,9 @@ jobs:
           openops-evidence vulnerability report -i evidence.sample.json -f json -o vulnerability-report.json
           openops-evidence validate -i vulnerability-report.json -t vulnerability-report
           openops-evidence vulnerability report -i evidence.sample.json -o vulnerability-report.md
+          openops-evidence software report -i evidence.sample.json -f json -o software-inventory-report.json
+          openops-evidence validate -i software-inventory-report.json -t software-inventory-report
+          openops-evidence software report -i evidence.sample.json -o software-inventory-report.md
           openops-evidence runtime report -i evidence.sample.json -f json -o runtime-report.json
           openops-evidence validate -i runtime-report.json -t runtime-report
           openops-evidence runtime report -i evidence.sample.json -o runtime-report.md
@@ -137,6 +140,8 @@ jobs:
             patch-report.md
             vulnerability-report.json
             vulnerability-report.md
+            software-inventory-report.json
+            software-inventory-report.md
             runtime-report.json
             runtime-report.md
             service-level-report.json

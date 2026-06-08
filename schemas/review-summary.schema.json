@@ -72,6 +72,10 @@
         "vulnerability_warnings",
         "critical_vulnerabilities",
         "high_vulnerabilities",
+        "software_inventory_failures",
+        "software_inventory_warnings",
+        "software_components",
+        "software_missing_metadata",
         "runtime_failures",
         "runtime_warnings",
         "incident_failures",
@@ -217,6 +221,22 @@
           "minimum": 0
         },
         "high_vulnerabilities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "software_inventory_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "software_inventory_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "software_components": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "software_missing_metadata": {
           "type": "integer",
           "minimum": 0
         },

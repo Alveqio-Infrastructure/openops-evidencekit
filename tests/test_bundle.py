@@ -215,6 +215,7 @@ class BundleTests(unittest.TestCase):
             firewall_report = temp / "firewall-report.json"
             patch_report = temp / "patch-report.json"
             vulnerability_report = temp / "vulnerability-report.json"
+            software_inventory_report = temp / "software-inventory-report.json"
             runtime_report = temp / "runtime-report.json"
             service_level_report = temp / "service-level-report.json"
             incident_report = temp / "incident-report.json"
@@ -546,6 +547,10 @@ class BundleTests(unittest.TestCase):
                             "vulnerability_warnings": 0,
                             "critical_vulnerabilities": 0,
                             "high_vulnerabilities": 0,
+                            "software_inventory_failures": 0,
+                            "software_inventory_warnings": 0,
+                            "software_components": 0,
+                            "software_missing_metadata": 0,
                             "runtime_failures": 0,
                             "runtime_warnings": 0,
                             "incident_failures": 0,
@@ -925,6 +930,55 @@ class BundleTests(unittest.TestCase):
                         "critical_findings": [],
                         "high_findings": [],
                         "critical_high_findings": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            software_inventory_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "source": "cyclonedx",
+                            "bom_format": "CycloneDX",
+                            "spec_version": "1.5",
+                            "components_total": 1,
+                            "missing_versions": 0,
+                            "missing_purls": 0,
+                            "missing_licenses": 0,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "software_components_recorded",
+                                "title": "Software components are recorded",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals.software_inventory.components",
+                                "reason": "1 component was recorded.",
+                                "recommended_action": "Keep SBOM evidence current.",
+                            }
+                        ],
+                        "components": [
+                            {
+                                "bom_ref": "pkg:pypi/requests@2.32.3",
+                                "type": "library",
+                                "name": "requests",
+                                "version": "2.32.3",
+                                "group": "",
+                                "purl": "pkg:pypi/requests@2.32.3",
+                                "licenses": ["Apache-2.0"],
+                            }
+                        ],
+                        "missing_version_components": [],
+                        "missing_purl_components": [],
+                        "missing_license_components": [],
                     }
                 ),
                 encoding="utf-8",
@@ -1518,6 +1572,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(firewall_report), "firewall-report")
             self.assertEqual(classify_artifact(patch_report), "patch-report")
             self.assertEqual(classify_artifact(vulnerability_report), "vulnerability-report")
+            self.assertEqual(classify_artifact(software_inventory_report), "software-inventory-report")
             self.assertEqual(classify_artifact(runtime_report), "runtime-report")
             self.assertEqual(classify_artifact(service_level_report), "service-level-report")
             self.assertEqual(classify_artifact(incident_report), "incident-report")

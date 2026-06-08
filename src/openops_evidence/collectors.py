@@ -505,6 +505,46 @@ def collect_trivy_json(path: str) -> dict[str, Any]:
     }
 
 
+def collect_cyclonedx_json(path: str) -> dict[str, Any]:
+    payload = load_json(path)
+    if not isinstance(payload, dict):
+        raise ValueError("CycloneDX input must be a JSON object")
+    components = payload.get("components", [])
+    if not isinstance(components, list):
+        raise ValueError("CycloneDX input must contain a components list")
+    component_records = [
+        _cyclonedx_component_record(item)
+        for item in components
+        if isinstance(item, dict)
+    ]
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "source": f"cyclonedx-json:{path}",
+            "collector": "openops-evidencekit",
+        },
+        "assets": [
+            {
+                "id": item["bom_ref"] or item["purl"] or item["name"],
+                "type": "software-component",
+                "roles": ["software-inventory"],
+                "tags": [item["type"]] if item["type"] else [],
+            }
+            for item in component_records
+        ],
+        "signals": {
+            "software_inventory": {
+                "source": "cyclonedx",
+                "bom_format": str(payload.get("bomFormat") or "CycloneDX"),
+                "spec_version": str(payload.get("specVersion") or ""),
+                "components_total": len(component_records),
+                "components": component_records,
+            }
+        },
+    }
+
+
 def collect_nmap_xml(path: str) -> dict[str, Any]:
     tree = ET.parse(path)
     root = tree.getroot()
@@ -756,6 +796,27 @@ def _trivy_vulnerability_record(target: str, item: dict[str, Any]) -> dict[str, 
         "severity": str(item.get("Severity") or "UNKNOWN").lower(),
         "title": str(item.get("Title") or item.get("Description") or ""),
         "primary_url": str(item.get("PrimaryURL") or ""),
+    }
+
+
+def _cyclonedx_component_record(item: dict[str, Any]) -> dict[str, Any]:
+    licenses = []
+    for entry in item.get("licenses") or []:
+        if not isinstance(entry, dict):
+            continue
+        license_record = entry.get("license")
+        if isinstance(license_record, dict):
+            value = license_record.get("id") or license_record.get("name")
+            if value:
+                licenses.append(str(value))
+    return {
+        "bom_ref": str(item.get("bom-ref") or ""),
+        "type": str(item.get("type") or ""),
+        "name": str(item.get("name") or "unknown"),
+        "version": str(item.get("version") or ""),
+        "group": str(item.get("group") or ""),
+        "purl": str(item.get("purl") or ""),
+        "licenses": sorted(set(licenses)),
     }
 
 

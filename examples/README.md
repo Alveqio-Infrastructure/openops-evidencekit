@@ -49,6 +49,7 @@ is available.
 - `ufw.status.sample.txt` contains trimmed UFW firewall status output.
 - `apt.upgradable.sample.txt` contains trimmed `apt list --upgradable` output.
 - `trivy.sample.json` contains a trimmed Trivy JSON vulnerability scan output.
+- `cyclonedx.sample.json` contains a trimmed CycloneDX SBOM JSON output.
 - `systemd.timers.sample.json` contains a trimmed `systemctl list-timers`
   JSON export.
 - `docker.containers.sample.jsonl` contains JSON lines produced by
@@ -59,7 +60,7 @@ is available.
 
 Use the workflow in `docs/demo-workflow.md` to regenerate local evidence,
 policy matrices, policy coverage reports, questionnaires, inventories, reports,
-evidence scaffolds, evidence quality reports, scope reports, service catalog reports, exposure reports, firewall reports, patch reports, vulnerability reports, runtime reports, service-level reports, runbook coverage
+evidence scaffolds, evidence quality reports, scope reports, service catalog reports, exposure reports, firewall reports, patch reports, vulnerability reports, software inventory reports, runtime reports, service-level reports, runbook coverage
 reports, evidence completeness reports, evidence freshness reports, restore assurance reports, access exposure
 reports, TLS certificate reports, monitoring reports, incident readiness
 reports, executive briefs, scorecards, history timelines, evidence drift

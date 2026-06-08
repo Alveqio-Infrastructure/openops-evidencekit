@@ -6,6 +6,7 @@ from pathlib import Path
 
 from openops_evidence.collectors import (
     collect_borg_archives,
+    collect_cyclonedx_json,
     collect_docker_containers,
     collect_docs_directory,
     collect_apt_upgrades,
@@ -160,6 +161,29 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(vulnerabilities["findings_total"], 1)
         self.assertEqual(vulnerabilities["critical_total"], 1)
         self.assertEqual(vulnerabilities["findings"][0]["package"], "openssl")
+
+    def test_collect_cyclonedx_json(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "bom.json"
+            path.write_text(
+                """
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "components": [
+    {"bom-ref": "pkg:pypi/requests@2.32.3", "type": "library", "name": "requests", "version": "2.32.3", "purl": "pkg:pypi/requests@2.32.3", "licenses": [{"license": {"id": "Apache-2.0"}}]},
+    {"bom-ref": "internal-helper", "type": "library", "name": "internal-helper"}
+  ]
+}
+""".strip(),
+                encoding="utf-8",
+            )
+            evidence = collect_cyclonedx_json(str(path))
+        inventory = evidence["signals"]["software_inventory"]
+        self.assertEqual(inventory["source"], "cyclonedx")
+        self.assertEqual(inventory["components_total"], 2)
+        self.assertEqual(inventory["components"][0]["licenses"], ["Apache-2.0"])
+        self.assertEqual(inventory["components"][1]["name"], "internal-helper")
 
     def test_collect_apt_upgrades(self):
         with tempfile.TemporaryDirectory() as temp_dir:

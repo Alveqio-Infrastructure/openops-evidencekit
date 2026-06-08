@@ -54,6 +54,7 @@ from .runbooks import create_runbook_report, render_runbook_csv, render_runbook_
 from .runtime import create_runtime_report, render_runtime_csv, render_runtime_markdown
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .service_level import create_service_level_report, render_service_level_csv, render_service_level_markdown
+from .software_inventory import create_software_inventory_report, render_software_inventory_csv, render_software_inventory_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown
 from .tls import create_tls_report, render_tls_csv, render_tls_markdown
 from .vulnerabilities import create_vulnerability_report, render_vulnerability_csv, render_vulnerability_markdown
@@ -100,6 +101,7 @@ def create_review_pack(
     firewall_report = create_firewall_report(evidence) if _has_firewall_context(evidence, checks) else None
     patch_report = create_patch_report(evidence) if _has_patch_context(evidence, checks) else None
     vulnerability_report = create_vulnerability_report(evidence) if _has_vulnerability_context(evidence, checks) else None
+    software_inventory_report = create_software_inventory_report(evidence) if _has_software_inventory_context(evidence, checks) else None
     runtime_report = create_runtime_report(evidence) if _has_runtime_context(evidence, checks) else None
     incident_report = create_incident_report(evidence, catalog_document=catalog_document) if _has_incident_context(evidence, catalog_document, checks) else None
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
@@ -183,6 +185,10 @@ def create_review_pack(
         add_artifact("vulnerability-report.json", dump_json(vulnerability_report), "Vulnerability report", "Machine-readable vulnerability scan report.")
         add_artifact("vulnerability-report.md", render_vulnerability_markdown(vulnerability_report), "Vulnerability report", "Human-readable vulnerability scan report.")
         add_artifact("vulnerability-report.csv", render_vulnerability_csv(vulnerability_report), "Vulnerability report", "Spreadsheet-friendly vulnerability scan report.")
+    if software_inventory_report is not None:
+        add_artifact("software-inventory-report.json", dump_json(software_inventory_report), "Software inventory report", "Machine-readable SBOM component inventory report.")
+        add_artifact("software-inventory-report.md", render_software_inventory_markdown(software_inventory_report), "Software inventory report", "Human-readable SBOM component inventory report.")
+        add_artifact("software-inventory-report.csv", render_software_inventory_csv(software_inventory_report), "Software inventory report", "Spreadsheet-friendly SBOM component inventory report.")
     if runtime_report is not None:
         add_artifact("runtime-report.json", dump_json(runtime_report), "Runtime report", "Machine-readable runtime container and timer report.")
         add_artifact("runtime-report.md", render_runtime_markdown(runtime_report), "Runtime report", "Human-readable runtime container and timer report.")
@@ -291,6 +297,7 @@ def create_review_pack(
         firewall_report=firewall_report,
         patch_report=patch_report,
         vulnerability_report=vulnerability_report,
+        software_inventory_report=software_inventory_report,
         runtime_report=runtime_report,
         incident_report=incident_report,
         risk_register=risk_register,
@@ -346,6 +353,7 @@ def create_review_pack(
         "firewall_report": firewall_report,
         "patch_report": patch_report,
         "vulnerability_report": vulnerability_report,
+        "software_inventory_report": software_inventory_report,
         "runtime_report": runtime_report,
         "incident_report": incident_report,
         "risk_register": risk_register,
@@ -401,6 +409,8 @@ def render_review_pack_readme(
         suggested_steps.append("Use `patch-report.md` to review pending updates, security updates, and reboot state.")
     if any(artifact.get("filename") == "vulnerability-report.md" for artifact in artifacts):
         suggested_steps.append("Use `vulnerability-report.md` to review critical, high, and fixable vulnerability findings.")
+    if any(artifact.get("filename") == "software-inventory-report.md" for artifact in artifacts):
+        suggested_steps.append("Use `software-inventory-report.md` to review SBOM component metadata, package URLs, and licenses.")
     if any(artifact.get("filename") == "runtime-report.md" for artifact in artifacts):
         suggested_steps.append("Use `runtime-report.md` to review stopped containers, restart policies, and failed timers.")
     if any(artifact.get("filename") == "incident-report.md" for artifact in artifacts):
@@ -641,6 +651,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("firewall-report.md", "Firewall"),
         ("patch-report.md", "Patch"),
         ("vulnerability-report.md", "Vulnerabilities"),
+        ("software-inventory-report.md", "Software Inventory"),
         ("runtime-report.md", "Runtime"),
         ("incident-report.md", "Incident"),
         ("scope-report.md", "Scope Report"),
@@ -716,6 +727,13 @@ def _has_vulnerability_context(evidence: dict[str, Any], checks: list[Check]) ->
     if isinstance(signals, dict) and isinstance(signals.get("vulnerabilities"), dict):
         return True
     return any(check.path.startswith("signals.vulnerabilities") for check in checks)
+
+
+def _has_software_inventory_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
+    signals = evidence.get("signals")
+    if isinstance(signals, dict) and isinstance(signals.get("software_inventory"), dict):
+        return True
+    return any(check.path.startswith("signals.software_inventory") for check in checks)
 
 
 def _has_runtime_context(evidence: dict[str, Any], checks: list[Check]) -> bool:

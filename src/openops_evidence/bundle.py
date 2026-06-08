@@ -46,6 +46,7 @@ from .schema import (
     validate_service_level_report,
     validate_service_catalog_report,
     validate_scope_report,
+    validate_software_inventory_report,
     validate_tls_report,
     validate_vulnerability_report,
 )
@@ -319,6 +320,8 @@ def classify_artifact(path: Path) -> str:
             return "patch-report"
         if validate_vulnerability_report(document) == []:
             return "vulnerability-report"
+        if validate_software_inventory_report(document) == []:
+            return "software-inventory-report"
         if validate_runtime_report(document) == []:
             return "runtime-report"
         if validate_service_level_report(document) == []:

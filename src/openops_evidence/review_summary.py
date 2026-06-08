@@ -23,6 +23,7 @@ def create_review_summary(
     firewall_report: dict[str, Any] | None = None,
     patch_report: dict[str, Any] | None = None,
     vulnerability_report: dict[str, Any] | None = None,
+    software_inventory_report: dict[str, Any] | None = None,
     runtime_report: dict[str, Any] | None = None,
     incident_report: dict[str, Any] | None = None,
     risk_register: dict[str, Any] | None = None,
@@ -47,6 +48,7 @@ def create_review_summary(
     firewall_summary = (firewall_report or {}).get("summary", {})
     patch_summary = (patch_report or {}).get("summary", {})
     vulnerability_summary = (vulnerability_report or {}).get("summary", {})
+    software_inventory_summary = (software_inventory_report or {}).get("summary", {})
     runtime_summary = (runtime_report or {}).get("summary", {})
     incident_summary = (incident_report or {}).get("summary", {})
     risk_summary = (risk_register or {}).get("summary", {})
@@ -89,6 +91,12 @@ def create_review_summary(
         "vulnerability_warnings": _int_or_zero(vulnerability_summary.get("checks_warn")),
         "critical_vulnerabilities": _int_or_zero(vulnerability_summary.get("critical_total")),
         "high_vulnerabilities": _int_or_zero(vulnerability_summary.get("high_total")),
+        "software_inventory_failures": _int_or_zero(software_inventory_summary.get("checks_failed")),
+        "software_inventory_warnings": _int_or_zero(software_inventory_summary.get("checks_warn")),
+        "software_components": _int_or_zero(software_inventory_summary.get("components_total")),
+        "software_missing_metadata": _int_or_zero(software_inventory_summary.get("missing_versions"))
+        + _int_or_zero(software_inventory_summary.get("missing_purls"))
+        + _int_or_zero(software_inventory_summary.get("missing_licenses")),
         "runtime_failures": _int_or_zero(runtime_summary.get("checks_failed")),
         "runtime_warnings": _int_or_zero(runtime_summary.get("checks_warn")),
         "incident_failures": _int_or_zero(incident_summary.get("checks_failed")),
@@ -171,6 +179,10 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "vulnerability_warnings",
         "critical_vulnerabilities",
         "high_vulnerabilities",
+        "software_inventory_failures",
+        "software_inventory_warnings",
+        "software_components",
+        "software_missing_metadata",
         "runtime_failures",
         "runtime_warnings",
         "incident_failures",
@@ -231,6 +243,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("patch checks failed")
     if metrics["vulnerability_failures"] > 0:
         blockers.append("vulnerability checks failed")
+    if metrics["software_inventory_failures"] > 0:
+        blockers.append("software inventory checks failed")
     if metrics["runtime_failures"] > 0:
         blockers.append("runtime checks failed")
     if metrics["incident_failures"] > 0:
@@ -270,6 +284,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("patch warnings exist")
     if metrics["vulnerability_warnings"] > 0:
         warnings.append("vulnerability warnings exist")
+    if metrics["software_inventory_warnings"] > 0:
+        warnings.append("software inventory warnings exist")
     if metrics["runtime_warnings"] > 0:
         warnings.append("runtime warnings exist")
     if metrics["incident_warnings"] > 0:
@@ -358,6 +374,10 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['high_vulnerabilities']} high vulnerability finding(s) were recorded.")
     if metrics["vulnerability_warnings"]:
         highlights.append(f"{metrics['vulnerability_warnings']} vulnerability warning(s) need review.")
+    if metrics["software_components"]:
+        highlights.append(f"{metrics['software_components']} software component(s) were recorded in SBOM evidence.")
+    if metrics["software_missing_metadata"]:
+        highlights.append(f"{metrics['software_missing_metadata']} software component metadata gap(s) need review.")
     if metrics["runtime_failures"]:
         highlights.append(f"{metrics['runtime_failures']} runtime check(s) failed.")
     if metrics["runtime_warnings"]:
@@ -408,6 +428,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Review `patch-report.md` and apply, schedule, or explicitly defer pending updates.")
     if metrics["vulnerability_failures"] > 0 or metrics["vulnerability_warnings"] > 0:
         steps.append("Review `vulnerability-report.md` and patch, rebuild, mitigate, or accept recorded vulnerability findings.")
+    if metrics["software_inventory_failures"] > 0 or metrics["software_inventory_warnings"] > 0:
+        steps.append("Review `software-inventory-report.md` and complete SBOM version, package URL, or license metadata.")
     if metrics["runtime_failures"] > 0 or metrics["runtime_warnings"] > 0:
         steps.append("Review `runtime-report.md` and fix failed timers, stopped containers, or missing restart policies.")
     if metrics["incident_failures"] > 0 or metrics["incident_warnings"] > 0:

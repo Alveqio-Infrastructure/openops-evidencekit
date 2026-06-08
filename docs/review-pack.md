@@ -33,6 +33,7 @@ audiences need:
 | `firewall-report.json` / `firewall-report.md` / `firewall-report.csv` | Optional firewall status, default policy, and public admin rule report when firewall evidence or policy paths exist. |
 | `patch-report.json` / `patch-report.md` / `patch-report.csv` | Optional package update, security update, and reboot report when patch evidence or policy paths exist. |
 | `vulnerability-report.json` / `vulnerability-report.md` / `vulnerability-report.csv` | Optional vulnerability report when scanner evidence or policy paths exist. |
+| `software-inventory-report.json` / `software-inventory-report.md` / `software-inventory-report.csv` | Optional SBOM component inventory report when software inventory evidence or policy paths exist. |
 | `runtime-report.json` / `runtime-report.md` / `runtime-report.csv` | Optional Docker and systemd runtime report when runtime evidence or policy paths exist. |
 | `incident-report.json` / `incident-report.md` / `incident-report.csv` | Optional incident readiness report when `--catalog` is provided or incident policy paths exist. |
 | `evidence-drift.json` / `evidence-drift.md` / `evidence-drift.csv` | Optional drift report when `--base-evidence` is provided. |
@@ -63,6 +64,7 @@ python -m openops_evidence validate -i review-pack/exposure-report.json -t expos
 python -m openops_evidence validate -i review-pack/firewall-report.json -t firewall-report
 python -m openops_evidence validate -i review-pack/patch-report.json -t patch-report
 python -m openops_evidence validate -i review-pack/vulnerability-report.json -t vulnerability-report
+python -m openops_evidence validate -i review-pack/software-inventory-report.json -t software-inventory-report
 python -m openops_evidence validate -i review-pack/runtime-report.json -t runtime-report
 python -m openops_evidence validate -i review-pack/service-level-report.json -t service-level-report
 python -m openops_evidence validate -i review-pack/review-checklist.json -t review-checklist

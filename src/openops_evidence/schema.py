@@ -1419,6 +1419,41 @@ def validate_vulnerability_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_software_inventory_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Software inventory report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    for key in ("components", "missing_version_components", "missing_purl_components", "missing_license_components"):
+        _require_list(document, key, errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in ("source", "bom_format", "spec_version"):
+            _require_string_type(summary, key, errors, prefix="summary.")
+        for key in (
+            "components_total",
+            "missing_versions",
+            "missing_purls",
+            "missing_licenses",
+            "checks_total",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        _validate_operational_check(check, errors, f"checks[{index}].")
+    for collection_name in ("components", "missing_version_components", "missing_purl_components", "missing_license_components"):
+        for index, component in enumerate(document.get(collection_name, [])):
+            _validate_software_component(component, errors, f"{collection_name}[{index}].")
+    return errors
+
+
 def validate_runtime_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
@@ -1740,6 +1775,15 @@ def _validate_vulnerability_finding(value: Any, errors: list[str], prefix: str) 
     _require_enum(value, "severity", {"critical", "high", "medium", "low", "unknown"}, errors, prefix=prefix)
     _require_string_type(value, "title", errors, prefix=prefix)
     _require_string_type(value, "primary_url", errors, prefix=prefix)
+
+
+def _validate_software_component(value: Any, errors: list[str], prefix: str) -> None:
+    if not isinstance(value, dict):
+        errors.append(f"{prefix.rstrip('.')} must be an object.")
+        return
+    for key in ("bom_ref", "type", "name", "version", "group", "purl"):
+        _require_string_type(value, key, errors, prefix=prefix)
+    _require_list(value, "licenses", errors, prefix=prefix)
 
 
 def _is_sha256_hex(value: str) -> bool:

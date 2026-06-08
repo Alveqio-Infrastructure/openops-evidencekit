@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/software-inventory-report.schema.json",
+  "title": "OpenOps Software Inventory Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "checks", "components", "missing_version_components", "missing_purl_components", "missing_license_components"],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^0\\.1(\\.\\d+)?$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "metadata": {"type": "object", "additionalProperties": true},
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["status", "source", "bom_format", "spec_version", "components_total", "missing_versions", "missing_purls", "missing_licenses", "checks_total", "checks_passed", "checks_warn", "checks_failed"],
+      "properties": {
+        "status": {"enum": ["pass", "warn", "fail"]},
+        "source": {"type": "string"},
+        "bom_format": {"type": "string"},
+        "spec_version": {"type": "string"},
+        "components_total": {"type": "integer", "minimum": 0},
+        "missing_versions": {"type": "integer", "minimum": 0},
+        "missing_purls": {"type": "integer", "minimum": 0},
+        "missing_licenses": {"type": "integer", "minimum": 0},
+        "checks_total": {"type": "integer", "minimum": 0},
+        "checks_passed": {"type": "integer", "minimum": 0},
+        "checks_warn": {"type": "integer", "minimum": 0},
+        "checks_failed": {"type": "integer", "minimum": 0}
+      }
+    },
+    "checks": {"type": "array", "items": {"$ref": "#/$defs/operational_check"}},
+    "components": {"type": "array", "items": {"$ref": "#/$defs/component"}},
+    "missing_version_components": {"type": "array", "items": {"$ref": "#/$defs/component"}},
+    "missing_purl_components": {"type": "array", "items": {"$ref": "#/$defs/component"}},
+    "missing_license_components": {"type": "array", "items": {"$ref": "#/$defs/component"}}
+  },
+  "$defs": {
+    "operational_check": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "status", "severity", "path", "reason", "recommended_action"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "status": {"enum": ["pass", "warn", "fail"]},
+        "severity": {"enum": ["info", "low", "medium", "high", "critical"]},
+        "path": {"type": "string", "minLength": 1},
+        "reason": {"type": "string"},
+        "recommended_action": {"type": "string"}
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["bom_ref", "type", "name", "version", "group", "purl", "licenses"],
+      "properties": {
+        "bom_ref": {"type": "string"},
+        "type": {"type": "string"},
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "group": {"type": "string"},
+        "purl": {"type": "string"},
+        "licenses": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
