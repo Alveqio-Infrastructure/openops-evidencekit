@@ -27,6 +27,7 @@ and automation wrappers.
 - `exposure report --fail-on-warn` returns `1` when exposure checks fail or warn.
 - `firewall report --fail-on-warn` returns `1` when firewall checks fail or warn.
 - `patch report --fail-on-warn` returns `1` when patch checks fail or warn.
+- `vulnerability report --fail-on-warn` returns `1` when vulnerability checks fail or warn.
 - `runtime report --fail-on-warn` returns `1` when runtime checks fail or warn.
 - `service-level report --fail-on-warn` returns `1` when service-level targets fail or SLO evidence warnings exist.
 - `review create --fail-on-gate` returns `1` when the generated gate fails.

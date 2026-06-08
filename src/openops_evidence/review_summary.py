@@ -22,6 +22,7 @@ def create_review_summary(
     exposure_report: dict[str, Any] | None = None,
     firewall_report: dict[str, Any] | None = None,
     patch_report: dict[str, Any] | None = None,
+    vulnerability_report: dict[str, Any] | None = None,
     runtime_report: dict[str, Any] | None = None,
     incident_report: dict[str, Any] | None = None,
     risk_register: dict[str, Any] | None = None,
@@ -45,6 +46,7 @@ def create_review_summary(
     exposure_summary = (exposure_report or {}).get("summary", {})
     firewall_summary = (firewall_report or {}).get("summary", {})
     patch_summary = (patch_report or {}).get("summary", {})
+    vulnerability_summary = (vulnerability_report or {}).get("summary", {})
     runtime_summary = (runtime_report or {}).get("summary", {})
     incident_summary = (incident_report or {}).get("summary", {})
     risk_summary = (risk_register or {}).get("summary", {})
@@ -83,6 +85,10 @@ def create_review_summary(
         "patch_failures": _int_or_zero(patch_summary.get("checks_failed")),
         "patch_warnings": _int_or_zero(patch_summary.get("checks_warn")),
         "security_updates": _int_or_zero(patch_summary.get("security_updates_total")),
+        "vulnerability_failures": _int_or_zero(vulnerability_summary.get("checks_failed")),
+        "vulnerability_warnings": _int_or_zero(vulnerability_summary.get("checks_warn")),
+        "critical_vulnerabilities": _int_or_zero(vulnerability_summary.get("critical_total")),
+        "high_vulnerabilities": _int_or_zero(vulnerability_summary.get("high_total")),
         "runtime_failures": _int_or_zero(runtime_summary.get("checks_failed")),
         "runtime_warnings": _int_or_zero(runtime_summary.get("checks_warn")),
         "incident_failures": _int_or_zero(incident_summary.get("checks_failed")),
@@ -161,6 +167,10 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "patch_failures",
         "patch_warnings",
         "security_updates",
+        "vulnerability_failures",
+        "vulnerability_warnings",
+        "critical_vulnerabilities",
+        "high_vulnerabilities",
         "runtime_failures",
         "runtime_warnings",
         "incident_failures",
@@ -219,6 +229,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("firewall checks failed")
     if metrics["patch_failures"] > 0:
         blockers.append("patch checks failed")
+    if metrics["vulnerability_failures"] > 0:
+        blockers.append("vulnerability checks failed")
     if metrics["runtime_failures"] > 0:
         blockers.append("runtime checks failed")
     if metrics["incident_failures"] > 0:
@@ -256,6 +268,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("firewall warnings exist")
     if metrics["patch_warnings"] > 0:
         warnings.append("patch warnings exist")
+    if metrics["vulnerability_warnings"] > 0:
+        warnings.append("vulnerability warnings exist")
     if metrics["runtime_warnings"] > 0:
         warnings.append("runtime warnings exist")
     if metrics["incident_warnings"] > 0:
@@ -338,6 +352,12 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['patch_warnings']} patch warning(s) need review.")
     if metrics["security_updates"]:
         highlights.append(f"{metrics['security_updates']} security update(s) are pending.")
+    if metrics["critical_vulnerabilities"]:
+        highlights.append(f"{metrics['critical_vulnerabilities']} critical vulnerability finding(s) were recorded.")
+    if metrics["high_vulnerabilities"]:
+        highlights.append(f"{metrics['high_vulnerabilities']} high vulnerability finding(s) were recorded.")
+    if metrics["vulnerability_warnings"]:
+        highlights.append(f"{metrics['vulnerability_warnings']} vulnerability warning(s) need review.")
     if metrics["runtime_failures"]:
         highlights.append(f"{metrics['runtime_failures']} runtime check(s) failed.")
     if metrics["runtime_warnings"]:
@@ -386,6 +406,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Review `firewall-report.md` and restrict public administrative rules or fix firewall defaults.")
     if metrics["patch_failures"] > 0 or metrics["patch_warnings"] > 0:
         steps.append("Review `patch-report.md` and apply, schedule, or explicitly defer pending updates.")
+    if metrics["vulnerability_failures"] > 0 or metrics["vulnerability_warnings"] > 0:
+        steps.append("Review `vulnerability-report.md` and patch, rebuild, mitigate, or accept recorded vulnerability findings.")
     if metrics["runtime_failures"] > 0 or metrics["runtime_warnings"] > 0:
         steps.append("Review `runtime-report.md` and fix failed timers, stopped containers, or missing restart policies.")
     if metrics["incident_failures"] > 0 or metrics["incident_warnings"] > 0:

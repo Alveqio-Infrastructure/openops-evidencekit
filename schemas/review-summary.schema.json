@@ -68,6 +68,10 @@
         "patch_failures",
         "patch_warnings",
         "security_updates",
+        "vulnerability_failures",
+        "vulnerability_warnings",
+        "critical_vulnerabilities",
+        "high_vulnerabilities",
         "runtime_failures",
         "runtime_warnings",
         "incident_failures",
@@ -197,6 +201,22 @@
           "minimum": 0
         },
         "security_updates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "vulnerability_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "vulnerability_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_vulnerabilities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high_vulnerabilities": {
           "type": "integer",
           "minimum": 0
         },

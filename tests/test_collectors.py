@@ -13,6 +13,7 @@ from openops_evidence.collectors import (
     collect_prometheus_targets,
     collect_restic_snapshots,
     collect_systemd_timers,
+    collect_trivy_json,
     collect_uptime_kuma_export,
     collect_ufw_status,
 )
@@ -125,6 +126,40 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(exposure["hosts_total"], 1)
         self.assertEqual(exposure["open_ports_total"], 2)
         self.assertEqual(exposure["risky_ports"], ["203.0.113.10:22/tcp"])
+
+    def test_collect_trivy_json(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "trivy.json"
+            path.write_text(
+                """
+{
+  "Results": [
+    {
+      "Target": "example/app:1.0",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2026-0001",
+          "PkgName": "openssl",
+          "InstalledVersion": "1.0",
+          "FixedVersion": "1.1",
+          "Severity": "CRITICAL",
+          "Title": "Synthetic critical",
+          "PrimaryURL": "https://example.invalid/CVE-2026-0001"
+        }
+      ]
+    }
+  ]
+}
+""".strip(),
+                encoding="utf-8",
+            )
+            evidence = collect_trivy_json(str(path))
+        vulnerabilities = evidence["signals"]["vulnerabilities"]
+        self.assertEqual(vulnerabilities["scanner"], "trivy")
+        self.assertEqual(vulnerabilities["targets_total"], 1)
+        self.assertEqual(vulnerabilities["findings_total"], 1)
+        self.assertEqual(vulnerabilities["critical_total"], 1)
+        self.assertEqual(vulnerabilities["findings"][0]["package"], "openssl")
 
     def test_collect_apt_upgrades(self):
         with tempfile.TemporaryDirectory() as temp_dir:

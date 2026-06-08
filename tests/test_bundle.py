@@ -214,6 +214,7 @@ class BundleTests(unittest.TestCase):
             exposure_report = temp / "exposure-report.json"
             firewall_report = temp / "firewall-report.json"
             patch_report = temp / "patch-report.json"
+            vulnerability_report = temp / "vulnerability-report.json"
             runtime_report = temp / "runtime-report.json"
             service_level_report = temp / "service-level-report.json"
             incident_report = temp / "incident-report.json"
@@ -541,6 +542,10 @@ class BundleTests(unittest.TestCase):
                             "patch_failures": 0,
                             "patch_warnings": 0,
                             "security_updates": 0,
+                            "vulnerability_failures": 0,
+                            "vulnerability_warnings": 0,
+                            "critical_vulnerabilities": 0,
+                            "high_vulnerabilities": 0,
                             "runtime_failures": 0,
                             "runtime_warnings": 0,
                             "incident_failures": 0,
@@ -879,6 +884,47 @@ class BundleTests(unittest.TestCase):
                         ],
                         "packages": [],
                         "security_packages": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            vulnerability_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "scanner": "trivy",
+                            "targets_total": 1,
+                            "findings_total": 0,
+                            "critical_total": 0,
+                            "high_total": 0,
+                            "medium_total": 0,
+                            "low_total": 0,
+                            "unknown_total": 0,
+                            "fixable_total": 0,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "critical_high_vulnerabilities_remediated",
+                                "title": "Critical and high vulnerabilities are remediated",
+                                "status": "pass",
+                                "severity": "critical",
+                                "path": "signals.vulnerabilities.findings",
+                                "reason": "No critical or high vulnerabilities were recorded.",
+                                "recommended_action": "Keep vulnerability evidence current.",
+                            }
+                        ],
+                        "findings": [],
+                        "critical_findings": [],
+                        "high_findings": [],
+                        "critical_high_findings": [],
                     }
                 ),
                 encoding="utf-8",
@@ -1471,6 +1517,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(exposure_report), "exposure-report")
             self.assertEqual(classify_artifact(firewall_report), "firewall-report")
             self.assertEqual(classify_artifact(patch_report), "patch-report")
+            self.assertEqual(classify_artifact(vulnerability_report), "vulnerability-report")
             self.assertEqual(classify_artifact(runtime_report), "runtime-report")
             self.assertEqual(classify_artifact(service_level_report), "service-level-report")
             self.assertEqual(classify_artifact(incident_report), "incident-report")

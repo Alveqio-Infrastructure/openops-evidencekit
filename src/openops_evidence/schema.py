@@ -446,6 +446,10 @@ def validate_review_summary(document: Any) -> list[str]:
             "patch_failures",
             "patch_warnings",
             "security_updates",
+            "vulnerability_failures",
+            "vulnerability_warnings",
+            "critical_vulnerabilities",
+            "high_vulnerabilities",
             "runtime_failures",
             "runtime_warnings",
             "incident_failures",
@@ -1375,6 +1379,46 @@ def validate_patch_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_vulnerability_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["Vulnerability report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "checks", errors)
+    _require_list(document, "findings", errors)
+    _require_list(document, "critical_findings", errors)
+    _require_list(document, "high_findings", errors)
+    _require_list(document, "critical_high_findings", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        _require_string_type(summary, "scanner", errors, prefix="summary.")
+        for key in (
+            "targets_total",
+            "findings_total",
+            "critical_total",
+            "high_total",
+            "medium_total",
+            "low_total",
+            "unknown_total",
+            "fixable_total",
+            "checks_total",
+            "checks_passed",
+            "checks_warn",
+            "checks_failed",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, check in enumerate(document.get("checks", [])):
+        _validate_operational_check(check, errors, f"checks[{index}].")
+    for collection_name in ("findings", "critical_findings", "high_findings", "critical_high_findings"):
+        for index, finding in enumerate(document.get(collection_name, [])):
+            _validate_vulnerability_finding(finding, errors, f"{collection_name}[{index}].")
+    return errors
+
+
 def validate_runtime_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):
@@ -1682,6 +1726,20 @@ def validate_report_comparison(document: Any) -> list[str]:
     _require_list(document, "added", errors)
     _require_list(document, "removed", errors)
     return errors
+
+
+def _validate_vulnerability_finding(value: Any, errors: list[str], prefix: str) -> None:
+    if not isinstance(value, dict):
+        errors.append(f"{prefix.rstrip('.')} must be an object.")
+        return
+    _require_string(value, "id", errors, prefix=prefix)
+    _require_string_type(value, "target", errors, prefix=prefix)
+    _require_string_type(value, "package", errors, prefix=prefix)
+    _require_string_type(value, "installed_version", errors, prefix=prefix)
+    _require_string_type(value, "fixed_version", errors, prefix=prefix)
+    _require_enum(value, "severity", {"critical", "high", "medium", "low", "unknown"}, errors, prefix=prefix)
+    _require_string_type(value, "title", errors, prefix=prefix)
+    _require_string_type(value, "primary_url", errors, prefix=prefix)
 
 
 def _is_sha256_hex(value: str) -> bool:

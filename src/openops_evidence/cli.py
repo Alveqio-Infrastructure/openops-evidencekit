@@ -41,6 +41,7 @@ from .collectors import (
     collect_restic_snapshots,
     collect_systemd_timers,
     collect_tls,
+    collect_trivy_json,
     collect_uptime_kuma_export,
     collect_ufw_status,
 )
@@ -126,12 +127,14 @@ from .schema import (
     validate_service_catalog_report,
     validate_scope_report,
     validate_tls_report,
+    validate_vulnerability_report,
 )
 from .scorecard import create_report_scorecard, render_scorecard_csv, render_scorecard_html, render_scorecard_markdown
 from .service_level import create_service_level_report, render_service_level_csv, render_service_level_markdown
 from .scope import create_scope_report, render_scope_csv, render_scope_markdown, validate_scope_document
 from .tickets import export_action_plan_tickets
 from .tls import create_tls_report, render_tls_csv, render_tls_markdown
+from .vulnerabilities import create_vulnerability_report, render_vulnerability_csv, render_vulnerability_markdown
 from .waivers import validate_waiver_document
 
 
@@ -193,6 +196,10 @@ def build_parser() -> argparse.ArgumentParser:
     nmap.add_argument("path")
     nmap.add_argument("-o", "--output", default="-")
     nmap.set_defaults(func=cmd_collect_nmap)
+    trivy = collect_sub.add_parser("trivy-json", help="Collect vulnerability evidence from Trivy JSON output")
+    trivy.add_argument("path")
+    trivy.add_argument("-o", "--output", default="-")
+    trivy.set_defaults(func=cmd_collect_trivy)
     systemd = collect_sub.add_parser("systemd-timers", help="Collect runtime evidence from systemd timer JSON")
     systemd.add_argument("path")
     systemd.add_argument("-o", "--output", default="-")
@@ -418,6 +425,15 @@ def build_parser() -> argparse.ArgumentParser:
     patch_report.add_argument("--fail-on-warn", action="store_true")
     patch_report.add_argument("-o", "--output", default="-")
     patch_report.set_defaults(func=cmd_patch_report)
+
+    vulnerability = sub.add_parser("vulnerability", help="Inspect vulnerability scan evidence")
+    vulnerability_sub = vulnerability.add_subparsers(required=True)
+    vulnerability_report = vulnerability_sub.add_parser("report", help="Render vulnerability scan evidence")
+    vulnerability_report.add_argument("-i", "--input", required=True)
+    vulnerability_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    vulnerability_report.add_argument("--fail-on-warn", action="store_true")
+    vulnerability_report.add_argument("-o", "--output", default="-")
+    vulnerability_report.set_defaults(func=cmd_vulnerability_report)
 
     firewall = sub.add_parser("firewall", help="Inspect firewall policy and rule evidence")
     firewall_sub = firewall.add_subparsers(required=True)
@@ -666,6 +682,7 @@ def build_parser() -> argparse.ArgumentParser:
             "exposure-report",
             "firewall-report",
             "patch-report",
+            "vulnerability-report",
             "runtime-report",
             "service-level-report",
             "incident-report",
@@ -768,6 +785,11 @@ def cmd_collect_apt(args: argparse.Namespace) -> int:
 
 def cmd_collect_ufw(args: argparse.Namespace) -> int:
     write_text(args.output, dump_json(collect_ufw_status(args.path)))
+    return 0
+
+
+def cmd_collect_trivy(args: argparse.Namespace) -> int:
+    write_text(args.output, dump_json(collect_trivy_json(args.path)))
     return 0
 
 
@@ -1184,6 +1206,24 @@ def cmd_patch_report(args: argparse.Namespace) -> int:
         rendered = render_patch_csv(report)
     else:
         rendered = render_patch_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
+def cmd_vulnerability_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    report = create_vulnerability_report(evidence)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_vulnerability_csv(report)
+    else:
+        rendered = render_vulnerability_markdown(report)
     write_text(args.output, rendered)
     if args.fail_on_warn and report["summary"]["status"] != "pass":
         return 1
@@ -1836,6 +1876,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_firewall_report(document)
     elif args.type == "patch-report":
         errors = validate_patch_report(document)
+    elif args.type == "vulnerability-report":
+        errors = validate_vulnerability_report(document)
     elif args.type == "runtime-report":
         errors = validate_runtime_report(document)
     elif args.type == "service-level-report":

@@ -16,6 +16,7 @@ answers to practical readiness questions:
 - Are public ports intentional and reviewed?
 - Is the firewall active and default-deny?
 - Are security updates pending or reboots required?
+- Are critical or high vulnerabilities present?
 - Are TLS, mail, inventory, and runbook basics documented?
 - Can evidence be shared without leaking secrets or customer data?
 
@@ -42,7 +43,7 @@ domain scorecards, tickets, and signed evidence bundles.
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
 risk registers, restore assurance reports, mail domain reports, TLS certificate
-reports, access exposure reports, monitoring reports, exposure reports, firewall reports, patch reports, runtime reports, service-level reports, incident readiness
+reports, access exposure reports, monitoring reports, exposure reports, firewall reports, patch reports, vulnerability reports, runtime reports, service-level reports, incident readiness
 reports, plus review packs with one-page summaries, manifests, and
 attestations.
 
@@ -200,6 +201,14 @@ python -m openops_evidence collect apt-upgrades apt.upgradable.txt -o patch.evid
 python -m openops_evidence patch report -i patch.evidence.json -o patch-report.md
 ```
 
+Import Trivy vulnerability scan output:
+
+```powershell
+trivy image --format json -o trivy.json example/app:1.0
+python -m openops_evidence collect trivy-json trivy.json -o vulnerability.evidence.json
+python -m openops_evidence vulnerability report -i vulnerability.evidence.json -o vulnerability-report.md
+```
+
 Import runtime evidence from systemd and Docker exports:
 
 ```powershell
@@ -281,6 +290,8 @@ Use `firewall report` when firewall status, default incoming policy, and public
 administrative allow rules should become a standalone firewall artifact.
 Use `patch report` when package update, security update, and reboot evidence
 should become a standalone maintenance artifact.
+Use `vulnerability report` when Trivy scan evidence should become a standalone
+critical/high vulnerability and fixed-version review artifact.
 Use `service-level report` when service owners need uptime, SLO target, and
 error-budget evidence tied to the service catalog.
 Use `runtime report` when Docker containers, restart policies, and systemd
@@ -324,6 +335,7 @@ Monitoring reports are described in [docs/monitoring-report.md](docs/monitoring-
 Exposure reports are described in [docs/exposure-report.md](docs/exposure-report.md).
 Firewall reports are described in [docs/firewall-report.md](docs/firewall-report.md).
 Patch reports are described in [docs/patch-report.md](docs/patch-report.md).
+Vulnerability reports are described in [docs/vulnerability-report.md](docs/vulnerability-report.md).
 Runtime reports are described in [docs/runtime-report.md](docs/runtime-report.md).
 Service-level reports are described in [docs/service-level-report.md](docs/service-level-report.md).
 Incident readiness reports are described in [docs/incident-report.md](docs/incident-report.md).

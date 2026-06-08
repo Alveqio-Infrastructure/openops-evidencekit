@@ -454,6 +454,57 @@ def collect_ufw_status(path: str) -> dict[str, Any]:
     }
 
 
+def collect_trivy_json(path: str) -> dict[str, Any]:
+    payload = load_json(path)
+    if not isinstance(payload, dict):
+        raise ValueError("Trivy input must be a JSON object")
+    results = payload.get("Results", [])
+    if not isinstance(results, list):
+        raise ValueError("Trivy input must contain a Results list")
+    vulnerabilities: list[dict[str, Any]] = []
+    targets = set()
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        target = str(result.get("Target") or "unknown")
+        targets.add(target)
+        for item in result.get("Vulnerabilities") or []:
+            if not isinstance(item, dict):
+                continue
+            vulnerabilities.append(_trivy_vulnerability_record(target, item))
+    severity_counts = _severity_counts(vulnerabilities)
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "source": f"trivy-json:{path}",
+            "collector": "openops-evidencekit",
+        },
+        "assets": [
+            {
+                "id": target,
+                "type": "scan-target",
+                "roles": ["vulnerability"],
+                "tags": ["trivy"],
+            }
+            for target in sorted(targets)
+        ],
+        "signals": {
+            "vulnerabilities": {
+                "scanner": "trivy",
+                "targets_total": len(targets),
+                "findings_total": len(vulnerabilities),
+                "critical_total": severity_counts["critical"],
+                "high_total": severity_counts["high"],
+                "medium_total": severity_counts["medium"],
+                "low_total": severity_counts["low"],
+                "unknown_total": severity_counts["unknown"],
+                "findings": vulnerabilities,
+            }
+        },
+    }
+
+
 def collect_nmap_xml(path: str) -> dict[str, Any]:
     tree = ET.parse(path)
     root = tree.getroot()
@@ -693,6 +744,27 @@ def _is_public_admin_rule(rule: dict[str, str]) -> bool:
         return False
     to_value = rule.get("to", "").lower()
     return any(token in to_value for token in ("22", "3389", "5900", "2375"))
+
+
+def _trivy_vulnerability_record(target: str, item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": str(item.get("VulnerabilityID") or item.get("ID") or "unknown"),
+        "target": target,
+        "package": str(item.get("PkgName") or ""),
+        "installed_version": str(item.get("InstalledVersion") or ""),
+        "fixed_version": str(item.get("FixedVersion") or ""),
+        "severity": str(item.get("Severity") or "UNKNOWN").lower(),
+        "title": str(item.get("Title") or item.get("Description") or ""),
+        "primary_url": str(item.get("PrimaryURL") or ""),
+    }
+
+
+def _severity_counts(findings: list[dict[str, Any]]) -> dict[str, int]:
+    counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "unknown": 0}
+    for finding in findings:
+        severity = str(finding.get("severity") or "unknown").lower()
+        counts[severity if severity in counts else "unknown"] += 1
+    return counts
 
 
 def _first_value(document: dict[str, Any], *keys: str) -> Any:

@@ -40,6 +40,7 @@ from openops_evidence.schema import (
     validate_service_catalog_report,
     validate_scope_report,
     validate_tls_report,
+    validate_vulnerability_report,
 )
 
 
@@ -808,6 +809,10 @@ class SchemaTests(unittest.TestCase):
                     "patch_failures": 0,
                     "patch_warnings": 0,
                     "security_updates": 0,
+                    "vulnerability_failures": 0,
+                    "vulnerability_warnings": 0,
+                    "critical_vulnerabilities": 0,
+                    "high_vulnerabilities": 0,
                     "runtime_failures": 0,
                     "runtime_warnings": 0,
                     "incident_failures": 0,
@@ -1414,6 +1419,57 @@ class SchemaTests(unittest.TestCase):
                         "security": True,
                     }
                 ],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_vulnerability_report(self):
+        finding = {
+            "id": "CVE-2026-0001",
+            "target": "example/app:1.0",
+            "package": "openssl",
+            "installed_version": "1.0",
+            "fixed_version": "1.1",
+            "severity": "critical",
+            "title": "Synthetic critical",
+            "primary_url": "https://example.invalid/CVE-2026-0001",
+        }
+        errors = validate_vulnerability_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "fail",
+                    "scanner": "trivy",
+                    "targets_total": 1,
+                    "findings_total": 1,
+                    "critical_total": 1,
+                    "high_total": 0,
+                    "medium_total": 0,
+                    "low_total": 0,
+                    "unknown_total": 0,
+                    "fixable_total": 1,
+                    "checks_total": 1,
+                    "checks_passed": 0,
+                    "checks_warn": 0,
+                    "checks_failed": 1,
+                },
+                "checks": [
+                    {
+                        "id": "critical_high_vulnerabilities_remediated",
+                        "title": "Critical and high vulnerabilities are remediated",
+                        "status": "fail",
+                        "severity": "critical",
+                        "path": "signals.vulnerabilities.findings",
+                        "reason": "1 critical/high vulnerability finding is present.",
+                        "recommended_action": "Patch affected packages.",
+                    }
+                ],
+                "findings": [finding],
+                "critical_findings": [finding],
+                "high_findings": [],
+                "critical_high_findings": [finding],
             }
         )
         self.assertEqual(errors, [])

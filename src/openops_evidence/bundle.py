@@ -47,6 +47,7 @@ from .schema import (
     validate_service_catalog_report,
     validate_scope_report,
     validate_tls_report,
+    validate_vulnerability_report,
 )
 from .waivers import validate_waiver_document
 
@@ -316,6 +317,8 @@ def classify_artifact(path: Path) -> str:
             return "firewall-report"
         if validate_patch_report(document) == []:
             return "patch-report"
+        if validate_vulnerability_report(document) == []:
+            return "vulnerability-report"
         if validate_runtime_report(document) == []:
             return "runtime-report"
         if validate_service_level_report(document) == []:
