@@ -19,6 +19,7 @@ from .checklist import create_review_checklist, render_review_checklist_csv, ren
 from .completeness import create_completeness_report, render_completeness_csv, render_completeness_markdown
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
+from .exposure import create_exposure_report, render_exposure_csv, render_exposure_markdown
 from .freshness import create_freshness_report, render_freshness_csv, render_freshness_markdown
 from .gates import evaluate_report_gate, render_gate_markdown
 from .incident import create_incident_report, render_incident_csv, render_incident_markdown
@@ -92,6 +93,7 @@ def create_review_pack(
     tls_report = create_tls_report(evidence) if _has_tls_context(evidence, checks) else None
     access_report = create_access_report(evidence) if _has_access_context(evidence, checks) else None
     monitoring_report = create_monitoring_report(evidence) if _has_monitoring_context(evidence, checks) else None
+    exposure_report = create_exposure_report(evidence) if _has_exposure_context(evidence, checks) else None
     runtime_report = create_runtime_report(evidence) if _has_runtime_context(evidence, checks) else None
     incident_report = create_incident_report(evidence, catalog_document=catalog_document) if _has_incident_context(evidence, catalog_document, checks) else None
     evidence_drift = compare_evidence(base_evidence, evidence) if base_evidence is not None else None
@@ -159,6 +161,10 @@ def create_review_pack(
         add_artifact("monitoring-report.json", dump_json(monitoring_report), "Monitoring report", "Machine-readable monitoring target and alert report.")
         add_artifact("monitoring-report.md", render_monitoring_markdown(monitoring_report), "Monitoring report", "Human-readable monitoring target and alert report.")
         add_artifact("monitoring-report.csv", render_monitoring_csv(monitoring_report), "Monitoring report", "Spreadsheet-friendly monitoring report.")
+    if exposure_report is not None:
+        add_artifact("exposure-report.json", dump_json(exposure_report), "Exposure report", "Machine-readable open port and risky service report.")
+        add_artifact("exposure-report.md", render_exposure_markdown(exposure_report), "Exposure report", "Human-readable open port and risky service report.")
+        add_artifact("exposure-report.csv", render_exposure_csv(exposure_report), "Exposure report", "Spreadsheet-friendly exposure report.")
     if runtime_report is not None:
         add_artifact("runtime-report.json", dump_json(runtime_report), "Runtime report", "Machine-readable runtime container and timer report.")
         add_artifact("runtime-report.md", render_runtime_markdown(runtime_report), "Runtime report", "Human-readable runtime container and timer report.")
@@ -263,6 +269,7 @@ def create_review_pack(
         tls_report=tls_report,
         access_report=access_report,
         monitoring_report=monitoring_report,
+        exposure_report=exposure_report,
         runtime_report=runtime_report,
         incident_report=incident_report,
         risk_register=risk_register,
@@ -314,6 +321,7 @@ def create_review_pack(
         "tls_report": tls_report,
         "access_report": access_report,
         "monitoring_report": monitoring_report,
+        "exposure_report": exposure_report,
         "runtime_report": runtime_report,
         "incident_report": incident_report,
         "risk_register": risk_register,
@@ -361,6 +369,8 @@ def render_review_pack_readme(
         suggested_steps.append("Use `access-report.md` to review public SSH, MFA, and admin entrypoints.")
     if any(artifact.get("filename") == "monitoring-report.md" for artifact in artifacts):
         suggested_steps.append("Use `monitoring-report.md` to review targets, down targets, alert channels, and alert test freshness.")
+    if any(artifact.get("filename") == "exposure-report.md" for artifact in artifacts):
+        suggested_steps.append("Use `exposure-report.md` to review open ports and risky public services.")
     if any(artifact.get("filename") == "runtime-report.md" for artifact in artifacts):
         suggested_steps.append("Use `runtime-report.md` to review stopped containers, restart policies, and failed timers.")
     if any(artifact.get("filename") == "incident-report.md" for artifact in artifacts):
@@ -597,6 +607,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("tls-report.md", "TLS"),
         ("access-report.md", "Access"),
         ("monitoring-report.md", "Monitoring"),
+        ("exposure-report.md", "Exposure"),
         ("runtime-report.md", "Runtime"),
         ("incident-report.md", "Incident"),
         ("scope-report.md", "Scope Report"),
@@ -644,6 +655,13 @@ def _has_monitoring_context(evidence: dict[str, Any], checks: list[Check]) -> bo
     if isinstance(signals, dict) and isinstance(signals.get("monitoring"), dict):
         return True
     return any(check.path.startswith("signals.monitoring") for check in checks)
+
+
+def _has_exposure_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
+    signals = evidence.get("signals")
+    if isinstance(signals, dict) and isinstance(signals.get("exposure"), dict):
+        return True
+    return any(check.path.startswith("signals.exposure") for check in checks)
 
 
 def _has_runtime_context(evidence: dict[str, Any], checks: list[Check]) -> bool:

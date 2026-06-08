@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nmaprun scanner="nmap">
+  <host>
+    <status state="up"/>
+    <address addr="203.0.113.10" addrtype="ipv4"/>
+    <ports>
+      <port protocol="tcp" portid="80">
+        <state state="open"/>
+        <service name="http" product="nginx"/>
+      </port>
+      <port protocol="tcp" portid="22">
+        <state state="open"/>
+        <service name="ssh" product="OpenSSH"/>
+      </port>
+      <port protocol="tcp" portid="5432">
+        <state state="closed"/>
+        <service name="postgresql"/>
+      </port>
+    </ports>
+  </host>
+</nmaprun>

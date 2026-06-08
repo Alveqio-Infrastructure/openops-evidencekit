@@ -10,6 +10,7 @@ from openops_evidence.schema import (
     validate_completeness_report,
     validate_evidence,
     validate_evidence_drift,
+    validate_exposure_report,
     validate_executive_brief,
     validate_freshness_report,
     validate_gate_result,
@@ -796,6 +797,9 @@ class SchemaTests(unittest.TestCase):
                     "access_warnings": 0,
                     "monitoring_failures": 0,
                     "monitoring_warnings": 0,
+                    "exposure_failures": 0,
+                    "exposure_warnings": 0,
+                    "risky_ports": 0,
                     "runtime_failures": 0,
                     "runtime_warnings": 0,
                     "incident_failures": 0,
@@ -1257,6 +1261,62 @@ class SchemaTests(unittest.TestCase):
                 "exited_containers": [],
                 "restart_policy_missing": [],
                 "failed_timers": [],
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_valid_exposure_report(self):
+        errors = validate_exposure_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "fail",
+                    "scanner": "nmap",
+                    "hosts_total": 1,
+                    "open_ports_total": 2,
+                    "risky_ports_total": 1,
+                    "checks_total": 1,
+                    "checks_passed": 0,
+                    "checks_warn": 0,
+                    "checks_failed": 1,
+                },
+                "checks": [
+                    {
+                        "id": "risky_ports_closed",
+                        "title": "Risky ports are closed",
+                        "status": "fail",
+                        "severity": "high",
+                        "path": "signals.exposure.open_ports",
+                        "reason": "Risky ports are exposed.",
+                        "recommended_action": "Restrict risky services.",
+                    }
+                ],
+                "open_ports": [
+                    {
+                        "id": "203.0.113.10:22/tcp",
+                        "host": "203.0.113.10",
+                        "port": 22,
+                        "protocol": "tcp",
+                        "service": "ssh",
+                        "product": "OpenSSH",
+                        "risk": "risky",
+                        "reason": "SSH should be restricted.",
+                    }
+                ],
+                "risky_ports": [
+                    {
+                        "id": "203.0.113.10:22/tcp",
+                        "host": "203.0.113.10",
+                        "port": 22,
+                        "protocol": "tcp",
+                        "service": "ssh",
+                        "product": "OpenSSH",
+                        "risk": "risky",
+                        "reason": "SSH should be restricted.",
+                    }
+                ],
             }
         )
         self.assertEqual(errors, [])

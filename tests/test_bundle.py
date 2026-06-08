@@ -211,6 +211,7 @@ class BundleTests(unittest.TestCase):
             tls_report = temp / "tls-report.json"
             access_report = temp / "access-report.json"
             monitoring_report = temp / "monitoring-report.json"
+            exposure_report = temp / "exposure-report.json"
             runtime_report = temp / "runtime-report.json"
             service_level_report = temp / "service-level-report.json"
             incident_report = temp / "incident-report.json"
@@ -529,6 +530,9 @@ class BundleTests(unittest.TestCase):
                             "access_warnings": 0,
                             "monitoring_failures": 0,
                             "monitoring_warnings": 0,
+                            "exposure_failures": 0,
+                            "exposure_warnings": 0,
+                            "risky_ports": 0,
                             "runtime_failures": 0,
                             "runtime_warnings": 0,
                             "incident_failures": 0,
@@ -764,6 +768,40 @@ class BundleTests(unittest.TestCase):
                             }
                         ],
                         "down_targets": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            exposure_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "scanner": "nmap",
+                            "hosts_total": 1,
+                            "open_ports_total": 0,
+                            "risky_ports_total": 0,
+                            "checks_total": 1,
+                            "checks_passed": 1,
+                            "checks_warn": 0,
+                            "checks_failed": 0,
+                        },
+                        "checks": [
+                            {
+                                "id": "risky_ports_closed",
+                                "title": "Risky ports are closed",
+                                "status": "pass",
+                                "severity": "high",
+                                "path": "signals.exposure.open_ports",
+                                "reason": "No risky ports were recorded.",
+                                "recommended_action": "Keep exposure evidence current.",
+                            }
+                        ],
+                        "open_ports": [],
+                        "risky_ports": [],
                     }
                 ),
                 encoding="utf-8",
@@ -1353,6 +1391,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(tls_report), "tls-report")
             self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(monitoring_report), "monitoring-report")
+            self.assertEqual(classify_artifact(exposure_report), "exposure-report")
             self.assertEqual(classify_artifact(runtime_report), "runtime-report")
             self.assertEqual(classify_artifact(service_level_report), "service-level-report")
             self.assertEqual(classify_artifact(incident_report), "incident-report")

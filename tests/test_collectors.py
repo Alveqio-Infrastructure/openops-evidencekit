@@ -8,6 +8,7 @@ from openops_evidence.collectors import (
     collect_borg_archives,
     collect_docker_containers,
     collect_docs_directory,
+    collect_nmap_xml,
     collect_prometheus_targets,
     collect_restic_snapshots,
     collect_systemd_timers,
@@ -96,6 +97,32 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(evidence["signals"]["monitoring"]["targets"], 1)
         self.assertEqual(evidence["signals"]["monitoring"]["targets_down"], 1)
         self.assertEqual(evidence["signals"]["monitoring"]["down_targets"], ["db:9100"])
+
+    def test_collect_nmap_xml(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "nmap.xml"
+            path.write_text(
+                """
+<nmaprun>
+  <host>
+    <status state="up"/>
+    <address addr="203.0.113.10" addrtype="ipv4"/>
+    <ports>
+      <port protocol="tcp" portid="80"><state state="open"/><service name="http"/></port>
+      <port protocol="tcp" portid="22"><state state="open"/><service name="ssh"/></port>
+      <port protocol="tcp" portid="5432"><state state="closed"/><service name="postgresql"/></port>
+    </ports>
+  </host>
+</nmaprun>
+""".strip(),
+                encoding="utf-8",
+            )
+            evidence = collect_nmap_xml(str(path))
+        exposure = evidence["signals"]["exposure"]
+        self.assertEqual(exposure["scanner"], "nmap")
+        self.assertEqual(exposure["hosts_total"], 1)
+        self.assertEqual(exposure["open_ports_total"], 2)
+        self.assertEqual(exposure["risky_ports"], ["203.0.113.10:22/tcp"])
 
     def test_collect_systemd_timers(self):
         with tempfile.TemporaryDirectory() as temp_dir:

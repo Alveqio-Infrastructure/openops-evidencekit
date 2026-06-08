@@ -76,4 +76,5 @@
 - Add TLS certificate reports for expiry and renewal-risk review.
 - Add access exposure reports for public SSH, MFA, and admin entrypoint review.
 - Add monitoring reports for target health, down targets, alert channels, and alert-test freshness.
+- Add exposure reports for Nmap open port and risky public service review.
 - Add incident readiness reports for escalation contacts, incident runbooks, alerts, restore proof, and emergency access.

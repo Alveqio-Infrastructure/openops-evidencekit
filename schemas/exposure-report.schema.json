@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alveqio-infrastructure.github.io/openops-evidencekit/schemas/exposure-report.schema.json",
+  "title": "OpenOps Exposure Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "generated_at", "metadata", "summary", "checks", "open_ports", "risky_ports"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^0\\.1(\\.\\d+)?$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["status", "scanner", "hosts_total", "open_ports_total", "risky_ports_total", "checks_total", "checks_passed", "checks_warn", "checks_failed"],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "scanner": {
+          "type": "string"
+        },
+        "hosts_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open_ports_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "risky_ports_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checks_failed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operational_check"
+      }
+    },
+    "open_ports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/exposure_port"
+      }
+    },
+    "risky_ports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/exposure_port"
+      }
+    }
+  },
+  "$defs": {
+    "operational_check": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "status", "severity", "path", "reason", "recommended_action"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["pass", "warn", "fail"]
+        },
+        "severity": {
+          "enum": ["info", "low", "medium", "high", "critical"]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string"
+        },
+        "recommended_action": {
+          "type": "string"
+        }
+      }
+    },
+    "exposure_port": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "host", "port", "protocol", "service", "risk", "reason"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "protocol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "service": {
+          "type": "string"
+        },
+        "product": {
+          "type": "string"
+        },
+        "risk": {
+          "enum": ["review", "risky"]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

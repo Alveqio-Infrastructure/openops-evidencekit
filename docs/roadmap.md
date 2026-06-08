@@ -54,6 +54,7 @@ having to deploy a platform first.
 - TLS certificate reports for expiry and renewal-risk review.
 - Access exposure reports for public SSH, MFA, and admin entrypoint review.
 - Monitoring reports for target health, down target, alert channel, and alert-test review.
+- Exposure reports for Nmap open port and risky public service review.
 - Runtime reports for Docker container and systemd timer review.
 - Service-level reports for SLO target, availability, and error-budget evidence by service.
 - Incident readiness reports for escalation contacts, incident runbooks, alerts, restore proof, and emergency access.

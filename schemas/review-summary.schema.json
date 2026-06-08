@@ -59,6 +59,9 @@
         "access_warnings",
         "monitoring_failures",
         "monitoring_warnings",
+        "exposure_failures",
+        "exposure_warnings",
+        "risky_ports",
         "runtime_failures",
         "runtime_warnings",
         "incident_failures",
@@ -152,6 +155,18 @@
           "minimum": 0
         },
         "monitoring_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exposure_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exposure_warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "risky_ports": {
           "type": "integer",
           "minimum": 0
         },

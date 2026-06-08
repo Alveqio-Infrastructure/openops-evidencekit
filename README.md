@@ -13,6 +13,7 @@ answers to practical readiness questions:
 - Has a restore drill been proven?
 - Are monitoring targets and alert channels present?
 - Are administrative entry points protected?
+- Are public ports intentional and reviewed?
 - Are TLS, mail, inventory, and runbook basics documented?
 - Can evidence be shared without leaking secrets or customer data?
 
@@ -39,7 +40,7 @@ domain scorecards, tickets, and signed evidence bundles.
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
 risk registers, restore assurance reports, mail domain reports, TLS certificate
-reports, access exposure reports, monitoring reports, runtime reports, service-level reports, incident readiness
+reports, access exposure reports, monitoring reports, exposure reports, runtime reports, service-level reports, incident readiness
 reports, plus review packs with one-page summaries, manifests, and
 attestations.
 
@@ -173,6 +174,14 @@ curl http://prometheus.example.invalid/api/v1/targets > prometheus.targets.json
 python -m openops_evidence collect prometheus-targets prometheus.targets.json -o prometheus.evidence.json
 ```
 
+Import Nmap XML scan output:
+
+```powershell
+nmap -oX nmap.xml example.com
+python -m openops_evidence collect nmap-xml nmap.xml -o exposure.evidence.json
+python -m openops_evidence exposure report -i exposure.evidence.json -o exposure-report.md
+```
+
 Import runtime evidence from systemd and Docker exports:
 
 ```powershell
@@ -248,6 +257,8 @@ Use `tls report` when certificate expiry evidence should become a standalone
 renewal-risk artifact.
 Use `access report` when public SSH, MFA, and administrative entrypoints should
 be reviewed as a standalone access exposure artifact.
+Use `exposure report` when Nmap scan evidence should become a standalone open
+port and risky public service artifact.
 Use `service-level report` when service owners need uptime, SLO target, and
 error-budget evidence tied to the service catalog.
 Use `runtime report` when Docker containers, restart policies, and systemd
@@ -288,6 +299,7 @@ Mail domain reports are described in [docs/mail-report.md](docs/mail-report.md).
 TLS certificate reports are described in [docs/tls-report.md](docs/tls-report.md).
 Access exposure reports are described in [docs/access-report.md](docs/access-report.md).
 Monitoring reports are described in [docs/monitoring-report.md](docs/monitoring-report.md).
+Exposure reports are described in [docs/exposure-report.md](docs/exposure-report.md).
 Runtime reports are described in [docs/runtime-report.md](docs/runtime-report.md).
 Service-level reports are described in [docs/service-level-report.md](docs/service-level-report.md).
 Incident readiness reports are described in [docs/incident-report.md](docs/incident-report.md).

@@ -5,6 +5,7 @@ import os
 import platform
 import socket
 import ssl
+import xml.etree.ElementTree as ET
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -369,6 +370,63 @@ def collect_docker_containers(path: str) -> dict[str, Any]:
     }
 
 
+def collect_nmap_xml(path: str) -> dict[str, Any]:
+    tree = ET.parse(path)
+    root = tree.getroot()
+    open_ports: list[dict[str, Any]] = []
+    assets: list[dict[str, Any]] = []
+    hosts = set()
+    for host_index, host in enumerate(root.findall("host"), start=1):
+        state = host.find("status")
+        if state is not None and state.get("state") not in {None, "up"}:
+            continue
+        host_id = _nmap_host_id(host, host_index)
+        hosts.add(host_id)
+        assets.append(
+            {
+                "id": host_id,
+                "type": "endpoint",
+                "hostname": host_id,
+                "roles": ["exposure"],
+                "tags": ["nmap"],
+            }
+        )
+        for port in host.findall("./ports/port"):
+            state = port.find("state")
+            if state is None or state.get("state") != "open":
+                continue
+            port_id = _safe_int(port.get("portid"))
+            service = port.find("service")
+            open_ports.append(
+                {
+                    "host": host_id,
+                    "port": port_id,
+                    "protocol": port.get("protocol") or "tcp",
+                    "service": service.get("name") if service is not None else "",
+                    "product": service.get("product") if service is not None else "",
+                }
+            )
+    risky_ports = [_exposure_port_name(item) for item in open_ports if _is_risky_port(item.get("port"))]
+    return {
+        "schema_version": "0.1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "metadata": {
+            "source": f"nmap-xml:{path}",
+            "collector": "openops-evidencekit",
+        },
+        "assets": assets,
+        "signals": {
+            "exposure": {
+                "scanner": "nmap",
+                "hosts_total": len(hosts),
+                "open_ports_total": len(open_ports),
+                "open_ports": open_ports,
+                "risky_ports": risky_ports,
+            }
+        },
+    }
+
+
 def collect_docs_directory(
     directory: str,
     required: list[str] | None = None,
@@ -533,6 +591,35 @@ def _container_restart_policy(container: dict[str, Any]) -> str:
         if isinstance(policy, dict):
             value = policy.get("Name")
     return str(value or "").lower()
+
+
+def _nmap_host_id(host: ET.Element, index: int) -> str:
+    for address in host.findall("address"):
+        value = address.get("addr")
+        if value:
+            return value
+    hostname = host.find("./hostnames/hostname")
+    if hostname is not None and hostname.get("name"):
+        return str(hostname.get("name"))
+    return f"nmap-host-{index}"
+
+
+def _safe_int(value: str | None) -> int | None:
+    try:
+        return int(str(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def _is_risky_port(port: Any) -> bool:
+    return port in {21, 22, 23, 25, 110, 143, 389, 445, 1433, 1521, 2049, 2375, 3306, 3389, 5432, 5900, 6379, 9200, 11211, 27017}
+
+
+def _exposure_port_name(item: dict[str, Any]) -> str:
+    host = item.get("host") or "unknown"
+    protocol = item.get("protocol") or "tcp"
+    port = item.get("port")
+    return f"{host}:{port}/{protocol}"
 
 
 def _documentation_files(root: Path) -> list[dict[str, Any]]:

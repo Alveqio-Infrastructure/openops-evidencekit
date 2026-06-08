@@ -19,6 +19,7 @@ def create_review_summary(
     tls_report: dict[str, Any] | None = None,
     access_report: dict[str, Any] | None = None,
     monitoring_report: dict[str, Any] | None = None,
+    exposure_report: dict[str, Any] | None = None,
     runtime_report: dict[str, Any] | None = None,
     incident_report: dict[str, Any] | None = None,
     risk_register: dict[str, Any] | None = None,
@@ -39,6 +40,7 @@ def create_review_summary(
     tls_summary = (tls_report or {}).get("summary", {})
     access_summary = (access_report or {}).get("summary", {})
     monitoring_summary = (monitoring_report or {}).get("summary", {})
+    exposure_summary = (exposure_report or {}).get("summary", {})
     runtime_summary = (runtime_report or {}).get("summary", {})
     incident_summary = (incident_report or {}).get("summary", {})
     risk_summary = (risk_register or {}).get("summary", {})
@@ -68,6 +70,9 @@ def create_review_summary(
         "access_warnings": _int_or_zero(access_summary.get("checks_warn")),
         "monitoring_failures": _int_or_zero(monitoring_summary.get("checks_failed")),
         "monitoring_warnings": _int_or_zero(monitoring_summary.get("checks_warn")),
+        "exposure_failures": _int_or_zero(exposure_summary.get("checks_failed")),
+        "exposure_warnings": _int_or_zero(exposure_summary.get("checks_warn")),
+        "risky_ports": _int_or_zero(exposure_summary.get("risky_ports_total")),
         "runtime_failures": _int_or_zero(runtime_summary.get("checks_failed")),
         "runtime_warnings": _int_or_zero(runtime_summary.get("checks_warn")),
         "incident_failures": _int_or_zero(incident_summary.get("checks_failed")),
@@ -137,6 +142,9 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "access_warnings",
         "monitoring_failures",
         "monitoring_warnings",
+        "exposure_failures",
+        "exposure_warnings",
+        "risky_ports",
         "runtime_failures",
         "runtime_warnings",
         "incident_failures",
@@ -189,6 +197,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         blockers.append("access exposure checks failed")
     if metrics["monitoring_failures"] > 0:
         blockers.append("monitoring checks failed")
+    if metrics["exposure_failures"] > 0:
+        blockers.append("network exposure checks failed")
     if metrics["runtime_failures"] > 0:
         blockers.append("runtime checks failed")
     if metrics["incident_failures"] > 0:
@@ -220,6 +230,8 @@ def _decision(metrics: dict[str, Any]) -> dict[str, str]:
         warnings.append("access exposure warnings exist")
     if metrics["monitoring_warnings"] > 0:
         warnings.append("monitoring warnings exist")
+    if metrics["exposure_warnings"] > 0:
+        warnings.append("network exposure warnings exist")
     if metrics["runtime_warnings"] > 0:
         warnings.append("runtime warnings exist")
     if metrics["incident_warnings"] > 0:
@@ -284,6 +296,12 @@ def _highlights(metrics: dict[str, Any]) -> list[str]:
         highlights.append(f"{metrics['monitoring_failures']} monitoring check(s) failed.")
     if metrics["monitoring_warnings"]:
         highlights.append(f"{metrics['monitoring_warnings']} monitoring warning(s) need review.")
+    if metrics["exposure_failures"]:
+        highlights.append(f"{metrics['exposure_failures']} network exposure check(s) failed.")
+    if metrics["exposure_warnings"]:
+        highlights.append(f"{metrics['exposure_warnings']} network exposure warning(s) need review.")
+    if metrics["risky_ports"]:
+        highlights.append(f"{metrics['risky_ports']} risky open port(s) were recorded.")
     if metrics["runtime_failures"]:
         highlights.append(f"{metrics['runtime_failures']} runtime check(s) failed.")
     if metrics["runtime_warnings"]:
@@ -326,6 +344,8 @@ def _next_steps(decision: dict[str, str], metrics: dict[str, Any]) -> list[str]:
         steps.append("Review `access-report.md` and fix public SSH, MFA, or admin entrypoint gaps.")
     if metrics["monitoring_failures"] > 0 or metrics["monitoring_warnings"] > 0:
         steps.append("Review `monitoring-report.md` and fix down targets, alert routing, or alert test evidence.")
+    if metrics["exposure_failures"] > 0 or metrics["exposure_warnings"] > 0:
+        steps.append("Review `exposure-report.md` and restrict or document open public services.")
     if metrics["runtime_failures"] > 0 or metrics["runtime_warnings"] > 0:
         steps.append("Review `runtime-report.md` and fix failed timers, stopped containers, or missing restart policies.")
     if metrics["incident_failures"] > 0 or metrics["incident_warnings"] > 0:

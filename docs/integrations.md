@@ -19,6 +19,7 @@ Integrations should collect facts, not secrets.
 | Backup | Borg | archive recency, repository identifier, protected hosts |
 | Monitoring | Prometheus | target count, up/down target count, down target list |
 | Monitoring | Uptime Kuma | monitor count, enabled target count, alert channel references |
+| Exposure | Nmap XML | hosts, open ports, service names, risky public services |
 | Runtime | systemd | enabled timers, failed units |
 | Runtime | Docker | running containers, restart policies |
 | Documentation | local directory | required files, stale files, runbook and inventory timestamps |
@@ -41,6 +42,7 @@ produces the common CI artifacts below.
 | TLS certificate report | `openops-evidence tls report -i evidence.json -o tls-report.md` | Show certificate expiry and renewal risk before review. |
 | Access exposure | `openops-evidence access report -i evidence.json -o access-report.md` | Show public SSH, MFA, and admin entrypoint evidence before review. |
 | Monitoring report | `openops-evidence monitoring report -i evidence.json -o monitoring-report.md` | Show target health, down targets, alert channels, and alert-test freshness before review. |
+| Exposure report | `openops-evidence exposure report -i evidence.json -o exposure-report.md` | Show open ports and risky public services before review. |
 | Runtime report | `openops-evidence runtime report -i evidence.json -o runtime-report.md` | Show stopped containers, missing restart policies, and failed systemd timers. |
 | Service-level report | `openops-evidence service-level report -i evidence.json -c service-catalog.toml -o service-level-report.md` | Show per-service SLO targets, observed availability, and missing service-level evidence. |
 | Incident readiness | `openops-evidence incident report -i evidence.json -c service-catalog.toml -o incident-report.md` | Show escalation contacts, incident runbooks, alerts, restore proof, and emergency access readiness before review. |

@@ -59,6 +59,9 @@ jobs:
           openops-evidence monitoring report -i evidence.sample.json -f json -o monitoring-report.json
           openops-evidence validate -i monitoring-report.json -t monitoring-report
           openops-evidence monitoring report -i evidence.sample.json -o monitoring-report.md
+          openops-evidence exposure report -i evidence.sample.json -f json -o exposure-report.json
+          openops-evidence validate -i exposure-report.json -t exposure-report
+          openops-evidence exposure report -i evidence.sample.json -o exposure-report.md
           openops-evidence runtime report -i evidence.sample.json -f json -o runtime-report.json
           openops-evidence validate -i runtime-report.json -t runtime-report
           openops-evidence runtime report -i evidence.sample.json -o runtime-report.md
@@ -117,6 +120,8 @@ jobs:
             access-report.md
             monitoring-report.json
             monitoring-report.md
+            exposure-report.json
+            exposure-report.md
             runtime-report.json
             runtime-report.md
             service-level-report.json

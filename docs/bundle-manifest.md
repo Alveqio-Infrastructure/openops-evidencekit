@@ -131,6 +131,7 @@ EvidenceKit infers a simple role for each artifact:
 - `tls-report` for valid TLS certificate report JSON
 - `access-report` for valid access exposure report JSON
 - `monitoring-report` for valid monitoring target and alert report JSON
+- `exposure-report` for valid open port exposure report JSON
 - `runtime-report` for valid runtime report JSON
 - `service-level-report` for valid service-level report JSON
 - `incident-report` for valid incident readiness report JSON
