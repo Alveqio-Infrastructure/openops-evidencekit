@@ -1,0 +1,2 @@
+domain,status,address_record_count,nameserver_count,caa_present,dnssec,reason,recommended_action
+example.invalid,pass,2,2,True,True,"Address records, nameservers, CAA, and DNSSEC evidence are present.",Keep DNS evidence current and review it after provider or certificate authority changes.

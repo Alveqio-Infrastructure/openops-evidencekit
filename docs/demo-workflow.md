@@ -49,6 +49,9 @@ python -m openops_evidence restore report -i evidence.redacted.json --max-drill-
 python -m openops_evidence mail report -i evidence.redacted.json -f json -o mail-report.json
 python -m openops_evidence validate -i mail-report.json -t mail-report
 python -m openops_evidence mail report -i evidence.redacted.json -o mail-report.md
+python -m openops_evidence dns report -i evidence.redacted.json -f json -o dns-report.json
+python -m openops_evidence validate -i dns-report.json -t dns-report
+python -m openops_evidence dns report -i evidence.redacted.json -o dns-report.md
 python -m openops_evidence tls report -i evidence.redacted.json -f json -o tls-report.json
 python -m openops_evidence validate -i tls-report.json -t tls-report
 python -m openops_evidence tls report -i evidence.redacted.json -o tls-report.md
@@ -129,6 +132,7 @@ python -m openops_evidence validate -i review-pack/quality-report.json -t qualit
 python -m openops_evidence validate -i review-pack/completeness-report.json -t completeness-report
 python -m openops_evidence validate -i review-pack/restore-report.json -t restore-report
 python -m openops_evidence validate -i review-pack/mail-report.json -t mail-report
+python -m openops_evidence validate -i review-pack/dns-report.json -t dns-report
 python -m openops_evidence validate -i review-pack/tls-report.json -t tls-report
 python -m openops_evidence validate -i review-pack/access-report.json -t access-report
 python -m openops_evidence validate -i review-pack/monitoring-report.json -t monitoring-report
@@ -146,7 +150,7 @@ python -m openops_evidence plan -i report.local.json -f markdown -o action-plan.
 python -m openops_evidence waiver validate examples/waivers.sample.toml
 python -m openops_evidence plan -i report.local.json --waivers examples/waivers.sample.toml -o action-plan.json
 python -m openops_evidence ticket export -i action-plan.json -o action-tickets
-python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json quality-report.json completeness-report.json freshness-report.json restore-report.json mail-report.json tls-report.json access-report.json monitoring-report.json exposure-report.json firewall-report.json patch-report.json runtime-report.json service-level-report.json incident-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
+python -m openops_evidence bundle manifest evidence.scaffold.json evidence.redacted.json evidence-drift.json questionnaire.json inventory.json quality-report.json completeness-report.json freshness-report.json restore-report.json mail-report.json dns-report.json tls-report.json access-report.json monitoring-report.json exposure-report.json firewall-report.json patch-report.json runtime-report.json service-level-report.json incident-report.json scope-report.json service-catalog.json runbook-report.json policy-coverage.json report.local.json gate-result.json readiness-badge.json executive-brief.json risk-register.json scorecard.json readiness-history.json readiness-history.svg report.docs.json report.local.md report.local.sarif.json report.local.prom readiness.bookstack.md -o evidence-bundle.manifest.json
 python -m openops_evidence validate -i evidence-bundle.manifest.json -t bundle
 python -m openops_evidence bundle verify evidence-bundle.manifest.json --base-dir . -o evidence-bundle.verification.json
 python -m openops_evidence validate -i evidence-bundle.verification.json -t bundle-verification
@@ -160,7 +164,7 @@ Expected result for the baseline fixture:
 ```text
 Status: PASS
 Score: 100
-Checks: 10 passed, 0 failed, 0 warnings
+Checks: 12 passed, 0 failed, 0 warnings
 ```
 
 For real assessments, keep raw evidence private, redact before sharing, and use

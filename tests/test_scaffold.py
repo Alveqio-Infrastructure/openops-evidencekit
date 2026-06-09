@@ -42,8 +42,8 @@ class ScaffoldTests(unittest.TestCase):
             self.assertEqual(data["metadata"]["organization"], "Example Operations")
             self.assertEqual(data["metadata"]["environment"], "production")
             self.assertEqual(data["metadata"]["policy_name"], "OpenOps baseline readiness policy")
-            self.assertEqual(data["metadata"]["policy_check_count"], 10)
-            self.assertEqual(set(data["signals"]), {"access", "backup", "docs", "mail", "monitoring", "tls"})
+            self.assertEqual(data["metadata"]["policy_check_count"], 12)
+            self.assertEqual(set(data["signals"]), {"access", "backup", "dns", "docs", "mail", "monitoring", "tls"})
             self.assertIsNone(data["signals"]["backup"]["last_success_at"])
             self.assertIsNone(data["signals"]["backup"]["restore_test_at"])
             self.assertIsNone(data["signals"]["monitoring"]["targets"])
@@ -54,6 +54,8 @@ class ScaffoldTests(unittest.TestCase):
             self.assertIsNone(data["signals"]["docs"]["inventory_updated_at"])
             self.assertIsNone(data["signals"]["docs"]["runbooks"][0]["name"])
             self.assertIsNone(data["signals"]["mail"]["domains"][0]["dmarc"])
+            self.assertEqual(data["signals"]["dns"]["domains"][0]["nameservers"], [])
+            self.assertEqual(data["signals"]["dns"]["domains"][0]["caa"], [])
 
             self.assertEqual(
                 main(

@@ -25,7 +25,7 @@ compliance platform:
 - review monitoring targets, alert channels, and alert-test freshness;
 - identify public access exposure and risky network services;
 - summarize patch, vulnerability, and SBOM evidence;
-- check TLS, mail, runbook, service catalog, and incident readiness basics;
+- check TLS, DNS, mail, runbook, service catalog, and incident readiness basics;
 - create privacy-reviewed handoff bundles for stakeholders.
 
 ## Public Benefit

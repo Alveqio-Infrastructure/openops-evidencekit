@@ -18,6 +18,7 @@ from .catalog import (
 from .checklist import create_review_checklist, render_review_checklist_csv, render_review_checklist_markdown
 from .completeness import create_completeness_report, render_completeness_csv, render_completeness_markdown
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
+from .dns import create_dns_report, render_dns_csv, render_dns_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .exposure import create_exposure_report, render_exposure_csv, render_exposure_markdown
 from .firewall import create_firewall_report, render_firewall_csv, render_firewall_markdown
@@ -94,6 +95,7 @@ def create_review_pack(
         max_backup_age_days=restore_max_backup_age_days,
     )
     mail_report = create_mail_report(evidence) if _has_mail_context(evidence, checks) else None
+    dns_report = create_dns_report(evidence) if _has_dns_context(evidence, checks) else None
     tls_report = create_tls_report(evidence) if _has_tls_context(evidence, checks) else None
     access_report = create_access_report(evidence) if _has_access_context(evidence, checks) else None
     monitoring_report = create_monitoring_report(evidence) if _has_monitoring_context(evidence, checks) else None
@@ -157,6 +159,10 @@ def create_review_pack(
         add_artifact("mail-report.json", dump_json(mail_report), "Mail domain report", "Machine-readable SPF, DKIM, and DMARC report.")
         add_artifact("mail-report.md", render_mail_markdown(mail_report), "Mail domain report", "Human-readable SPF, DKIM, and DMARC report.")
         add_artifact("mail-report.csv", render_mail_csv(mail_report), "Mail domain report", "Spreadsheet-friendly mail domain report.")
+    if dns_report is not None:
+        add_artifact("dns-report.json", dump_json(dns_report), "DNS hygiene report", "Machine-readable DNS hygiene report.")
+        add_artifact("dns-report.md", render_dns_markdown(dns_report), "DNS hygiene report", "Human-readable DNS hygiene report.")
+        add_artifact("dns-report.csv", render_dns_csv(dns_report), "DNS hygiene report", "Spreadsheet-friendly DNS hygiene report.")
     if tls_report is not None:
         add_artifact("tls-report.json", dump_json(tls_report), "TLS certificate report", "Machine-readable TLS certificate expiry report.")
         add_artifact("tls-report.md", render_tls_markdown(tls_report), "TLS certificate report", "Human-readable TLS certificate expiry report.")
@@ -290,6 +296,7 @@ def create_review_pack(
         freshness_report=freshness_report,
         restore_report=restore_report,
         mail_report=mail_report,
+        dns_report=dns_report,
         tls_report=tls_report,
         access_report=access_report,
         monitoring_report=monitoring_report,
@@ -346,6 +353,7 @@ def create_review_pack(
         "freshness_report": freshness_report,
         "restore_report": restore_report,
         "mail_report": mail_report,
+        "dns_report": dns_report,
         "tls_report": tls_report,
         "access_report": access_report,
         "monitoring_report": monitoring_report,
@@ -395,6 +403,8 @@ def render_review_pack_readme(
         suggested_steps.append("Use `restore-report.md` to confirm backup recency and restore drill proof.")
     if any(artifact.get("filename") == "mail-report.md" for artifact in artifacts):
         suggested_steps.append("Check `mail-report.md` for SPF, DKIM, and DMARC evidence.")
+    if any(artifact.get("filename") == "dns-report.md" for artifact in artifacts):
+        suggested_steps.append("Check `dns-report.md` for address records, nameservers, CAA, and DNSSEC evidence.")
     if any(artifact.get("filename") == "tls-report.md" for artifact in artifacts):
         suggested_steps.append("Use `tls-report.md` to review certificate expiry and renewal risk.")
     if any(artifact.get("filename") == "access-report.md" for artifact in artifacts):
@@ -644,6 +654,7 @@ def _quick_links_html(artifacts: list[dict[str, Any]]) -> str:
         ("freshness-report.md", "Freshness"),
         ("restore-report.md", "Restore"),
         ("mail-report.md", "Mail"),
+        ("dns-report.md", "DNS"),
         ("tls-report.md", "TLS"),
         ("access-report.md", "Access"),
         ("monitoring-report.md", "Monitoring"),
@@ -678,6 +689,13 @@ def _has_mail_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
     if isinstance(signals, dict) and isinstance(signals.get("mail"), dict):
         return True
     return any(check.path.startswith("signals.mail") for check in checks)
+
+
+def _has_dns_context(evidence: dict[str, Any], checks: list[Check]) -> bool:
+    signals = evidence.get("signals")
+    if isinstance(signals, dict) and isinstance(signals.get("dns"), dict):
+        return True
+    return any(check.path.startswith("signals.dns") for check in checks)
 
 
 def _has_tls_context(evidence: dict[str, Any], checks: list[Check]) -> bool:

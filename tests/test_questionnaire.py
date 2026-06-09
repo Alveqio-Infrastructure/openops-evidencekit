@@ -61,8 +61,8 @@ class QuestionnaireTests(unittest.TestCase):
 
             data = json.loads(questionnaire.read_text(encoding="utf-8"))
             questions = {item["id"]: item for item in data["questions"]}
-            self.assertEqual(data["summary"]["questions_total"], 10)
-            self.assertEqual(data["summary"]["domain_count"], 6)
+            self.assertEqual(data["summary"]["questions_total"], 12)
+            self.assertEqual(data["summary"]["domain_count"], 7)
             self.assertEqual(questions["backup_recent"]["domain"], "backup")
             self.assertIn("no older than 2 day(s)", questions["backup_recent"]["request"])
             self.assertIn("# OpenOps Evidence Questionnaire", markdown.read_text(encoding="utf-8"))

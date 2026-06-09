@@ -19,6 +19,7 @@ answers to practical readiness questions:
 - Are critical or high vulnerabilities present?
 - Is there a reviewable SBOM/software inventory?
 - Are TLS, mail, inventory, and runbook basics documented?
+- Are DNS address records, nameservers, CAA, and DNSSEC evidence reviewable?
 - Can evidence be shared without leaking secrets or customer data?
 
 The project intentionally keeps the core deterministic. AI systems can help
@@ -49,7 +50,7 @@ The same report can be rendered for people, CI systems, dashboards, and
 handoff bundles: Markdown or BookStack pages, HTML, JUnit XML, SARIF JSON,
 Prometheus text metrics, a Shields-compatible badge, executive briefs, action
 plans, risk registers, service catalog reports, evidence freshness reports,
-domain scorecards, tickets, and signed evidence bundles.
+domain scorecards, tickets, DNS hygiene reports, and signed evidence bundles.
 
 ### Report Artifact Gallery
 
@@ -57,7 +58,7 @@ domain scorecards, tickets, and signed evidence bundles.
 
 Typical generated report artifacts include readiness reports, executive briefs,
 scope boundary reports, evidence drift reports, prioritized action plans, and
-risk registers, restore assurance reports, mail domain reports, TLS certificate
+risk registers, restore assurance reports, mail domain reports, DNS hygiene reports, TLS certificate
 reports, access exposure reports, monitoring reports, exposure reports, firewall reports, patch reports, vulnerability reports, software inventory reports, runtime reports, service-level reports, incident readiness
 reports, plus review packs with one-page summaries, manifests, and
 attestations.
@@ -88,6 +89,7 @@ python -m openops_evidence evidence completeness -i evidence.local.json -p examp
 python -m openops_evidence freshness report -i evidence.local.json --max-age-days 30 -o freshness-report.md
 python -m openops_evidence restore report -i evidence.local.json --max-drill-age-days 90 -o restore-report.md
 python -m openops_evidence mail report -i evidence.local.json -o mail-report.md
+python -m openops_evidence dns report -i evidence.local.json -o dns-report.md
 python -m openops_evidence tls report -i evidence.local.json -o tls-report.md
 python -m openops_evidence access report -i evidence.local.json -o access-report.md
 python -m openops_evidence monitoring report -i evidence.local.json -o monitoring-report.md
@@ -236,6 +238,14 @@ python -m openops_evidence collect cyclonedx-json bom.json -o software.evidence.
 python -m openops_evidence software report -i software.evidence.json -o software-inventory-report.md
 ```
 
+Review DNS hygiene evidence:
+
+```powershell
+python -m openops_evidence dns report -i evidence.local.json -o dns-report.md
+python -m openops_evidence dns report -i evidence.local.json -f json -o dns-report.json
+python -m openops_evidence validate -i dns-report.json -t dns-report
+```
+
 Import runtime evidence from systemd and Docker exports:
 
 ```powershell
@@ -307,6 +317,8 @@ Use `restore report` when backup recency and restore drill proof should become
 a standalone operational assurance artifact.
 Use `mail report` when SPF, DKIM, and DMARC evidence should become a standalone
 mail-domain hygiene artifact.
+Use `dns report` when DNS address records, nameservers, CAA, and DNSSEC
+evidence should become a standalone domain hygiene artifact.
 Use `tls report` when certificate expiry evidence should become a standalone
 renewal-risk artifact.
 Use `access report` when public SSH, MFA, and administrative entrypoints should
@@ -361,6 +373,7 @@ Evidence drift reports are described in [docs/evidence-drift.md](docs/evidence-d
 Evidence freshness reports are described in [docs/freshness-report.md](docs/freshness-report.md).
 Restore assurance reports are described in [docs/restore-report.md](docs/restore-report.md).
 Mail domain reports are described in [docs/mail-report.md](docs/mail-report.md).
+DNS hygiene reports are described in [docs/dns-report.md](docs/dns-report.md).
 TLS certificate reports are described in [docs/tls-report.md](docs/tls-report.md).
 Access exposure reports are described in [docs/access-report.md](docs/access-report.md).
 Monitoring reports are described in [docs/monitoring-report.md](docs/monitoring-report.md).

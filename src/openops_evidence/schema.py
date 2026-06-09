@@ -860,6 +860,48 @@ def validate_mail_report(document: Any) -> list[str]:
     return errors
 
 
+def validate_dns_report(document: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(document, dict):
+        return ["DNS report must be a JSON object."]
+    _require_supported_schema_version(document, errors)
+    _require_datetime(document, "generated_at", errors)
+    _require_mapping(document, "metadata", errors)
+    _require_mapping(document, "summary", errors)
+    _require_list(document, "domains", errors)
+    summary = document.get("summary")
+    if isinstance(summary, dict):
+        _require_enum(summary, "status", {"pass", "warn", "fail"}, errors, prefix="summary.")
+        for key in (
+            "domains_total",
+            "domains_passed",
+            "domains_warn",
+            "domains_failed",
+            "domains_with_address_records",
+            "domains_with_nameservers",
+            "domains_with_caa",
+            "domains_with_dnssec",
+        ):
+            _require_int_range(summary, key, errors, minimum=0, prefix="summary.")
+    for index, domain in enumerate(document.get("domains", [])):
+        if not isinstance(domain, dict):
+            errors.append(f"domains[{index}] must be an object.")
+            continue
+        prefix = f"domains[{index}]."
+        _require_string(domain, "domain", errors, prefix=prefix)
+        _require_enum(domain, "status", {"pass", "warn", "fail"}, errors, prefix=prefix)
+        _require_int_range(domain, "address_record_count", errors, minimum=0, prefix=prefix)
+        _require_int_range(domain, "nameserver_count", errors, minimum=0, prefix=prefix)
+        for key in ("caa_present", "dnssec"):
+            if key not in domain:
+                errors.append(f"{prefix}{key} is required.")
+            elif domain[key] is not None and not isinstance(domain[key], bool):
+                errors.append(f"{prefix}{key} must be a boolean or null.")
+        for key in ("reason", "recommended_action"):
+            _require_string(domain, key, errors, prefix=prefix)
+    return errors
+
+
 def validate_tls_report(document: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(document, dict):

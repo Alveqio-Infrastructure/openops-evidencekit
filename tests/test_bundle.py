@@ -208,6 +208,7 @@ class BundleTests(unittest.TestCase):
             review_checklist = temp / "review-checklist.json"
             restore_report = temp / "restore-report.json"
             mail_report = temp / "mail-report.json"
+            dns_report = temp / "dns-report.json"
             tls_report = temp / "tls-report.json"
             access_report = temp / "access-report.json"
             monitoring_report = temp / "monitoring-report.json"
@@ -663,6 +664,39 @@ class BundleTests(unittest.TestCase):
                                 "dmarc_status": "enforced",
                                 "reason": "SPF, DKIM, and enforced DMARC evidence are present.",
                                 "recommended_action": "Keep mail authentication evidence current.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            dns_report.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "0.1",
+                        "generated_at": "2026-06-01T10:00:00+00:00",
+                        "metadata": {},
+                        "summary": {
+                            "status": "pass",
+                            "domains_total": 1,
+                            "domains_passed": 1,
+                            "domains_warn": 0,
+                            "domains_failed": 0,
+                            "domains_with_address_records": 1,
+                            "domains_with_nameservers": 1,
+                            "domains_with_caa": 1,
+                            "domains_with_dnssec": 1,
+                        },
+                        "domains": [
+                            {
+                                "domain": "example.invalid",
+                                "status": "pass",
+                                "address_record_count": 2,
+                                "nameserver_count": 2,
+                                "caa_present": True,
+                                "dnssec": True,
+                                "reason": "DNS evidence is present.",
+                                "recommended_action": "Keep DNS evidence current.",
                             }
                         ],
                     }
@@ -1565,6 +1599,7 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(classify_artifact(review_checklist), "review-checklist")
             self.assertEqual(classify_artifact(restore_report), "restore-report")
             self.assertEqual(classify_artifact(mail_report), "mail-report")
+            self.assertEqual(classify_artifact(dns_report), "dns-report")
             self.assertEqual(classify_artifact(tls_report), "tls-report")
             self.assertEqual(classify_artifact(access_report), "access-report")
             self.assertEqual(classify_artifact(monitoring_report), "monitoring-report")

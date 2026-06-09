@@ -16,6 +16,7 @@ def create_review_summary(
     freshness_report: dict[str, Any] | None = None,
     restore_report: dict[str, Any] | None = None,
     mail_report: dict[str, Any] | None = None,
+    dns_report: dict[str, Any] | None = None,
     tls_report: dict[str, Any] | None = None,
     access_report: dict[str, Any] | None = None,
     monitoring_report: dict[str, Any] | None = None,
@@ -41,6 +42,7 @@ def create_review_summary(
     freshness_summary = (freshness_report or {}).get("summary", {})
     restore_summary = (restore_report or {}).get("summary", {})
     mail_summary = (mail_report or {}).get("summary", {})
+    dns_summary = (dns_report or {}).get("summary", {})
     tls_summary = (tls_report or {}).get("summary", {})
     access_summary = (access_report or {}).get("summary", {})
     monitoring_summary = (monitoring_report or {}).get("summary", {})
@@ -72,6 +74,8 @@ def create_review_summary(
         "restore_warnings": _int_or_zero(restore_summary.get("checks_warn")),
         "mail_failures": _int_or_zero(mail_summary.get("domains_failed")),
         "mail_warnings": _int_or_zero(mail_summary.get("domains_warn")),
+        "dns_failures": _int_or_zero(dns_summary.get("domains_failed")),
+        "dns_warnings": _int_or_zero(dns_summary.get("domains_warn")),
         "tls_failures": _int_or_zero(tls_summary.get("certificates_failed")),
         "tls_warnings": _int_or_zero(tls_summary.get("certificates_warn")),
         "access_failures": _int_or_zero(access_summary.get("checks_failed")),
@@ -160,6 +164,8 @@ def render_review_summary_markdown(summary: dict[str, Any]) -> str:
         "restore_warnings",
         "mail_failures",
         "mail_warnings",
+        "dns_failures",
+        "dns_warnings",
         "tls_failures",
         "tls_warnings",
         "access_failures",

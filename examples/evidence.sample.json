@@ -85,6 +85,18 @@
           "dmarc": "quarantine"
         }
       ]
+    },
+    "dns": {
+      "domains": [
+        {
+          "domain": "example.invalid",
+          "a": ["192.0.2.10"],
+          "aaaa": ["2001:db8::10"],
+          "nameservers": ["ns1.example.invalid", "ns2.example.invalid"],
+          "caa": ["0 issue \"example-ca.invalid\""],
+          "dnssec": true
+        }
+      ]
     }
   }
 }

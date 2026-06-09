@@ -16,6 +16,7 @@ from .schema import (
     validate_badge,
     validate_bundle_signature,
     validate_bundle_verification,
+    validate_dns_report,
     validate_completeness_report,
     validate_evidence,
     validate_evidence_drift,
@@ -306,6 +307,8 @@ def classify_artifact(path: Path) -> str:
             return "restore-report"
         if validate_mail_report(document) == []:
             return "mail-report"
+        if validate_dns_report(document) == []:
+            return "dns-report"
         if validate_tls_report(document) == []:
             return "tls-report"
         if validate_access_report(document) == []:

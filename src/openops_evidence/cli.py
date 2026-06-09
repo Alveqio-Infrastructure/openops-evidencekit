@@ -47,6 +47,7 @@ from .collectors import (
     collect_ufw_status,
 )
 from .coverage import create_coverage_report, render_coverage_csv, render_coverage_markdown
+from .dns import create_dns_report, render_dns_csv, render_dns_markdown
 from .evidence_diff import compare_evidence, render_evidence_diff_csv, render_evidence_diff_markdown
 from .exposure import create_exposure_report, render_exposure_csv, render_exposure_markdown
 from .firewall import create_firewall_report, render_firewall_csv, render_firewall_markdown
@@ -96,6 +97,7 @@ from .schema import (
     validate_bundle_signature,
     validate_bundle_verification,
     validate_completeness_report,
+    validate_dns_report,
     validate_evidence,
     validate_evidence_drift,
     validate_exposure_report,
@@ -386,6 +388,15 @@ def build_parser() -> argparse.ArgumentParser:
     mail_report.add_argument("-o", "--output", default="-")
     mail_report.set_defaults(func=cmd_mail_report)
 
+    dns_report_root = sub.add_parser("dns", help="Inspect DNS hygiene evidence")
+    dns_sub = dns_report_root.add_subparsers(required=True)
+    dns_report = dns_sub.add_parser("report", help="Render DNS address, nameserver, CAA, and DNSSEC evidence")
+    dns_report.add_argument("-i", "--input", required=True)
+    dns_report.add_argument("-f", "--format", choices=["json", "markdown", "csv"], default="markdown")
+    dns_report.add_argument("--fail-on-warn", action="store_true")
+    dns_report.add_argument("-o", "--output", default="-")
+    dns_report.set_defaults(func=cmd_dns_report)
+
     tls_report_root = sub.add_parser("tls", help="Inspect TLS certificate expiry evidence")
     tls_sub = tls_report_root.add_subparsers(required=True)
     tls_report = tls_sub.add_parser("report", help="Render TLS certificate expiry evidence")
@@ -592,6 +603,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_create.add_argument("--fail-on-freshness-warn", action="store_true")
     review_create.add_argument("--fail-on-restore-warn", action="store_true")
     review_create.add_argument("--fail-on-mail-warn", action="store_true")
+    review_create.add_argument("--fail-on-dns-warn", action="store_true")
     review_create.add_argument("--fail-on-tls-warn", action="store_true")
     review_create.add_argument("--fail-on-access-warn", action="store_true")
     review_create.add_argument("--fail-on-monitoring-warn", action="store_true")
@@ -692,6 +704,7 @@ def build_parser() -> argparse.ArgumentParser:
             "review-checklist",
             "restore-report",
             "mail-report",
+            "dns-report",
             "tls-report",
             "access-report",
             "monitoring-report",
@@ -1134,6 +1147,24 @@ def cmd_mail_report(args: argparse.Namespace) -> int:
         rendered = render_mail_csv(report)
     else:
         rendered = render_mail_markdown(report)
+    write_text(args.output, rendered)
+    if args.fail_on_warn and report["summary"]["status"] != "pass":
+        return 1
+    return 0
+
+
+def cmd_dns_report(args: argparse.Namespace) -> int:
+    evidence = load_json(args.input)
+    errors = validate_evidence(evidence)
+    if errors:
+        raise UserFacingError("Evidence validation failed:\n- " + "\n- ".join(errors))
+    report = create_dns_report(evidence)
+    if args.format == "json":
+        rendered = dump_json(report)
+    elif args.format == "csv":
+        rendered = render_dns_csv(report)
+    else:
+        rendered = render_dns_markdown(report)
     write_text(args.output, rendered)
     if args.fail_on_warn and report["summary"]["status"] != "pass":
         return 1
@@ -1703,6 +1734,12 @@ def cmd_review_create(args: argparse.Namespace) -> int:
     ):
         return 1
     if (
+        args.fail_on_dns_warn
+        and pack.get("dns_report") is not None
+        and pack["dns_report"]["summary"]["status"] != "pass"
+    ):
+        return 1
+    if (
         args.fail_on_tls_warn
         and pack.get("tls_report") is not None
         and pack["tls_report"]["summary"]["status"] != "pass"
@@ -1904,6 +1941,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         errors = validate_restore_report(document)
     elif args.type == "mail-report":
         errors = validate_mail_report(document)
+    elif args.type == "dns-report":
+        errors = validate_dns_report(document)
     elif args.type == "tls-report":
         errors = validate_tls_report(document)
     elif args.type == "access-report":

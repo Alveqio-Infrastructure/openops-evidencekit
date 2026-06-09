@@ -7,6 +7,7 @@ from openops_evidence.schema import (
     validate_bundle_manifest,
     validate_bundle_signature,
     validate_bundle_verification,
+    validate_dns_report,
     validate_completeness_report,
     validate_evidence,
     validate_evidence_drift,
@@ -1156,6 +1157,40 @@ class SchemaTests(unittest.TestCase):
                 ],
             }
         )
+        self.assertEqual(errors, [])
+
+    def test_valid_dns_report(self):
+        errors = validate_dns_report(
+            {
+                "schema_version": "0.1",
+                "generated_at": "2026-06-01T10:00:00+00:00",
+                "metadata": {},
+                "summary": {
+                    "status": "pass",
+                    "domains_total": 1,
+                    "domains_passed": 1,
+                    "domains_warn": 0,
+                    "domains_failed": 0,
+                    "domains_with_address_records": 1,
+                    "domains_with_nameservers": 1,
+                    "domains_with_caa": 1,
+                    "domains_with_dnssec": 1,
+                },
+                "domains": [
+                    {
+                        "domain": "example.invalid",
+                        "status": "pass",
+                        "address_record_count": 2,
+                        "nameserver_count": 2,
+                        "caa_present": True,
+                        "dnssec": True,
+                        "reason": "DNS evidence is present.",
+                        "recommended_action": "Keep DNS evidence current.",
+                    }
+                ],
+            }
+        )
+
         self.assertEqual(errors, [])
 
     def test_valid_access_report(self):

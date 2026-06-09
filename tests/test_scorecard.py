@@ -54,8 +54,9 @@ class ScorecardTests(unittest.TestCase):
             data = json.loads(scorecard.read_text(encoding="utf-8"))
             domains = {item["domain"]: item for item in data["domains"]}
             self.assertEqual(data["summary"]["status"], "pass")
-            self.assertEqual(data["summary"]["domains_total"], 6)
+            self.assertEqual(data["summary"]["domains_total"], 7)
             self.assertEqual(domains["backup"]["checks_total"], 2)
+            self.assertEqual(domains["dns"]["checks_total"], 2)
             self.assertEqual(domains["monitoring"]["checks_total"], 2)
             self.assertEqual(domains["tls"]["title"], "TLS")
             self.assertIn("# OpenOps Domain Scorecard", markdown.read_text(encoding="utf-8"))

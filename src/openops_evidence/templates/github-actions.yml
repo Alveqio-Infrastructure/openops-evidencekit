@@ -50,6 +50,9 @@ jobs:
           openops-evidence mail report -i evidence.sample.json -f json -o mail-report.json
           openops-evidence validate -i mail-report.json -t mail-report
           openops-evidence mail report -i evidence.sample.json -o mail-report.md
+          openops-evidence dns report -i evidence.sample.json -f json -o dns-report.json
+          openops-evidence validate -i dns-report.json -t dns-report
+          openops-evidence dns report -i evidence.sample.json -o dns-report.md
           openops-evidence tls report -i evidence.sample.json -f json -o tls-report.json
           openops-evidence validate -i tls-report.json -t tls-report
           openops-evidence tls report -i evidence.sample.json -o tls-report.md
@@ -126,6 +129,8 @@ jobs:
             restore-report.md
             mail-report.json
             mail-report.md
+            dns-report.json
+            dns-report.md
             tls-report.json
             tls-report.md
             access-report.json

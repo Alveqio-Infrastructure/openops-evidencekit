@@ -1,0 +1,34 @@
+{
+  "domains": [
+    {
+      "address_record_count": 2,
+      "caa_present": true,
+      "dnssec": true,
+      "domain": "example.invalid",
+      "nameserver_count": 2,
+      "reason": "Address records, nameservers, CAA, and DNSSEC evidence are present.",
+      "recommended_action": "Keep DNS evidence current and review it after provider or certificate authority changes.",
+      "status": "pass"
+    }
+  ],
+  "generated_at": "2026-06-09T06:28:20.039248+00:00",
+  "metadata": {
+    "created_by": "openops-evidencekit",
+    "environment": "production",
+    "organization": "Example Operations Team",
+    "source": "example",
+    "source_generated_at": "2026-05-31T10:00:00+00:00"
+  },
+  "schema_version": "0.1",
+  "summary": {
+    "domains_failed": 0,
+    "domains_passed": 1,
+    "domains_total": 1,
+    "domains_warn": 0,
+    "domains_with_address_records": 1,
+    "domains_with_caa": 1,
+    "domains_with_dnssec": 1,
+    "domains_with_nameservers": 1,
+    "status": "pass"
+  }
+}

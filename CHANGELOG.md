@@ -73,6 +73,7 @@
 - Add review checklist artifacts for reviewer handoff tasks.
 - Add restore assurance reports for backup recency and restore drill proof.
 - Add mail domain reports for SPF, DKIM, and DMARC evidence review.
+- Add DNS hygiene reports for address records, nameservers, CAA, and DNSSEC evidence review.
 - Add TLS certificate reports for expiry and renewal-risk review.
 - Add access exposure reports for public SSH, MFA, and admin entrypoint review.
 - Add monitoring reports for target health, down targets, alert channels, and alert-test freshness.

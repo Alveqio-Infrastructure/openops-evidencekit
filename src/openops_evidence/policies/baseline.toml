@@ -99,3 +99,21 @@ value = ["quarantine", "reject"]
 severity = "low"
 required = false
 remediation = "Move DMARC policy from none to quarantine or reject after monitoring."
+
+[[checks]]
+id = "dns_nameservers_present"
+title = "DNS nameserver evidence exists"
+path = "signals.dns.domains[*].nameservers[*]"
+operator = "exists"
+severity = "medium"
+required = true
+remediation = "Record authoritative nameserver evidence for each reviewed domain."
+
+[[checks]]
+id = "dns_caa_present"
+title = "DNS CAA evidence exists"
+path = "signals.dns.domains[*].caa[*]"
+operator = "exists"
+severity = "low"
+required = false
+remediation = "Publish or record CAA records so certificate authority authorization is reviewable."

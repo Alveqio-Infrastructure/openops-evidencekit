@@ -72,8 +72,9 @@ class CoverageTests(unittest.TestCase):
             domains = {item["domain"]: item for item in data["domains"]}
             self.assertEqual(data["summary"]["status"], "pass")
             self.assertEqual(data["summary"]["coverage_percent"], 100)
-            self.assertEqual(data["summary"]["evidence_domains_total"], 6)
+            self.assertEqual(data["summary"]["evidence_domains_total"], 7)
             self.assertEqual(domains["backup"]["check_count"], 2)
+            self.assertEqual(domains["dns"]["check_count"], 2)
             self.assertEqual(domains["mail"]["optional_count"], 1)
             self.assertIn("# OpenOps Policy Coverage", markdown.read_text(encoding="utf-8"))
             self.assertIn("domain,status,evidence_present", csv.read_text(encoding="utf-8"))
